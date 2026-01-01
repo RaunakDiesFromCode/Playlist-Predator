@@ -1,9 +1,19 @@
-import { fetchPlaylistVideoIds, fetchVideoDetails, parseISODuration } from "./client";
+import {
+    fetchPlaylistVideoIds,
+    fetchVideoDetails,
+    fetchPlaylistDetails,
+    parseISODuration,
+} from "./client";
 import {
     formatDuration,
     calculateAdjustedDurations,
 } from "@/lib/time/duration";
-import { AnalyzePlaylistRequest, PlaylistAnalysis, PlaylistAnalysisResponse, VideoMetadata } from "@/types/playlist";
+import {
+    AnalyzePlaylistRequest,
+    PlaylistAnalysis,
+    PlaylistAnalysisResponse,
+    VideoMetadata,
+} from "@/types/playlist";
 
 export async function analyzePlaylist(
     input: AnalyzePlaylistRequest
@@ -12,6 +22,8 @@ export async function analyzePlaylist(
 
     const playlistId = extractPlaylistId(playlistUrl);
     if (!playlistId) throw new Error("Invalid playlist URL");
+
+    const playlistDetails = await fetchPlaylistDetails(playlistId);
 
     const videoIds = await fetchPlaylistVideoIds(playlistId);
     const videoData = await fetchVideoDetails(videoIds);
@@ -60,6 +72,7 @@ export async function analyzePlaylist(
     return {
         summary,
         videos,
+        playlist: playlistDetails,
     };
 }
 

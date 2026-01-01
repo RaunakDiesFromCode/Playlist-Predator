@@ -84,6 +84,25 @@ export async function fetchVideoDetails(videoIds: string[]) {
     return videos;
 }
 
+export async function fetchPlaylistDetails(playlistId: string) {
+    const res = await fetch(
+        `${API_BASE}/playlists?part=snippet&id=${playlistId}&key=${API_KEY}`
+    );
+
+    const data = await res.json();
+
+    if (!data.items || data.items.length === 0) {
+        throw new Error("Playlist not found");
+    }
+
+    const snippet = data.items[0].snippet;
+
+    return {
+        title: snippet.title,
+        channelTitle: snippet.channelTitle,
+        thumbnail: snippet.thumbnails.medium?.url,
+    };
+}
 
 export function parseISODuration(iso: string): number {
     const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);

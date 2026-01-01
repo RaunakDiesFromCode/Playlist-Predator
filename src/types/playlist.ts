@@ -26,4 +26,11 @@ export interface VideoMetadata {
 export interface PlaylistAnalysisResponse {
     summary: PlaylistAnalysis;
     videos: VideoMetadata[];
+    playlist: PlaylistMeta;
+}
+
+export interface PlaylistMeta {
+    title: string;
+    channelTitle: string;
+    thumbnail?: string;
 }

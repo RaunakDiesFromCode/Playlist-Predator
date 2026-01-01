@@ -45,7 +45,6 @@ const PlaylistForm = () => {
         setProgress(loadProgress(playlistId));
     }, [playlistId]);
 
-
     function toggleWatched(videoId: string) {
         if (!playlistId) return;
 
@@ -120,17 +119,6 @@ const PlaylistForm = () => {
                     className="w-full p-3 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
                 />
 
-                {/* <input
-                    type="number"
-                    min={0}
-                    value={completedVideos}
-                    onChange={(e) =>
-                        setCompletedVideos(Number(e.target.value) || 0)
-                    }
-                    placeholder="Videos completed"
-                    className="w-full p-3 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
-                /> */}
-
                 <button
                     type="submit"
                     disabled={loading}
@@ -156,6 +144,7 @@ const PlaylistForm = () => {
                         videos={videos}
                         progress={progress}
                         onToggle={toggleWatched}
+                        playlist={null}
                     />
                 </div>
             )}
