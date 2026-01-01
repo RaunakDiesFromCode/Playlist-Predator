@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { VideoMetadata } from "@/types/playlist";
-import { Card } from "../ui/Card";
+import { Card } from "../ui/card";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Check, Clock } from "lucide-react";
