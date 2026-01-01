@@ -1,20 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { PlaylistAnalysis, VideoMetadata } from "@/types/playlist";
 import PlaylistOverview from "./PlaylistOverview";
 import PlaylistVideoList from "./PlaylistVideoList";
+import { loadProgress, saveProgress } from "@/lib/storage/progress";
+import { PlaylistProgress } from "@/types/progress";
+import { formatDuration } from "@/lib/time/duration";
+// import { formatDuration } from "@/lib/time/duration";
 
 const PlaylistForm = () => {
     const [playlistUrl, setPlaylistUrl] = useState("");
-    const [completedVideos, setCompletedVideos] = useState(0);
 
     const [summary, setSummary] = useState<PlaylistAnalysis | null>(null);
     const [videos, setVideos] = useState<VideoMetadata[]>([]);
 
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+
+    const [progress, setProgress] = useState<PlaylistProgress>({});
+
+    const [playlistId, setPlaylistId] = useState<string | null>(null);
+
+    const watchedCount = videos.filter(
+        (v) => progress[v.videoId]?.watched
+    ).length;
+
+    const watchedDuration = videos
+        .filter((v) => progress[v.videoId]?.watched)
+        .reduce((acc, v) => acc + v.durationSeconds, 0);
+
+    const totalDurationSeconds = videos.reduce(
+        (acc, v) => acc + v.durationSeconds,
+        0
+    );
+
+    const remainingDurationFormatted = formatDuration(
+        Math.max(totalDurationSeconds - watchedDuration, 0)
+    );
+
+    useEffect(() => {
+        if (!playlistId) return;
+        setProgress(loadProgress(playlistId));
+    }, [playlistId]);
+
+
+    function toggleWatched(videoId: string) {
+        if (!playlistId) return;
+
+        setProgress((prev) => {
+            const updated = {
+                ...prev,
+                [videoId]: { watched: !prev[videoId]?.watched },
+            };
+            saveProgress(playlistId, updated);
+            return updated;
+        });
+    }
+
+    function extractPlaylistId(url: string): string | null {
+        try {
+            return new URL(url).searchParams.get("list");
+        } catch {
+            return null;
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,10 +79,18 @@ const PlaylistForm = () => {
         setLoading(true);
 
         try {
+            const id = extractPlaylistId(playlistUrl);
+            if (!id) {
+                setError("Invalid playlist URL");
+                setLoading(false);
+                return;
+            }
+
+            setPlaylistId(id);
             const res = await fetch("/api/playlist/analyze", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ playlistUrl, completedVideos }),
+                body: JSON.stringify({ playlistUrl }),
             });
 
             const data = await res.json();
@@ -61,7 +120,7 @@ const PlaylistForm = () => {
                     className="w-full p-3 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
                 />
 
-                <input
+                {/* <input
                     type="number"
                     min={0}
                     value={completedVideos}
@@ -70,7 +129,7 @@ const PlaylistForm = () => {
                     }
                     placeholder="Videos completed"
                     className="w-full p-3 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
-                />
+                /> */}
 
                 <button
                     type="submit"
@@ -86,8 +145,18 @@ const PlaylistForm = () => {
 
             {summary && (
                 <div className="mt-8 space-y-8">
-                    <PlaylistOverview summary={summary} />
-                    <PlaylistVideoList videos={videos} />
+                    <PlaylistOverview
+                        totalVideos={summary.totalVideos}
+                        watchedVideos={watchedCount}
+                        totalDuration={summary.totalDuration}
+                        remainingDuration={remainingDurationFormatted}
+                    />
+
+                    <PlaylistVideoList
+                        videos={videos}
+                        progress={progress}
+                        onToggle={toggleWatched}
+                    />
                 </div>
             )}
         </div>
