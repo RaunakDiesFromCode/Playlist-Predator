@@ -1,5 +1,5 @@
-import Navbar from "@/app/components/Navbar";
-import PlaylistForm from "@/app/components/PlaylistForm"; // PlaylistForm component
+import Navbar from "@/components/layout/Navbar";
+import PlaylistForm from "@/components/playlist/PlaylistForm"; // PlaylistForm component
 import { CloudLightning } from "lucide-react";
 const Home = () => {
   return (

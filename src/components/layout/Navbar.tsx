@@ -1,6 +1,7 @@
 import Image from "next/image"; // Import the Image component from Next.js
-import ThemeToggle from "./ThemeToggle";
+
 import { GithubIcon } from "lucide-react";
+import ThemeToggle from "../ThemeToggle";
 
 const Navbar = () => {
   return (

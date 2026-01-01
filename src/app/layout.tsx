@@ -1,17 +1,17 @@
-import { ThemeProvider } from "@/app/context/theme-context";
+import { ThemeProvider } from "@/context/theme-context";
 import "./globals.css"; // import global styles
 
 export default function RootLayout({
-  children,
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
-  return (
-    <html lang="en">
-      <head />
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en">
+            <head />
+            <body>
+                <ThemeProvider>{children}</ThemeProvider>
+            </body>
+        </html>
+    );
 }
