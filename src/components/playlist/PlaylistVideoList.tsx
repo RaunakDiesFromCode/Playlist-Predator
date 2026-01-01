@@ -16,9 +16,9 @@ const PlaylistVideoList = ({ videos, progress, onToggle, playlist }: Props) => {
     const playlistThumbnail = videos[0].thumbnail;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-2">
             {/* Playlist header */}
-            <div className="relative w-full overflow-hidden rounded-xl">
+            <div className="relative w-full overflow-hidden rounded-t-xl">
                 <Image
                     src={playlistThumbnail}
                     alt="Playlist cover"

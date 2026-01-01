@@ -14,40 +14,54 @@ interface Props {
 const PlaylistVideoCard = ({ video, watched, onToggle }: Props) => {
     return (
         <Card
-            className={`flex items-center overflow-hidden pr-2 ${
+            className={`group flex items-center gap-3 p-2 transition-opacity ${
                 watched ? "opacity-60" : ""
             }`}
         >
+            {/* Clickable content */}
             <Link
                 href={`https://youtube.com/watch?v=${video.videoId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 w-full"
+                className="flex items-center gap-3 flex-1 min-w-0"
             >
-                <Image
-                    src={video.thumbnail}
-                    alt={video.title}
-                    width={120}
-                    height={68}
-                    className=""
-                />
+                {/* Thumbnail */}
+                <div className="relative w-[120px] aspect-video flex-shrink-0 overflow-hidden rounded-md bg-black/10">
+                    <Image
+                        src={video.thumbnail}
+                        alt={video.title}
+                        fill
+                        className="object-cover"
+                    />
+                </div>
 
-                <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{video.title}</p>
-                    <p className="text-sm text-foreground/70">
+                {/* Text */}
+                <div className="min-w-0">
+                    <p className="font-medium leading-snug truncate">
+                        {video.title}
+                    </p>
+                    <p className="text-sm text-foreground/70 truncate">
                         {video.channelTitle} · {video.durationFormatted}
                     </p>
                 </div>
             </Link>
 
+            {/* Action */}
             <Button
                 onClick={() => onToggle(video.videoId)}
-                size={"icon"}
-                className={`text-xs px-2 py-1 rounded-full ${
-                    watched ? "bg-green-600 hover:bg-green-700 text-white" : ""
+                size="icon"
+                variant={watched ? "default" : "secondary"}
+                className={`h-9 w-9 rounded-full shrink-0 ${
+                    watched
+                        ? "bg-green-600 hover:bg-green-700 text-white"
+                        : "opacity-0 group-hover:opacity-100 transition-opacity"
                 }`}
             >
-                {watched ? <Check /> : <Clock />}
+                {watched ? (
+                    <Check className="h-4 w-4" />
+                ) : (
+                    <Clock className="h-4 w-4" />
+                )}
             </Button>
         </Card>
     );
