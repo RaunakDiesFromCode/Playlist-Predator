@@ -8,6 +8,8 @@ import PlaylistVideoList from "./PlaylistVideoList";
 import { loadProgress, saveProgress } from "@/lib/storage/progress";
 import { PlaylistProgress } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 // import { formatDuration } from "@/lib/time/duration";
 
 const PlaylistForm = () => {
@@ -111,7 +113,7 @@ const PlaylistForm = () => {
     return (
         <div className="max-w-2xl mx-auto p-4">
             <form onSubmit={handleSubmit} className="space-y-4">
-                <input
+                <Input
                     type="text"
                     value={playlistUrl}
                     onChange={(e) => setPlaylistUrl(e.target.value)}
@@ -119,14 +121,14 @@ const PlaylistForm = () => {
                     className="w-full p-3 rounded-lg border dark:border-gray-700 dark:bg-gray-800"
                 />
 
-                <button
+                <Button
                     type="submit"
                     disabled={loading}
                     className="w-full flex justify-center items-center gap-2 p-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
                 >
                     {loading && <Loader2 className="w-5 h-5 animate-spin" />}
                     Analyze Playlist
-                </button>
+                </Button>
             </form>
 
             {error && <p className="mt-4 text-center text-red-500">{error}</p>}

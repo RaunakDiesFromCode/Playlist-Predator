@@ -80,7 +80,7 @@ const Navbar = () => {
                 <div className="flex items-center gap-3 ml-auto">
                     <ThemeToggle />
 
-                    <a
+                    <Link
                         href="https://github.com/Aymaan-Shabbir"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -88,7 +88,7 @@ const Navbar = () => {
                         className="text-foreground hover:text-primary transition"
                     >
                         <GithubIcon size={20} />
-                    </a>
+                    </Link>
                 </div>
             </div>
         </nav>
