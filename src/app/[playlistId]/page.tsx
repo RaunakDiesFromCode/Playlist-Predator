@@ -2,12 +2,48 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { PlaylistAnalysis, PlaylistMeta, VideoMetadata } from "@/types/playlist";
+import {
+    PlaylistAnalysis,
+    PlaylistMeta,
+    VideoMetadata,
+} from "@/types/playlist";
 import PlaylistOverview from "@/components/playlist/PlaylistOverview";
 import PlaylistVideoList from "@/components/playlist/PlaylistVideoList";
 import { loadProgress, saveProgress } from "@/lib/storage/progress";
 import { PlaylistProgress } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function PlaylistPageSkeleton() {
+    return (
+        <div className="flex gap-8 p-8">
+            {/* Left panel skeleton */}
+            <div className="w-1/2 space-y-4">
+                {/* Playlist hero */}
+                <Skeleton className="h-64 w-full rounded-xl" />
+
+                {/* Video list */}
+                {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="flex gap-4 items-center">
+                        <Skeleton className="h-20 w-32 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Right panel skeleton */}
+            <div className="w-1/2 space-y-4">
+                <Skeleton className="h-8 w-1/3" />
+                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-24 w-full rounded-lg" />
+            </div>
+        </div>
+    );
+}
 
 export default function PlaylistPage() {
     const { playlistId } = useParams<{ playlistId: string }>();
@@ -52,7 +88,7 @@ export default function PlaylistPage() {
         });
     }
 
-    if (loading) return <p className="p-8">Loading…</p>;
+    if (loading) return <PlaylistPageSkeleton />;
     if (error) return <p className="p-8 text-red-500">{error}</p>;
     if (!summary) return null;
 
