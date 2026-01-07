@@ -1,16 +1,16 @@
 import { PlaylistMeta, VideoMetadata } from "@/types/playlist";
 import PlaylistVideoCard from "./PlaylistVideoCard";
-import { PlaylistProgress } from "@/types/progress";
+import { PlaylistProgress, VideoStatus } from "@/types/progress";
 import Image from "next/image";
 
 interface Props {
     videos: VideoMetadata[];
     progress: PlaylistProgress;
-    onToggle: (id: string) => void;
+    onStatusChange: (id: string, status: VideoStatus) => void;
     playlist: PlaylistMeta | null;
 }
 
-const PlaylistVideoList = ({ videos, progress, onToggle, playlist }: Props) => {
+const PlaylistVideoList = ({ videos, progress, onStatusChange, playlist }: Props) => {
     if (videos.length === 0) return null;
 
     const playlistThumbnail = videos[0].thumbnail;
@@ -49,8 +49,10 @@ const PlaylistVideoList = ({ videos, progress, onToggle, playlist }: Props) => {
                         <PlaylistVideoCard
                             key={video.videoId}
                             video={video}
-                            watched={!!progress[video.videoId]?.watched}
-                            onToggle={onToggle}
+                            currentStatus={
+                                progress[video.videoId]?.status || "STUDY"
+                            }
+                            onStatusChange={onStatusChange}
                         />
                     ))}
                 </div>

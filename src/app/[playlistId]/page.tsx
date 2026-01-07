@@ -9,10 +9,12 @@ import {
 } from "@/types/playlist";
 import PlaylistOverview from "@/components/playlist/PlaylistOverview";
 import PlaylistVideoList from "@/components/playlist/PlaylistVideoList";
-import { loadProgress, saveProgress } from "@/lib/storage/progress";
+import { loadProgress } from "@/lib/storage/progress";
 import { PlaylistProgress } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
 import { Skeleton } from "@/components/ui/skeleton";
+import { updateVideoStatus } from "@/lib/storage/progress";
+import { VideoStatus } from "@/types/progress";
 
 function PlaylistPageSkeleton() {
     return (
@@ -77,15 +79,9 @@ export default function PlaylistPage() {
             .finally(() => setLoading(false));
     }, [playlistId]);
 
-    function toggleWatched(videoId: string) {
-        setProgress((prev) => {
-            const updated = {
-                ...prev,
-                [videoId]: { watched: !prev[videoId]?.watched },
-            };
-            saveProgress(playlistId, updated);
-            return updated;
-        });
+    function changeStatus(videoId: string, status: VideoStatus) {
+        const updated = updateVideoStatus(playlistId, videoId, status);
+        setProgress(updated);
     }
 
     if (loading) return <PlaylistPageSkeleton />;
@@ -93,7 +89,7 @@ export default function PlaylistPage() {
     if (!summary) return null;
 
     const watchedCount = videos.filter(
-        (v) => progress[v.videoId]?.watched
+        (v) => progress[v.videoId]?.status === "DONE"
     ).length;
 
     const totalDurationSeconds = videos.reduce(
@@ -118,7 +114,7 @@ export default function PlaylistPage() {
                 <PlaylistVideoList
                     videos={videos}
                     progress={progress}
-                    onToggle={toggleWatched}
+                    onStatusChange={changeStatus}
                     playlist={playlist}
                 />
             </div>

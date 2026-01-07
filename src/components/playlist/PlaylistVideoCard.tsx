@@ -3,19 +3,19 @@ import { VideoMetadata } from "@/types/playlist";
 import { Card } from "../ui/card";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { Check, Clock } from "lucide-react";
+import { VideoStatus } from "@/types/progress";
 
 interface Props {
     video: VideoMetadata;
-    watched: boolean;
-    onToggle: (id: string) => void;
+    currentStatus: VideoStatus;
+    onStatusChange: (id: string, status: VideoStatus) => void;
 }
 
-const PlaylistVideoCard = ({ video, watched, onToggle }: Props) => {
+const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
     return (
         <Card
             className={`group flex items-center gap-3 p-2 transition-opacity ${
-                watched ? "opacity-60" : ""
+                currentStatus === "DONE" ? "opacity-60" : ""
             }`}
         >
             {/* Clickable content */}
@@ -47,22 +47,20 @@ const PlaylistVideoCard = ({ video, watched, onToggle }: Props) => {
             </Link>
 
             {/* Action */}
-            <Button
-                onClick={() => onToggle(video.videoId)}
-                size="icon"
-                variant={watched ? "default" : "secondary"}
-                className={`h-9 w-9 rounded-full shrink-0 ${
-                    watched
-                        ? "bg-green-600 hover:bg-green-700 text-white"
-                        : "opacity-0 group-hover:opacity-100 transition-opacity"
-                }`}
-            >
-                {watched ? (
-                    <Check className="h-4 w-4" />
-                ) : (
-                    <Clock className="h-4 w-4" />
-                )}
-            </Button>
+            <div className="flex gap-1">
+                {["DONE", "STUDY", "REWATCH", "SKIP"].map((s) => (
+                    <Button
+                        key={s}
+                        onClick={() =>
+                            onStatusChange(video.videoId, s as VideoStatus)
+                        }
+                        variant={currentStatus === s ? "default" : "secondary"}
+                        size="sm"
+                    >
+                        {s}
+                    </Button>
+                ))}
+            </div>
         </Card>
     );
 };
