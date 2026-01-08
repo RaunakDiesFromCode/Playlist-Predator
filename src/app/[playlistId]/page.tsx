@@ -15,6 +15,7 @@ import { formatDuration } from "@/lib/time/duration";
 import { Skeleton } from "@/components/ui/skeleton";
 import { updateVideoStatus } from "@/lib/storage/progress";
 import { VideoStatus } from "@/types/progress";
+import { supabase } from "@/lib/supabase/client";
 
 function PlaylistPageSkeleton() {
     return (
@@ -78,6 +79,32 @@ export default function PlaylistPage() {
             .catch(() => setError("Failed to load playlist"))
             .finally(() => setLoading(false));
     }, [playlistId]);
+
+    useEffect(() => {
+        if (!playlistId || !playlist) return;
+
+        async function maybeSavePlaylist() {
+            const { data } = await supabase.auth.getUser();
+            const user = data.user;
+
+            if (!user) return; // guest → do nothing
+
+            if (playlist) {
+                await fetch("/api/playlists", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        youtube_playlist_id: playlistId,
+                        title: playlist.title,
+                        thumbnail: playlist.thumbnail,
+                    }),
+                });
+            }
+        }
+
+        maybeSavePlaylist();
+    }, [playlistId, playlist]);
+
 
     function changeStatus(videoId: string, status: VideoStatus) {
         const updated = updateVideoStatus(playlistId, videoId, status);
