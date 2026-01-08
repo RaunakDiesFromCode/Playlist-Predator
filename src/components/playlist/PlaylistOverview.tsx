@@ -32,6 +32,8 @@ const speeds = [
     { label: "1.25×", value: 1.25 },
     { label: "1.5×", value: 1.5 },
     { label: "2×", value: 2 },
+    { label: "3×", value: 3 },
+    { label: "4×", value: 4 },
 ];
 
 const PlaylistOverview = ({
@@ -66,7 +68,7 @@ const PlaylistOverview = ({
                 </div>
 
                 {/* Time summary */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                         <p className="text-muted-foreground">Total length</p>
                         <p className="font-medium">{totalDuration}</p>
