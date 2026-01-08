@@ -1,14 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { GithubIcon, Search } from "lucide-react";
+import { GithubIcon, Search, Sidebar } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Input } from "../ui/input";
 import Link from "next/link";
 import { Button } from "../ui/button";
-
 import { supabase } from "@/lib/supabase/client";
 
 type UserInfo = {
@@ -16,7 +15,13 @@ type UserInfo = {
     name?: string;
 };
 
-const Navbar = () => {
+type NavbarProps = {
+    sidebarOpen: boolean;
+    toggleSidebar: () => void;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
     const pathname = usePathname();
     const router = useRouter();
     const [input, setInput] = useState("");
@@ -80,6 +85,15 @@ const Navbar = () => {
             <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
                 {/* Left: Logo */}
                 <div className="flex items-center gap-2 shrink-0">
+                    {user && (<Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleSidebar}
+                        aria-label="Toggle sidebar"
+                    >
+                        <Sidebar />
+                    </Button>)}
+
                     <Image
                         src="/logo.gif"
                         alt="Playlist Predator"
