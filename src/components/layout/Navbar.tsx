@@ -4,9 +4,17 @@ import Image from "next/image";
 import { GithubIcon, Search } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "../ui/input";
 import Link from "next/link";
+import { Button } from "../ui/button";
+
+import { supabase } from "@/lib/supabase/client";
+
+type UserInfo = {
+    email: string;
+    name?: string;
+};
 
 const Navbar = () => {
     const pathname = usePathname();
@@ -15,6 +23,38 @@ const Navbar = () => {
 
     const isHome = pathname === "/";
     const showSearch = !isHome;
+
+    const [user, setUser] = useState<UserInfo | null>(null);
+    const [loadingAuth, setLoadingAuth] = useState(true);
+
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data }) => {
+            if (data.user) {
+                setUser({
+                    email: data.user.email!,
+                    name: data.user.user_metadata?.name,
+                });
+            } else {
+                setUser(null);
+            }
+            setLoadingAuth(false);
+        });
+
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                setUser({
+                    email: session.user.email!,
+                    name: session.user.user_metadata?.name,
+                });
+            } else {
+                setUser(null);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
 
     function extractPlaylistId(value: string) {
         try {
@@ -55,7 +95,7 @@ const Navbar = () => {
                     </Link>
                 </div>
 
-                {/* Center: Search (playlist pages only) */}
+                {/* Center: Search */}
                 {showSearch && (
                     <form
                         onSubmit={handleSearch}
@@ -78,6 +118,39 @@ const Navbar = () => {
 
                 {/* Right: Controls */}
                 <div className="flex items-center gap-3 ml-auto">
+                    {!loadingAuth &&
+                        (user ? (
+                            <>
+                                <span className="text-sm text-muted-foreground">
+                                    {user.name ?? user.email}
+                                </span>
+                                <Button
+                                    onClick={async () => {
+                                        await supabase.auth.signOut();
+                                        router.push("/login");
+                                    }}
+                                    variant="outline"
+                                >
+                                    Logout
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    href="/login"
+                                    className="text-sm px-3 py-1 rounded border"
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    href="/register"
+                                    className="text-sm px-3 py-1 rounded border"
+                                >
+                                    Register
+                                </Link>
+                            </>
+                        ))}
+
                     <ThemeToggle />
 
                     <Link
@@ -85,7 +158,6 @@ const Navbar = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="GitHub"
-                        className="text-foreground hover:text-primary transition"
                     >
                         <GithubIcon size={20} />
                     </Link>
