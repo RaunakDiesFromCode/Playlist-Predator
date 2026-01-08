@@ -92,13 +92,18 @@ export default function PlaylistPage() {
         (v) => progress[v.videoId]?.status === "DONE"
     ).length;
 
+    const skippedCount = videos.filter(
+        (v) => progress[v.videoId]?.status === "SKIP"
+    ).length;
+
+
     const totalDurationSeconds = videos.reduce(
         (a, v) => a + v.durationSeconds,
         0
     );
 
     const watchedDuration = videos
-        .filter((v) => progress[v.videoId]?.watched)
+        .filter((v) => progress[v.videoId]?.status === "DONE")
         .reduce((a, v) => a + v.durationSeconds, 0);
 
     const remainingDuration = formatDuration(
@@ -122,6 +127,7 @@ export default function PlaylistPage() {
                 <PlaylistOverview
                     totalVideos={summary.totalVideos}
                     watchedVideos={watchedCount}
+                    skippedVideos={skippedCount}
                     totalDuration={summary.totalDuration}
                     remainingDuration={remainingDuration}
                 />
