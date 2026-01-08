@@ -20,7 +20,7 @@ function PlaylistPageSkeleton() {
     return (
         <div className="flex gap-4 p-4">
             {/* Left panel skeleton */}
-            <div className="w-1/2 space-y-4">
+            <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-hidden space-y-4">
                 {/* Playlist hero */}
                 <Skeleton className="h-64 w-full rounded-xl" />
 
@@ -37,7 +37,7 @@ function PlaylistPageSkeleton() {
             </div>
 
             {/* Right panel skeleton */}
-            <div className="w-1/2 space-y-4">
+            <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-y-auto space-y-4">
                 <Skeleton className="h-8 w-1/3" />
                 <Skeleton className="h-24 w-full rounded-lg" />
                 <Skeleton className="h-24 w-full rounded-lg" />

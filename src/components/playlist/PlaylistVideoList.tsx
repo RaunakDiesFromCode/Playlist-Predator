@@ -87,7 +87,7 @@ const PlaylistVideoList = ({
             </div>
 
             {/* Video list */}
-            <div className="relative z-10 mt-2 space-y-3 px-1">
+            <div className="relative z-10 mt-2 space-y-2 px-1">
                 {videos.map((video) => (
                     <PlaylistVideoCard
                         key={video.videoId}

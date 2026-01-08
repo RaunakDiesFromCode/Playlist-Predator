@@ -1,9 +1,19 @@
+import * as React from "react";
 import Image from "next/image";
-import { VideoMetadata } from "@/types/playlist";
-import { Card } from "../ui/card";
 import Link from "next/link";
-import { Button } from "../ui/button";
+
+import { VideoMetadata } from "@/types/playlist";
 import { VideoStatus } from "@/types/progress";
+
+import { Card } from "../ui/card";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
     video: VideoMetadata;
@@ -11,11 +21,33 @@ interface Props {
     onStatusChange: (id: string, status: VideoStatus) => void;
 }
 
+const STATUS_STYLES: Record<VideoStatus, { trigger: string; item: string }> = {
+    DONE: {
+        trigger: "bg-green-500/15 text-green-600 border-green-500/30",
+        item: "text-green-600 focus:bg-green-500/15",
+    },
+    STUDY: {
+        trigger: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+        item: "text-blue-600 focus:bg-blue-500/15",
+    },
+    REWATCH: {
+        trigger: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
+        item: "text-yellow-600 focus:bg-yellow-500/15",
+    },
+    SKIP: {
+        trigger: "bg-red-500/15 text-red-600 border-red-500/30",
+        item: "text-red-600 focus:bg-red-500/15",
+    },
+};
+const STATUS_OPTIONS: VideoStatus[] = ["DONE", "STUDY", "REWATCH", "SKIP"];
+
 const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
     return (
         <Card
             className={`group flex items-center gap-3 p-2 transition-colors backdrop-blur-sm ${
-                currentStatus === "DONE" || currentStatus === "SKIP" ? "opacity-60" : ""
+                currentStatus === "DONE" || currentStatus === "SKIP"
+                    ? "opacity-60"
+                    : ""
             }`}
         >
             {/* Clickable content */}
@@ -46,21 +78,33 @@ const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
                 </div>
             </Link>
 
-            {/* Action */}
-            <div className="flex gap-1">
-                {["DONE", "STUDY", "REWATCH", "SKIP"].map((s) => (
-                    <Button
-                        key={s}
-                        onClick={() =>
-                            onStatusChange(video.videoId, s as VideoStatus)
-                        }
-                        variant={currentStatus === s ? "default" : "secondary"}
-                        size="sm"
-                    >
-                        {s}
-                    </Button>
-                ))}
-            </div>
+            {/* Status Select */}
+            <Select
+                value={currentStatus}
+                onValueChange={(value) =>
+                    onStatusChange(video.videoId, value as VideoStatus)
+                }
+            >
+                <SelectTrigger
+                    className={`w-[120px] h-8 text-xs border font-bold ${STATUS_STYLES[currentStatus].trigger}`}
+                >
+                    <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                    <SelectGroup>
+                        {STATUS_OPTIONS.map((status) => (
+                            <SelectItem
+                                key={status}
+                                value={status}
+                                className={`cursor-pointer font-semibold ${STATUS_STYLES[status].item}`}
+                            >
+                                {status}
+                            </SelectItem>
+                        ))}
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
         </Card>
     );
 };
