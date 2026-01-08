@@ -18,7 +18,7 @@ import { VideoStatus } from "@/types/progress";
 
 function PlaylistPageSkeleton() {
     return (
-        <div className="flex gap-8 p-8">
+        <div className="flex gap-4 p-4">
             {/* Left panel skeleton */}
             <div className="w-1/2 space-y-4">
                 {/* Playlist hero */}
@@ -106,11 +106,9 @@ export default function PlaylistPage() {
     );
 
     return (
-        <div className="flex gap-8 p-8">
+        <div className="flex  gap-4 p-4 ">
             {/* Left panel */}
-            <div className="w-1/2">
-                {/* <h2 className="font-semibold text-lg">Playlist</h2>
-                <p>{summary.totalVideos} videos</p> */}
+            <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-hidden ">
                 <PlaylistVideoList
                     videos={videos}
                     progress={progress}
@@ -120,7 +118,7 @@ export default function PlaylistPage() {
             </div>
 
             {/* Right panel */}
-            <div className="w-1/2">
+            <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-y-auto ">
                 <PlaylistOverview
                     totalVideos={summary.totalVideos}
                     watchedVideos={watchedCount}

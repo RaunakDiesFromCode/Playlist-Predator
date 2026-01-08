@@ -14,8 +14,8 @@ interface Props {
 const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
     return (
         <Card
-            className={`group flex items-center gap-3 p-2 transition-opacity ${
-                currentStatus === "DONE" ? "opacity-60" : ""
+            className={`group flex items-center gap-3 p-2 transition-colors backdrop-blur-sm ${
+                currentStatus === "DONE" || currentStatus === "SKIP" ? "opacity-60" : ""
             }`}
         >
             {/* Clickable content */}
