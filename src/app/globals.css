@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  overscroll-behavior-y: none;
+  overflow: hidden;
+}
 
 
 @layer base {
