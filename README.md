@@ -105,6 +105,7 @@ You hunt **them**.
 ### 😴 Things I want to add someday
 
 * Responsive mobile layout
+* Add filtering and sorting to video list
 * AI-powered playlist summarization
 * Browser extension for quick playlist importing
 
