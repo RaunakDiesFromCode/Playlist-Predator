@@ -5,7 +5,7 @@ import Link from "next/link";
 import { VideoMetadata } from "@/types/playlist";
 import { VideoStatus } from "@/types/progress";
 
-import { Card } from "../ui/card";
+import { Card } from "@/components/ui/card";
 import {
     Select,
     SelectContent,

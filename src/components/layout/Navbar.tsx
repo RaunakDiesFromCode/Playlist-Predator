@@ -5,9 +5,9 @@ import { GithubIcon, Search, Sidebar } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase/client";
 
 type UserInfo = {

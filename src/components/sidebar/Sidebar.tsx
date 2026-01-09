@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 import SidebarSkeleton from "./SidebarSkeleton";
 import SidebarItem from "./SidebarItem";
 import { usePathname } from "next/navigation";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 
 type Playlist = {
     id: string;

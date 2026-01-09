@@ -8,8 +8,9 @@ import PlaylistVideoList from "./PlaylistVideoList";
 import { loadProgress, saveProgress } from "@/lib/storage/progress";
 import { PlaylistProgress } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
 // import { formatDuration } from "@/lib/time/duration";
 
 const PlaylistForm = () => {
