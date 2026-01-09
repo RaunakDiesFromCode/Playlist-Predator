@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🐺 Playlist Predator
 
-## Getting Started
+> **Turn YouTube playlists into something you can actually *conquer*.**
 
-First, run the development server:
+Playlist Predator is a modern web app that takes chaotic YouTube playlists and turns them into a clean, trackable, no-BS study / watch system. It tells you **how long the playlist really is**, how long it’ll take at different speeds, and lets you track exactly what you’ve **done**, **skipped**, or need to **rewatch**.
+
+It works perfectly **without login** using local storage — and gets supercharged when you sign in, syncing everything to the cloud.
+
+Live on Vercel. Fast. Snappy. Opinionated.
+
+---
+
+## ✨ Features
+
+* 🎯 **Playlist analysis**
+  Total duration, remaining time, and speed-based estimates (upto 4x).
+
+* ✅ **Smart progress tracking**
+  Mark videos as **Done**, **Skip**, or reset them back to **Study** (rewatch).
+
+* ⚡ **Instant UI (optimistic updates)**
+  Clicks feel immediate — no waiting on the network.
+
+* 👤 **Optional authentication** (Supabase)
+
+  * Guests → progress stored locally
+  * Logged-in users → progress stored in Postgres
+
+* 🧠 **Unified progress model**
+  No fake states. No duplicated data. Clean semantics.
+
+* 📚 **Playlist sidebar**
+  Logged-in users get a sidebar showing every playlist they’ve ever opened.
+
+* 🌙 **Dark mode** out of the box
+
+---
+
+## 🛠 Tech Stack
+
+* **Next.js (App Router)**
+* **TypeScript**
+* **Tailwind CSS + shadcn/ui**
+* **Supabase** (Auth + Postgres)
+* **YouTube Data API**
+* **Vercel** (hosting)
+
+---
+
+## 🧩 How Progress Works (Important)
+
+Playlist Predator uses a deliberately simple model:
+
+* `DONE` → video watched
+* `SKIP` → video skipped
+* *(no entry)* → video still in study / rewatch mode
+
+There is **no stored “rewatch” state** — rewatch is an *action*, not a state.
+
+This keeps counts accurate, logic predictable, and data clean.
+
+---
+
+## 🚀 Getting Started (Local)
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create a `.env.local` with:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+YOUTUBE_API_KEY = ...
+NEXTAUTH_SECRET= ...
+NEXTAUTH_URL= ...
+NEXT_PUBLIC_SUPABASE_URL= ...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY= ...
+NEXT_PUBLIC_SUPABASE_ANON_KEY= ...
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🧪 Status
 
-To learn more about Next.js, take a look at the following resources:
+This project is actively developed and already production-ready.
+Expect polish, refinements, and more predator instincts.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📄 License
 
-## Deploy on Vercel
+Licensed under the MIT License. See `LICENSE` for details.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🐾 Why “Playlist Predator”?
+
+Because playlists shouldn’t hunt *you*.
+
+You hunt **them**.
+
+---
+
+### 😴 Things I want to add someday
+
+* Responsive mobile layout
+* AI-powered playlist summarization
+* Browser extension for quick playlist importing
+
+---
+
+# Cloned from Aymaan Shabbir's [Playlist Predator](https://github.com/Aymaan-Shabbir/Playlist-Predator)
+
+# Special thanks to [Dipannita Sharma](https://github.com/dipannitasharma)
