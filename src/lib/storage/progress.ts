@@ -26,9 +26,14 @@ export function updateVideoStatus(
 ) {
     const progress = loadProgress(playlistId);
 
-    progress[videoId] = { status, watched: false };
+    if (status === "NONE") {
+        // 🔁 Reset / rewatch → remove entry
+        delete progress[videoId];
+    } else {
+        progress[videoId] = { status };
+    }
 
     saveProgress(playlistId, progress);
-
     return progress;
 }
+
