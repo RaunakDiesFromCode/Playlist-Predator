@@ -27,11 +27,11 @@ const PlaylistForm = () => {
     const [playlistId, setPlaylistId] = useState<string | null>(null);
 
     const watchedCount = videos.filter(
-        (v) => progress[v.videoId]?.watched
+        (v) => progress[v.videoId]?.status === "DONE"
     ).length;
 
     const watchedDuration = videos
-        .filter((v) => progress[v.videoId]?.watched)
+        .filter((v) => progress[v.videoId]?.status === "DONE")
         .reduce((acc, v) => acc + v.durationSeconds, 0);
 
     const totalDurationSeconds = videos.reduce(
@@ -52,48 +52,20 @@ const PlaylistForm = () => {
         setProgress(loadProgress(playlistId));
     }, [playlistId]);
 
-    // function toggleWatched(videoId: string) {
-    //     if (!playlistId) return;
-
-    //     setProgress((prev) => {
-    //         const prevVideo = prev[videoId] ?? {
-    //             watched: false,
-    //             status: "STUDY",
-    //         };
-
-    //         const updated: PlaylistProgress = {
-    //             ...prev,
-    //             [videoId]: {
-    //                 ...prevVideo,
-    //                 watched: !prevVideo.watched,
-    //             },
-    //         };
-
-    //         saveProgress(playlistId, updated);
-    //         return updated;
-    //     });
-    // }
-
     function handleStatusChange(videoId: string, status: VideoStatus) {
         if (!playlistId) return;
 
         setProgress((prev) => {
-            const prevVideo = prev[videoId] ?? {
-                watched: false,
-                status: "STUDY",
-            };
+            const next = { ...prev };
 
-            const updated: PlaylistProgress = {
-                ...prev,
-                [videoId]: {
-                    ...prevVideo,
-                    status,
-                    watched: status === "DONE",
-                },
-            };
+            if (status === "NONE") {
+                delete next[videoId];
+            } else {
+                next[videoId] = { status };
+            }
 
-            saveProgress(playlistId, updated);
-            return updated;
+            saveProgress(playlistId, next);
+            return next;
         });
     }
 
