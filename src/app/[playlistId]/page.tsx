@@ -9,7 +9,7 @@ import {
 } from "@/types/playlist";
 import PlaylistOverview from "@/components/playlist/PlaylistOverview";
 import PlaylistVideoList from "@/components/playlist/PlaylistVideoList";
-import { loadProgress, updateVideoStatus } from "@/lib/progress";
+import { loadProgress } from "@/lib/progress";
 import { PlaylistProgress } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
 import { Skeleton } from "@/components/ui/skeleton";

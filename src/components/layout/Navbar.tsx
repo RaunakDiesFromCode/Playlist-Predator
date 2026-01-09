@@ -11,10 +11,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase/client";
 
-type UserInfo = {
-    email: string;
-    name?: string;
-};
 
 type NavbarProps = {
     sidebarOpen: boolean;

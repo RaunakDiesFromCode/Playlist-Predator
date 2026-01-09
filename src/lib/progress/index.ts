@@ -1,5 +1,4 @@
 import { loadProgress as loadLocal, saveProgress } from "@/lib/storage/progress";
-import { updateVideoStatus as updateLocal } from "@/lib/storage/progress";
 import { VideoStatus, PlaylistProgress } from "@/types/progress";
 import { supabase } from "@/lib/supabase/client";
 
