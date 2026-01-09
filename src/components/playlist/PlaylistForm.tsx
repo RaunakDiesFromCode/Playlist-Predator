@@ -6,7 +6,7 @@ import { PlaylistAnalysis, VideoMetadata } from "@/types/playlist";
 import PlaylistOverview from "./PlaylistOverview";
 import PlaylistVideoList from "./PlaylistVideoList";
 import { loadProgress, saveProgress } from "@/lib/storage/progress";
-import { PlaylistProgress } from "@/types/progress";
+import { PlaylistProgress, VideoStatus } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,10 @@ const PlaylistForm = () => {
         Math.max(totalDurationSeconds - watchedDuration, 0)
     );
 
+    const skippedCount = videos.filter(
+        (v) => progress[v.videoId]?.status === "SKIP"
+    ).length;
+
     useEffect(() => {
         if (!playlistId) return;
         setProgress(loadProgress(playlistId));
@@ -52,10 +56,42 @@ const PlaylistForm = () => {
         if (!playlistId) return;
 
         setProgress((prev) => {
-            const updated = {
-                ...prev,
-                [videoId]: { watched: !prev[videoId]?.watched },
+            const prevVideo = prev[videoId] ?? {
+                watched: false,
+                status: "STUDY",
             };
+
+            const updated: PlaylistProgress = {
+                ...prev,
+                [videoId]: {
+                    ...prevVideo,
+                    watched: !prevVideo.watched,
+                },
+            };
+
+            saveProgress(playlistId, updated);
+            return updated;
+        });
+    }
+
+    function handleStatusChange(videoId: string, status: VideoStatus) {
+        if (!playlistId) return;
+
+        setProgress((prev) => {
+            const prevVideo = prev[videoId] ?? {
+                watched: false,
+                status: "STUDY",
+            };
+
+            const updated: PlaylistProgress = {
+                ...prev,
+                [videoId]: {
+                    ...prevVideo,
+                    status,
+                    watched: status === "DONE",
+                },
+            };
+
             saveProgress(playlistId, updated);
             return updated;
         });
@@ -139,6 +175,7 @@ const PlaylistForm = () => {
                     <PlaylistOverview
                         totalVideos={summary.totalVideos}
                         watchedVideos={watchedCount}
+                        skippedVideos={skippedCount}
                         totalDuration={summary.totalDuration}
                         remainingDuration={remainingDurationFormatted}
                     />
@@ -146,7 +183,7 @@ const PlaylistForm = () => {
                     <PlaylistVideoList
                         videos={videos}
                         progress={progress}
-                        onToggle={toggleWatched}
+                        onStatusChange={handleStatusChange}
                         playlist={null}
                     />
                 </div>
