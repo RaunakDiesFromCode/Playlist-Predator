@@ -8,12 +8,23 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 
 const GREETINGS = [
-    "Unlock playlist insights",
-    "Discover your next favorite song",
-    "Find pure gold together",
-    "Turn taste into predictions",
-    "Transform playlists into masterpieces",
+    "Make sense of your YouTube playlist",
+    "Turn chaos into watch order",
+    "Finish the playlist you abandoned",
+    "Track what you watched and skipped",
+    "Stop rewatching the same damn video",
+    "See where you dropped off",
+    "Bring order to your YouTube mess",
+    "Turn Watch Later into Watched",
+    "Your playlist, finally under control",
+    "Because YouTube won’t manage your shit",
+    "From endless scroll to actual progress",
+    "Understand your binge habits",
+    "Tame that out-of-hand playlist",
+    "Watch smarter, not longer",
+    "Separate gold from algorithmic junk",
 ];
+
 
 export default function HomePage() {
     const [input, setInput] = useState("");
