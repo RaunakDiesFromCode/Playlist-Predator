@@ -52,27 +52,27 @@ const PlaylistForm = () => {
         setProgress(loadProgress(playlistId));
     }, [playlistId]);
 
-    function toggleWatched(videoId: string) {
-        if (!playlistId) return;
+    // function toggleWatched(videoId: string) {
+    //     if (!playlistId) return;
 
-        setProgress((prev) => {
-            const prevVideo = prev[videoId] ?? {
-                watched: false,
-                status: "STUDY",
-            };
+    //     setProgress((prev) => {
+    //         const prevVideo = prev[videoId] ?? {
+    //             watched: false,
+    //             status: "STUDY",
+    //         };
 
-            const updated: PlaylistProgress = {
-                ...prev,
-                [videoId]: {
-                    ...prevVideo,
-                    watched: !prevVideo.watched,
-                },
-            };
+    //         const updated: PlaylistProgress = {
+    //             ...prev,
+    //             [videoId]: {
+    //                 ...prevVideo,
+    //                 watched: !prevVideo.watched,
+    //             },
+    //         };
 
-            saveProgress(playlistId, updated);
-            return updated;
-        });
-    }
+    //         saveProgress(playlistId, updated);
+    //         return updated;
+    //     });
+    // }
 
     function handleStatusChange(videoId: string, status: VideoStatus) {
         if (!playlistId) return;
