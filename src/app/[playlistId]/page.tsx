@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     PlaylistAnalysis,
     PlaylistMeta,
@@ -9,13 +9,12 @@ import {
 } from "@/types/playlist";
 import PlaylistOverview from "@/components/playlist/PlaylistOverview";
 import PlaylistVideoList from "@/components/playlist/PlaylistVideoList";
-import { loadProgress } from "@/lib/storage/progress";
+import { loadProgress, updateVideoStatus } from "@/lib/progress";
 import { PlaylistProgress } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
 import { Skeleton } from "@/components/ui/skeleton";
-import { updateVideoStatus } from "@/lib/storage/progress";
 import { VideoStatus } from "@/types/progress";
-import { supabase } from "@/lib/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 function PlaylistPageSkeleton() {
     return (
@@ -49,7 +48,10 @@ function PlaylistPageSkeleton() {
 }
 
 export default function PlaylistPage() {
-    const { playlistId } = useParams<{ playlistId: string }>();
+    const raw = useParams().playlistId;
+    const playlistId = Array.isArray(raw) ? raw[0] : raw;
+
+    const { user, loading: authLoading } = useAuth();
 
     const [summary, setSummary] = useState<PlaylistAnalysis | null>(null);
     const [videos, setVideos] = useState<VideoMetadata[]>([]);
@@ -57,58 +59,89 @@ export default function PlaylistPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [playlist, setPlaylist] = useState<PlaylistMeta | null>(null);
+    const savedRef = useRef(false);
 
     useEffect(() => {
         if (!playlistId) return;
 
-        setProgress(loadProgress(playlistId));
+        let cancelled = false;
 
-        fetch("/api/playlist/analyze", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                playlistUrl: `https://youtube.com/playlist?list=${playlistId}`,
-            }),
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                setSummary(data.summary);
-                setVideos(data.videos);
-                setPlaylist(data.playlist);
-            })
-            .catch(() => setError("Failed to load playlist"))
-            .finally(() => setLoading(false));
-    }, [playlistId]);
+        async function init() {
+            try {
+                // 1. Load progress (local OR DB)
+                if (!playlistId) return;
+                const p = await loadProgress(playlistId);
+                if (!cancelled) setProgress(p);
 
-    useEffect(() => {
-        if (!playlistId || !playlist) return;
-
-        async function maybeSavePlaylist() {
-            const { data } = await supabase.auth.getUser();
-            const user = data.user;
-
-            if (!user) return; // guest → do nothing
-
-            if (playlist) {
-                await fetch("/api/playlists", {
+                // 2. Analyze playlist
+                const res = await fetch("/api/playlist/analyze", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        youtube_playlist_id: playlistId,
-                        title: playlist.title,
-                        thumbnail: playlist.thumbnail,
+                        playlistUrl: `https://youtube.com/playlist?list=${playlistId}`,
                     }),
                 });
+
+                const data = await res.json();
+                if (cancelled) return;
+
+                setSummary(data.summary);
+                setVideos(data.videos);
+                setPlaylist(data.playlist);
+            } catch (err) {
+                console.error(err);
+                if (!cancelled) setError("Failed to load playlist");
+            } finally {
+                if (!cancelled) setLoading(false);
             }
         }
 
-        maybeSavePlaylist();
-    }, [playlistId, playlist]);
+        init();
 
+        return () => {
+            cancelled = true;
+        };
+    }, [playlistId]);
 
-    function changeStatus(videoId: string, status: VideoStatus) {
-        const updated = updateVideoStatus(playlistId, videoId, status);
-        setProgress(updated);
+    useEffect(() => {
+        if (authLoading) return;
+        if (!user) return;
+        if (!playlistId || !playlist) return;
+        if (savedRef.current) return;
+
+        savedRef.current = true;
+
+        fetch("/api/playlists", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                youtube_playlist_id: playlistId,
+                title: playlist.title,
+                thumbnail: playlist.thumbnail,
+            }),
+        }).catch(() => {
+            // swallow error — sidebar can recover later
+        });
+    }, [playlistId, playlist, user, authLoading]);
+
+    async function changeStatus(videoId: string, status: VideoStatus) {
+        setProgress((prev) => {
+            const next = { ...prev };
+
+            if (status === "NONE") {
+                delete next[videoId];
+            } else {
+                next[videoId] = { status };
+            }
+
+            return next;
+        });
+
+        await fetch("/api/progress", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ playlistId, videoId, status }),
+        });
     }
 
     if (loading) return <PlaylistPageSkeleton />;
@@ -122,7 +155,6 @@ export default function PlaylistPage() {
     const skippedCount = videos.filter(
         (v) => progress[v.videoId]?.status === "SKIP"
     ).length;
-
 
     const totalDurationSeconds = videos.reduce(
         (a, v) => a + v.durationSeconds,

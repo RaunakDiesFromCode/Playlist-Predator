@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
 import SidebarSkeleton from "./SidebarSkeleton";
 import SidebarItem from "./SidebarItem";
 import { usePathname } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/use-auth";
 
 type Playlist = {
     id: string;
@@ -15,11 +15,10 @@ type Playlist = {
 
 export default function Sidebar({ open }: { open: boolean }) {
     const pathname = usePathname();
+    const { user, loading: authLoading } = useAuth();
 
     const [loading, setLoading] = useState(true);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
-
     const [query, setQuery] = useState("");
 
     const filteredPlaylists = playlists.filter((pl) =>
@@ -29,55 +28,44 @@ export default function Sidebar({ open }: { open: boolean }) {
     );
 
     useEffect(() => {
+        if (authLoading) return;
+
+        if (!user) {
+            setPlaylists([]);
+            setLoading(false);
+            return;
+        }
+
         let mounted = true;
 
         async function load() {
-            // auth check
-            const { data } = await supabase.auth.getUser();
-            if (!data.user) {
-                setIsLoggedIn(false);
-                setLoading(false);
-                return;
-            }
-
-            setIsLoggedIn(true);
-
-            // fetch playlists
+            setLoading(true);
             const res = await fetch("/api/playlists");
-            const dataJson = await res.json();
+            const data = await res.json();
 
             if (!mounted) return;
 
-            setPlaylists(dataJson);
+            setPlaylists(data);
             setLoading(false);
         }
 
         load();
 
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange(() => {
-            // re-fetch on login/logout
-            setLoading(true);
-            load();
-        });
-
         return () => {
             mounted = false;
-            subscription.unsubscribe();
         };
-    }, []);
+    }, [user, authLoading]);
 
     // Guest → no sidebar
-    if (!isLoggedIn) return null;
+    if (!user) return null;
 
     return (
         <aside
-            className={`fixed left-0 z-40 h-[calc(100vh)]
-        bg-background border-r border-border
-        transition-transform duration-200 ease-out
-        ${open ? "translate-x-0" : "-translate-x-full"}
-        w-64`}
+            className={`fixed left-0 z-40 h-screen
+            bg-background border-r border-border
+            transition-transform duration-200 ease-out
+            ${open ? "translate-x-0" : "-translate-x-full"}
+            w-64`}
         >
             <div className="p-4 font-semibold text-lg">Playlists</div>
 
@@ -113,6 +101,7 @@ export default function Sidebar({ open }: { open: boolean }) {
                             />
                         );
                     })}
+
                 {!loading && filteredPlaylists.length === 0 && query && (
                     <p className="px-3 py-2 text-sm text-muted-foreground">
                         No matching playlists

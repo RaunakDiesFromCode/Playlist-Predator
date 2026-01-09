@@ -2,10 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/lib/supabase/client";
 import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 const GREETINGS = [
     "Unlock playlist insights",
@@ -18,20 +18,20 @@ const GREETINGS = [
 export default function HomePage() {
     const [input, setInput] = useState("");
     const [greeting, setGreeting] = useState("");
-    const [, setName] = useState("");
     const router = useRouter();
 
+    const { user, loading } = useAuth();
+
     useEffect(() => {
-        // pick greeting
+        // pick greeting once per auth change
         const greet = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 
-        // fetch user safely
-        supabase.auth.getUser().then(({ data }) => {
-            const userName = data.user?.user_metadata?.name;
-            setName(userName ?? "");
-            setGreeting(userName ? `${greet}, ${userName}` : greet);
-        });
-    }, []);
+        if (!loading && user?.name) {
+            setGreeting(`${greet}, ${user.name}`);
+        } else {
+            setGreeting(greet);
+        }
+    }, [user, loading]);
 
     function extractPlaylistId(value: string) {
         try {

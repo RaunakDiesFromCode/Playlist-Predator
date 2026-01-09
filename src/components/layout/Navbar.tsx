@@ -4,10 +4,11 @@ import Image from "next/image";
 import { GithubIcon, Search, Sidebar } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase/client";
 
 type UserInfo = {
@@ -29,37 +30,7 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
     const isHome = pathname === "/";
     const showSearch = !isHome;
 
-    const [user, setUser] = useState<UserInfo | null>(null);
-    const [loadingAuth, setLoadingAuth] = useState(true);
-
-    useEffect(() => {
-        supabase.auth.getUser().then(({ data }) => {
-            if (data.user) {
-                setUser({
-                    email: data.user.email!,
-                    name: data.user.user_metadata?.name,
-                });
-            } else {
-                setUser(null);
-            }
-            setLoadingAuth(false);
-        });
-
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
-                setUser({
-                    email: session.user.email!,
-                    name: session.user.user_metadata?.name,
-                });
-            } else {
-                setUser(null);
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
+    const { user, loading } = useAuth();
 
     function extractPlaylistId(value: string) {
         try {
@@ -132,7 +103,7 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
 
                 {/* Right: Controls */}
                 <div className="flex items-center gap-3 ml-auto">
-                    {!loadingAuth &&
+                    {!loading &&
                         (user ? (
                             <>
                                 <span className="text-sm text-muted-foreground">

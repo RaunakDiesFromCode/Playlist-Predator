@@ -1,7 +1,7 @@
-export type VideoStatus = "DONE" | "STUDY" | "REWATCH" | "SKIP";
+export type VideoStatus = "NONE" | "DONE" | "SKIP";
 
 export interface VideoProgress {
-    watched: boolean;
+    // watched: boolean;
     status: VideoStatus;
 }
 

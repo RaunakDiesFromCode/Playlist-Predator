@@ -17,11 +17,32 @@ import {
 
 interface Props {
     video: VideoMetadata;
-    currentStatus: VideoStatus;
+    currentStatus: VideoStatus; // DONE | SKIP | NONE
     onStatusChange: (id: string, status: VideoStatus) => void;
 }
 
-const STATUS_STYLES: Record<VideoStatus, { trigger: string; item: string }> = {
+/* ---------------- UI STATUS LAYER ---------------- */
+
+const UI_STATUS_OPTIONS = ["DONE", "STUDY", "REWATCH", "SKIP"] as const;
+type UIStatus = (typeof UI_STATUS_OPTIONS)[number];
+
+// Map UI → backend
+const UI_TO_BACKEND: Record<UIStatus, VideoStatus> = {
+    DONE: "DONE",
+    SKIP: "SKIP",
+    STUDY: "NONE",
+    REWATCH: "NONE",
+};
+
+// Map backend → UI (for Select value)
+function backendToUI(status: VideoStatus): UIStatus {
+    if (status === "NONE") return "STUDY";
+    return status;
+}
+
+/* ---------------- STYLES ---------------- */
+
+const STATUS_STYLES: Record<UIStatus, { trigger: string; item: string }> = {
     DONE: {
         trigger: "bg-green-500/15 text-green-600 border-green-500/30",
         item: "text-green-600 focus:bg-green-500/15",
@@ -39,9 +60,12 @@ const STATUS_STYLES: Record<VideoStatus, { trigger: string; item: string }> = {
         item: "text-red-600 focus:bg-red-500/15",
     },
 };
-const STATUS_OPTIONS: VideoStatus[] = ["DONE", "STUDY", "REWATCH", "SKIP"];
+
+/* ---------------- COMPONENT ---------------- */
 
 const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
+    const uiValue = backendToUI(currentStatus);
+
     return (
         <Card
             className={`group flex items-center gap-3 p-2 transition-colors backdrop-blur-sm ${
@@ -80,20 +104,28 @@ const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
 
             {/* Status Select */}
             <Select
-                value={currentStatus}
-                onValueChange={(value) =>
-                    onStatusChange(video.videoId, value as VideoStatus)
-                }
+                value={uiValue}
+                onValueChange={(value) => {
+                    const backendStatus = UI_TO_BACKEND[value as UIStatus];
+
+                    // 🔁 If user selects the same logical state → reset to NONE
+                    if (backendStatus === "NONE" && currentStatus === "NONE") {
+                        onStatusChange(video.videoId, "NONE");
+                        return;
+                    }
+
+                    onStatusChange(video.videoId, backendStatus);
+                }}
             >
                 <SelectTrigger
-                    className={`w-[120px] h-8 text-xs border font-bold ${STATUS_STYLES[currentStatus].trigger}`}
+                    className={`w-[120px] h-8 text-xs border font-bold ${STATUS_STYLES[uiValue].trigger}`}
                 >
                     <SelectValue />
                 </SelectTrigger>
 
                 <SelectContent>
                     <SelectGroup>
-                        {STATUS_OPTIONS.map((status) => (
+                        {UI_STATUS_OPTIONS.map((status) => (
                             <SelectItem
                                 key={status}
                                 value={status}
