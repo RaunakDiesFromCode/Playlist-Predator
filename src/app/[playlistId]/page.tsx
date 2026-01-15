@@ -11,7 +11,7 @@ export async function generateMetadata(props: {
     const { playlistId } = await props.params;
 
     try {
-        const baseUrl = process.env.SITE_URL ?? "http://localhost:3000";
+        const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
         const res = await fetch(`${baseUrl}/api/playlist/analyze`, {
             method: "POST",
