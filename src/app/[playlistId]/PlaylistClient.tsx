@@ -29,7 +29,7 @@ import {
 function PlaylistPageSkeleton() {
     return (
         <div className="flex gap-4 p-4">
-            <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-hidden space-y-4">
+            <div className="w-full h-[calc(100dvh-6rem)] overflow-hidden space-y-4">
                 <Skeleton className="h-64 w-full rounded-xl" />
                 {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="flex gap-4 items-center">
@@ -42,7 +42,7 @@ function PlaylistPageSkeleton() {
                 ))}
             </div>
 
-            <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-y-auto space-y-4">
+            <div className="w-full h-[calc(100dvh-6rem)] md:block hidden overflow-y-auto space-y-4">
                 <Skeleton className="h-8 w-1/3" />
                 <Skeleton className="h-24 w-full rounded-lg" />
                 <Skeleton className="h-24 w-full rounded-lg" />
