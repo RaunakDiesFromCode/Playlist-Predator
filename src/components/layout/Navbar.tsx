@@ -9,8 +9,6 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/lib/supabase/client";
-
 
 type NavbarProps = {
     sidebarOpen: boolean;
@@ -49,17 +47,19 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
 
     return (
         <nav className="sticky top-0 z-50 bg-background backdrop-blur border-b border-border">
-            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+            <div className="max-w-7xl mx-auto md:px-3 pr-2 py-3 flex items-center gap-4">
                 {/* Left: Logo */}
                 <div className="flex items-center gap-2 shrink-0">
-                    {user && (<Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={toggleSidebar}
-                        aria-label="Toggle sidebar"
-                    >
-                        <Sidebar />
-                    </Button>)}
+                    {user && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={toggleSidebar}
+                            aria-label="Toggle sidebar"
+                        >
+                            <Sidebar />
+                        </Button>
+                    )}
 
                     <Image
                         src="/logo.gif"
@@ -70,7 +70,7 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
                     />
                     <Link
                         href="/"
-                        className="font-semibold text-foreground text-lg"
+                        className="font-semibold text-foreground text-lg md:block hidden"
                     >
                         Playlist Predator
                     </Link>
@@ -101,35 +101,18 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
                 <div className="flex items-center gap-3 ml-auto">
                     {!loading &&
                         (user ? (
-                            <>
-                                <span className="text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className="hidden sm:inline text-muted-foreground">
+                                    Hi,
+                                </span>
+                                <span className="font-medium truncate max-w-[120px]">
                                     {user.name ?? user.email}
                                 </span>
-                                <Button
-                                    onClick={async () => {
-                                        await supabase.auth.signOut();
-                                        router.push("/login");
-                                    }}
-                                    variant="outline"
-                                >
-                                    Logout
-                                </Button>
-                            </>
+                            </div>
                         ) : (
-                            <>
-                                <Link
-                                    href="/login"
-                                    className="text-sm px-3 py-1 rounded border"
-                                >
-                                    Login
-                                </Link>
-                                <Link
-                                    href="/register"
-                                    className="text-sm px-3 py-1 rounded border"
-                                >
-                                    Register
-                                </Link>
-                            </>
+                            <Button asChild variant="outline">
+                                <Link href="/login">Login</Link>
+                            </Button>
                         ))}
 
                     <ThemeToggle />
@@ -139,6 +122,7 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="GitHub"
+                        className=" hidden md:block"
                     >
                         <GithubIcon size={20} />
                     </Link>

@@ -42,7 +42,11 @@ export default function RegisterPage() {
             return;
         }
 
-        router.push("/login");
+        if (window.history.length > 1) {
+            router.back();
+        } else {
+            router.push("/");
+        }
     }
 
     return (

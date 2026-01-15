@@ -6,6 +6,9 @@ import SidebarItem from "./SidebarItem";
 import { usePathname } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
+import { Button } from "../ui/button";
+import { supabase } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 type Playlist = {
     id: string;
@@ -20,6 +23,8 @@ export default function Sidebar({ open }: { open: boolean }) {
     const [loading, setLoading] = useState(true);
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const [query, setQuery] = useState("");
+
+    const router = useRouter();
 
     const filteredPlaylists = playlists.filter((pl) =>
         (pl.title ?? pl.youtube_playlist_id)
@@ -61,15 +66,18 @@ export default function Sidebar({ open }: { open: boolean }) {
 
     return (
         <aside
-            className={`fixed left-0 z-40 h-screen
-            bg-background border-r border-border
-            transition-transform duration-200 ease-out
-            ${open ? "translate-x-0" : "-translate-x-full"}
-            w-64`}
+            className={`fixed left-0 z-40 inset-y-0
+  bg-background border-r border-border
+  transition-transform duration-200 ease-out pt-2
+  ${open ? "translate-x-0" : "-translate-x-full"}
+  md:w-64 w-full
+  flex flex-col`}
         >
-            <div className="p-4 font-semibold text-lg">Playlists</div>
+            {/* HEADER */}
+            <div className="p-4 font-semibold text-lg shrink-0">Playlists</div>
 
-            <div className="px-3 pb-2">
+            {/* SEARCH */}
+            <div className="px-3 pb-2 shrink-0">
                 <Input
                     type="text"
                     value={query}
@@ -78,7 +86,8 @@ export default function Sidebar({ open }: { open: boolean }) {
                 />
             </div>
 
-            <div className="px-2 space-y-1">
+            {/* SCROLLABLE CONTENT */}
+            <div className="px-2 space-y-1 overflow-y-auto flex-1">
                 {loading && <SidebarSkeleton />}
 
                 {!loading && playlists.length === 0 && (
@@ -107,6 +116,29 @@ export default function Sidebar({ open }: { open: boolean }) {
                         No matching playlists
                     </p>
                 )}
+            </div>
+
+            {/* FOOTER (ALWAYS VISIBLE) */}
+            <div className="border-t border-border p-4 space-y-3 shrink-0 flex flex-col items-center">
+                <div className="px-1">
+                    <p className="text-xs text-muted-foreground mb-2">
+                        Logged in as
+                    </p>
+                    <p className="text-sm font-medium truncate text-center">
+                        {user.name ?? user.email}
+                    </p>
+                </div>
+
+                <Button
+                    onClick={async () => {
+                        await supabase.auth.signOut();
+                        router.push("/login");
+                    }}
+                    variant="outline"
+                    className=""
+                >
+                    Logout
+                </Button>
             </div>
         </aside>
     );
