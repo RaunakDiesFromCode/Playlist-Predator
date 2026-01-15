@@ -1,19 +1,23 @@
 import type { Metadata } from "next";
 import PlaylistClient from "./PlaylistClient";
 
-export async function generateMetadata({
-    params,
-}: {
-    params: { playlistId: string };
+type RouteParams = {
+    playlistId: string;
+};
+
+export async function generateMetadata(props: {
+    params: Promise<RouteParams>;
 }): Promise<Metadata> {
+    const { playlistId } = await props.params;
+
     try {
-        const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+        const baseUrl = process.env.SITE_URL ?? "http://localhost:3000";
 
         const res = await fetch(`${baseUrl}/api/playlist/analyze`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                playlistUrl: `https://youtube.com/playlist?list=${params.playlistId}`,
+                playlistUrl: `https://youtube.com/playlist?list=${playlistId}`,
             }),
             cache: "no-store",
         });
@@ -28,6 +32,8 @@ export async function generateMetadata({
     }
 }
 
-export default function Page({ params }: { params: { playlistId: string } }) {
-    return <PlaylistClient playlistId={params.playlistId} />;
+export default async function Page(props: { params: Promise<RouteParams> }) {
+    const { playlistId } = await props.params;
+
+    return <PlaylistClient playlistId={playlistId} />;
 }
