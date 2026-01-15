@@ -61,13 +61,18 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
                         </Button>
                     )}
 
-                    <Image
-                        src="/logo.gif"
-                        alt="Playlist Predator"
-                        width={36}
-                        height={36}
-                        className="rounded"
-                    />
+                    <Link
+                        href="/"
+                        className="font-semibold text-foreground text-lg md:block hidden"
+                    >
+                        <Image
+                            src="/logo.gif"
+                            alt="Playlist Predator"
+                            width={36}
+                            height={36}
+                            className="rounded"
+                        />
+                    </Link>
                     <Link
                         href="/"
                         className="font-semibold text-foreground text-lg md:block hidden"
