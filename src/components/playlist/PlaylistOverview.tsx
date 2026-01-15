@@ -56,40 +56,40 @@ function getRemainingHoursToday() {
     return Math.max(0, hoursLeft);
 }
 
-    function getDynamicInsight(
-        remainingSeconds: number,
-        recommendedSpeed: number,
-        untouchedVideos: number
-    ) {
-        const watchSeconds = remainingSeconds / recommendedSpeed;
-        const hours = watchSeconds / 3600;
+function getDynamicInsight(
+    remainingSeconds: number,
+    recommendedSpeed: number,
+    untouchedVideos: number
+) {
+    const watchSeconds = remainingSeconds / recommendedSpeed;
+    const hours = watchSeconds / 3600;
 
-        let scope: string;
-        if (hours < 1) scope = "light";
-        else if (hours < 3) scope = "moderate";
-        else scope = "heavy";
+    let scope: string;
+    if (hours < 1) scope = "light";
+    else if (hours < 3) scope = "moderate";
+    else scope = "heavy";
 
-        let fragmentation: string;
-        if (untouchedVideos <= 5) fragmentation = "compact";
-        else if (untouchedVideos <= 15) fragmentation = "fragmented";
-        else fragmentation = "scattered";
+    let fragmentation: string;
+    if (untouchedVideos <= 5) fragmentation = "compact";
+    else if (untouchedVideos <= 15) fragmentation = "fragmented";
+    else fragmentation = "scattered";
 
-        let strategy: string;
-        if (scope === "light" && fragmentation === "compact") {
-            strategy = "one clean sitting";
-        } else if (scope === "moderate") {
-            strategy = "two focused sessions";
-        } else {
-            strategy = "multiple short sessions";
-        }
-
-        return {
-            watchTime: format(watchSeconds),
-            scope,
-            fragmentation,
-            strategy,
-        };
+    let strategy: string;
+    if (scope === "light" && fragmentation === "compact") {
+        strategy = "one clean sitting";
+    } else if (scope === "moderate") {
+        strategy = "two focused sessions";
+    } else {
+        strategy = "multiple short sessions";
     }
+
+    return {
+        watchTime: format(watchSeconds),
+        scope,
+        fragmentation,
+        strategy,
+    };
+}
 
 /* ===================== COMPONENT ===================== */
 
@@ -130,7 +130,13 @@ const PlaylistOverview = ({
         untouchedVideos
     );
 
-
+    const completedPercent =
+        totalVideos === 0
+            ? 0
+            : ((parseToSeconds(totalDuration) -
+                  parseToSeconds(remainingDuration)) *
+                  100) /
+              parseToSeconds(totalDuration);
 
     return (
         <Card>
@@ -138,7 +144,7 @@ const PlaylistOverview = ({
                 <CardTitle className="text-lg">Reality Check</CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 md:space-y-6">
                 {/* ================= PROGRESS BAR ================= */}
 
                 <div className="space-y-2">
@@ -156,14 +162,14 @@ const PlaylistOverview = ({
                         />
                     </div>
 
-                    <div className="flex gap-4 text-xs text-muted-foreground">
-                        <Badge className="bg-green-500/80">
+                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        <Badge className="whitespace-nowrap bg-green-500/80">
                             DONE ({watchedVideos})
                         </Badge>
-                        <Badge className="bg-red-500/80">
+                        <Badge className="whitespace-nowrap bg-red-500/80">
                             Skipped ({skippedVideos})
                         </Badge>
-                        <Badge className="bg-muted text-muted-foreground">
+                        <Badge className="whitespace-nowrap bg-muted text-muted-foreground">
                             Remaining ({untouchedVideos})
                         </Badge>
                     </div>
@@ -171,32 +177,29 @@ const PlaylistOverview = ({
 
                 {/* ================= TIME SUMMARY ================= */}
 
-                <div className="w-full flex gap-4 text-sm">
+                <div className="w-full flex  gap-4 text-sm md:flex-row">
                     <div className="w-full">
                         <p className="text-muted-foreground">Total length</p>
                         <p className="font-medium">{totalDuration}</p>
                     </div>
+
                     <div className="w-full">
                         <p className="text-muted-foreground">Still left</p>
                         <p className="font-medium">{remainingDuration}</p>
                     </div>
-                    <div className="w-full text-right flex justify-end items-center gap-1">
+
+                    <div className="w-full flex items-center md:justify-end gap-2">
                         <div>
                             <p className="text-muted-foreground leading-4">
                                 You have
                                 <br />
-                                Completed
+                                completed
                             </p>
                         </div>
-                        <div className="flex justify-end items-end gap-1">
+                        <div className="flex items-end gap-1">
                             <p className="font-bold text-4xl">
-                                {(
-                                    ((parseToSeconds(totalDuration) -
-                                        parseToSeconds(remainingDuration)) *
-                                        100) /
-                                    parseToSeconds(totalDuration)
-                                ).toFixed(0)}
-                            </p>{" "}
+                                {completedPercent.toFixed(0)}
+                            </p>
                             <p>%</p>
                         </div>
                     </div>
@@ -209,7 +212,7 @@ const PlaylistOverview = ({
                 <div className="space-y-3">
                     <p className="text-sm font-medium">Fastest sane options</p>
 
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                         {speeds.map((s) => {
                             const isRecommended = s.value === recommendedSpeed;
 
@@ -217,7 +220,7 @@ const PlaylistOverview = ({
                                 <div
                                     key={s.value}
                                     className={cn(
-                                        "flex items-center justify-between rounded-md border px-3 py-2",
+                                        "flex items-center justify-between rounded-md border px-3 py-2.5",
                                         isRecommended &&
                                             "border-primary bg-primary/10"
                                     )}
@@ -250,13 +253,19 @@ const PlaylistOverview = ({
                 <div className="space-y-3 text-sm">
                     <p className="font-medium">Quick insights</p>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        {/* Time feasibility */}
-                        <div className="rounded-md border px-3 py-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="rounded-md border px-3 py-2.5">
                             <p className="text-xs text-muted-foreground">
                                 Today
                             </p>
-                            <p className="font-medium">
+                            <p
+                                className={cn(
+                                    "font-medium",
+                                    canFinishToday
+                                        ? "text-green-600"
+                                        : "text-red-600"
+                                )}
+                            >
                                 {canFinishToday ? "Fits" : "Overflows"}
                             </p>
                             <p className="text-xs text-muted-foreground">
@@ -265,8 +274,7 @@ const PlaylistOverview = ({
                             </p>
                         </div>
 
-                        {/* Overhead */}
-                        <div className="rounded-md border px-3 py-2">
+                        <div className="rounded-md border px-3 py-2.5">
                             <p className="text-xs text-muted-foreground">
                                 Friction
                             </p>
@@ -278,8 +286,7 @@ const PlaylistOverview = ({
                             </p>
                         </div>
 
-                        {/* Dynamic insight */}
-                        <div className="col-span-2 rounded-md border px-3 py-2 text-sm">
+                        <div className="sm:col-span-2 rounded-md border px-3 py-2.5">
                             <p className="text-muted-foreground">
                                 At{" "}
                                 <span className="font-medium">
@@ -289,7 +296,7 @@ const PlaylistOverview = ({
                                 <span className="font-medium">
                                     {insight.watchTime}
                                 </span>{" "}
-                                of video left, spread across{" "}
+                                of video left across{" "}
                                 <span className="font-medium">
                                     {untouchedVideos}
                                 </span>{" "}

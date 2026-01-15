@@ -14,6 +14,18 @@ import { formatDuration } from "@/lib/time/duration";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 
+import {
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer";
+
+/* ---------------------------------- */
+/* Skeleton */
+/* ---------------------------------- */
+
 function PlaylistPageSkeleton() {
     return (
         <div className="flex gap-4 p-4">
@@ -40,19 +52,40 @@ function PlaylistPageSkeleton() {
     );
 }
 
+/* ---------------------------------- */
+/* Main Component */
+/* ---------------------------------- */
+
 export default function PlaylistClient({ playlistId }: { playlistId: string }) {
     const { user, loading: authLoading } = useAuth();
 
     const [summary, setSummary] = useState<PlaylistAnalysis | null>(null);
     const [videos, setVideos] = useState<VideoMetadata[]>([]);
     const [progress, setProgress] = useState<PlaylistProgress>({});
+    const [playlist, setPlaylist] = useState<PlaylistMeta | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [playlist, setPlaylist] = useState<PlaylistMeta | null>(null);
 
+    const [isMobile, setIsMobile] = useState(false);
     const savedRef = useRef(false);
 
-    // Fetch playlist + progress
+    /* ---------------------------------- */
+    /* Detect mobile */
+    /* ---------------------------------- */
+
+    useEffect(() => {
+        const mq = window.matchMedia("(max-width: 768px)");
+        const update = () => setIsMobile(mq.matches);
+
+        update();
+        mq.addEventListener("change", update);
+        return () => mq.removeEventListener("change", update);
+    }, []);
+
+    /* ---------------------------------- */
+    /* Fetch playlist + progress */
+    /* ---------------------------------- */
+
     useEffect(() => {
         if (!playlistId) return;
 
@@ -91,12 +124,12 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
         };
     }, [playlistId]);
 
-    // Save playlist to DB once
+    /* ---------------------------------- */
+    /* Save playlist once */
+    /* ---------------------------------- */
+
     useEffect(() => {
-        if (authLoading) return;
-        if (!user) return;
-        if (!playlistId || !playlist) return;
-        if (savedRef.current) return;
+        if (authLoading || !user || !playlist || savedRef.current) return;
 
         savedRef.current = true;
 
@@ -111,16 +144,15 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
         }).catch(() => {});
     }, [playlistId, playlist, user, authLoading]);
 
+    /* ---------------------------------- */
+    /* Progress update */
+    /* ---------------------------------- */
+
     async function changeStatus(videoId: string, status: VideoStatus) {
         setProgress((prev) => {
             const next = { ...prev };
-
-            if (status === "NONE") {
-                delete next[videoId];
-            } else {
-                next[videoId] = { status };
-            }
-
+            if (status === "NONE") delete next[videoId];
+            else next[videoId] = { status };
             return next;
         });
 
@@ -130,6 +162,10 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
             body: JSON.stringify({ playlistId, videoId, status }),
         });
     }
+
+    /* ---------------------------------- */
+    /* States */
+    /* ---------------------------------- */
 
     if (loading) return <PlaylistPageSkeleton />;
     if (error) return <p className="p-8 text-red-500">{error}</p>;
@@ -156,9 +192,46 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
         Math.max(totalDurationSeconds - watchedDuration, 0)
     );
 
+    const AnalysisPanel = (
+        <PlaylistOverview
+            totalVideos={summary.totalVideos}
+            watchedVideos={watchedCount}
+            skippedVideos={skippedCount}
+            totalDuration={summary.totalDuration}
+            remainingDuration={remainingDuration}
+        />
+    );
+
+    /* ---------------------------------- */
+    /* Desktop */
+    /* ---------------------------------- */
+
+    if (!isMobile) {
+        return (
+            <div className="flex gap-4 p-4">
+                <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-hidden">
+                    <PlaylistVideoList
+                        videos={videos}
+                        progress={progress}
+                        onStatusChange={changeStatus}
+                        playlist={playlist}
+                    />
+                </div>
+
+                <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-y-auto">
+                    {AnalysisPanel}
+                </div>
+            </div>
+        );
+    }
+
+    /* ---------------------------------- */
+    /* Mobile (Drawer) */
+    /* ---------------------------------- */
+
     return (
-        <div className="flex gap-4 p-4">
-            <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-hidden">
+        <div className="p-4 flex flex-col gap-4 h-[calc(100dvh-4rem)]">
+            <div className="flex-1 overflow-hidden">
                 <PlaylistVideoList
                     videos={videos}
                     progress={progress}
@@ -167,15 +240,21 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
                 />
             </div>
 
-            <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-y-auto">
-                <PlaylistOverview
-                    totalVideos={summary.totalVideos}
-                    watchedVideos={watchedCount}
-                    skippedVideos={skippedCount}
-                    totalDuration={summary.totalDuration}
-                    remainingDuration={remainingDuration}
-                />
-            </div>
+            <Drawer>
+                <DrawerTrigger className="w-full rounded-lg bg-primary text-primary-foreground py-3 font-medium">
+                    View Playlist Analysis
+                </DrawerTrigger>
+
+                <DrawerContent className="max-h-[85dvh]">
+                    <DrawerHeader>
+                        <DrawerTitle>Playlist Analysis</DrawerTitle>
+                    </DrawerHeader>
+
+                    <div className="px-4 pb-6 overflow-y-auto">
+                        {AnalysisPanel}
+                    </div>
+                </DrawerContent>
+            </Drawer>
         </div>
     );
 }
