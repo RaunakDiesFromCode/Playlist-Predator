@@ -1,22 +1,31 @@
 "use client";
 
 import Image from "next/image";
-import { GithubIcon, Search, Sidebar } from "lucide-react";
-import ThemeToggle from "../ThemeToggle";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import Link from "next/link";
+
+import { Search, Sidebar, User, LogOut, SunMoon } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import ThemeToggle from "../ThemeToggle";
 import { useAuth } from "@/hooks/use-auth";
 
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 type NavbarProps = {
-    sidebarOpen: boolean;
     toggleSidebar: () => void;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
+const Navbar = ({ toggleSidebar }: NavbarProps) => {
     const pathname = usePathname();
     const router = useRouter();
     const [input, setInput] = useState("");
@@ -45,25 +54,30 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
         router.push(`/${id}`);
     }
 
+    async function handleLogout() {
+        const { supabase } = await import("@/lib/supabase/client");
+        await supabase.auth.signOut();
+        router.push("/login");
+    }
+
     return (
         <nav className="sticky top-0 z-50 bg-background backdrop-blur border-b border-border">
-            <div className="max-w-7xl mx-auto md:px-3 pr-2 py-3 flex items-center gap-4">
-                {/* Left: Logo */}
+            <div className="max-w-7xl mx-auto px-3 py-2 flex items-center gap-3">
+                {/* LEFT */}
                 <div className="flex items-center gap-2 shrink-0">
-                    {user && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={toggleSidebar}
-                            aria-label="Toggle sidebar"
-                        >
-                            <Sidebar />
-                        </Button>
-                    )}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleSidebar}
+                        aria-label="Toggle sidebar"
+                        className="h-11 w-11"
+                    >
+                        <Sidebar className="h-6 w-6" />
+                    </Button>
 
                     <Link
                         href="/"
-                        className="font-semibold text-foreground text-lg md:block hidden"
+                        className="hidden md:flex items-center gap-2 font-semibold text-lg"
                     >
                         <Image
                             src="/logo.gif"
@@ -72,16 +86,11 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
                             height={36}
                             className="rounded"
                         />
-                    </Link>
-                    <Link
-                        href="/"
-                        className="font-semibold text-foreground text-lg md:block hidden"
-                    >
                         Playlist Predator
                     </Link>
                 </div>
 
-                {/* Center: Search */}
+                {/* CENTER */}
                 {showSearch && (
                     <form
                         onSubmit={handleSearch}
@@ -102,12 +111,12 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
                     </form>
                 )}
 
-                {/* Right: Controls */}
-                <div className="flex items-center gap-3 ml-auto">
+                {/* RIGHT — DESKTOP */}
+                <div className="hidden md:flex items-center gap-3 ml-auto">
                     {!loading &&
                         (user ? (
-                            <div className="flex items-center gap-2 text-sm">
-                                <span className="hidden sm:inline text-muted-foreground">
+                            <div className="flex items-center gap-1 text-sm">
+                                <span className="text-muted-foreground">
                                     Hi,
                                 </span>
                                 <span className="font-medium truncate max-w-[120px]">
@@ -121,16 +130,67 @@ const Navbar = ({ sidebarOpen, toggleSidebar }: NavbarProps) => {
                         ))}
 
                     <ThemeToggle />
+                </div>
 
-                    <Link
-                        href="https://github.com/Aymaan-Shabbir"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="GitHub"
-                        className=" hidden md:block"
-                    >
-                        <GithubIcon size={20} />
-                    </Link>
+                {/* RIGHT — MOBILE */}
+                <div className="md:hidden ml-auto flex items-center">
+                    {user ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label="Open profile menu"
+                                    className="h-11 w-11"
+                                >
+                                    <User className="h-5 w-5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+
+                            <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuLabel>
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-muted-foreground">
+                                            Signed in as
+                                        </p>
+                                        <p className="text-sm font-medium truncate">
+                                            {user.name ?? user.email}
+                                        </p>
+                                    </div>
+                                </DropdownMenuLabel>
+
+                                <DropdownMenuSeparator />
+
+                                <DropdownMenuItem
+                                    className="flex items-center gap-2"
+                                    onClick={() => {
+                                        document.documentElement.classList.toggle(
+                                            "dark"
+                                        );
+                                    }}
+                                >
+                                    <SunMoon className="h-4 w-4" />
+                                    Toggle theme
+                                </DropdownMenuItem>
+
+                                <DropdownMenuSeparator />
+
+                                <DropdownMenuItem
+                                    className="flex items-center gap-2 text-red-600 focus:text-red-600"
+                                    onClick={handleLogout}
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                    Logout
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : (
+                        !loading && (
+                            <Button asChild variant="outline" size="sm">
+                                <Link href="/login">Login</Link>
+                            </Button>
+                        )
+                    )}
                 </div>
             </div>
         </nav>

@@ -69,6 +69,12 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
     const [isMobile, setIsMobile] = useState(false);
     const savedRef = useRef(false);
 
+    useEffect(() => {
+        if (playlist?.title) {
+            document.title = `${playlist.title} | Playlist Predator`;
+        }
+    }, [playlist?.title]);
+
     /* ---------------------------------- */
     /* Detect mobile */
     /* ---------------------------------- */
