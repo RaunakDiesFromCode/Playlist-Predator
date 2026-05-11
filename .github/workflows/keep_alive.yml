@@ -1,0 +1,23 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Run at midnight (0 0 * *) on Sunday (0) and Friday(5)
+    - cron: '0 0 * * 0,5'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database
+        run: |
+          # First table
+          curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/playlist_progress?select=id&limit=1" \
+          -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
+
+          # Second table
+          curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/playlists?select=id&limit=1" \
+          -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
