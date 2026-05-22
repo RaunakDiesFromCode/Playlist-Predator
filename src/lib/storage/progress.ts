@@ -22,18 +22,12 @@ export function saveProgress(playlistId: string, progress: PlaylistProgress) {
 export function updateVideoStatus(
     playlistId: string,
     videoId: string,
-    status: VideoStatus
+    status: VideoStatus,
 ) {
     const progress = loadProgress(playlistId);
 
-    if (status === "NONE") {
-        // 🔁 Reset / rewatch → remove entry
-        delete progress[videoId];
-    } else {
-        progress[videoId] = { status };
-    }
+    progress[videoId] = { status };
 
     saveProgress(playlistId, progress);
     return progress;
 }
-

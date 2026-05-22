@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     if (!playlistId) {
         return NextResponse.json(
             { error: "playlistId required" },
-            { status: 400 }
+            { status: 400 },
         );
     }
 
@@ -57,23 +57,7 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 🔁 REWATCH = DELETE
-    if (status === "NONE") {
-        const { error } = await supabase
-            .from("playlist_progress")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("playlist_id", playlistId)
-            .eq("video_id", videoId);
-
-        if (error) {
-            return NextResponse.json({ error: error.message }, { status: 500 });
-        }
-
-        return NextResponse.json({ success: true });
-    }
-
-    // ✅ DONE / SKIP = UPSERT
+    // Persist NONE as a real row so the status survives refresh.
     const { error } = await supabase.from("playlist_progress").upsert(
         {
             user_id: user.id,
@@ -82,7 +66,7 @@ export async function PATCH(req: NextRequest) {
             status,
             updated_at: new Date().toISOString(),
         },
-        { onConflict: "user_id,playlist_id,video_id" }
+        { onConflict: "user_id,playlist_id,video_id" },
     );
 
     if (error) {
@@ -91,4 +75,3 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({ success: true });
 }
-

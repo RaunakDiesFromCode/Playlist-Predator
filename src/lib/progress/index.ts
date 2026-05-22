@@ -1,9 +1,12 @@
-import { loadProgress as loadLocal, saveProgress } from "@/lib/storage/progress";
+import {
+    loadProgress as loadLocal,
+    saveProgress,
+} from "@/lib/storage/progress";
 import { VideoStatus, PlaylistProgress } from "@/types/progress";
 import { supabase } from "@/lib/supabase/client";
 
 export async function loadProgress(
-    playlistId: string
+    playlistId: string,
 ): Promise<PlaylistProgress> {
     const { data } = await supabase.auth.getUser();
 
@@ -27,7 +30,7 @@ export async function updateVideoStatus(
     playlistId: string,
     current: PlaylistProgress,
     videoId: string,
-    status: VideoStatus
+    status: VideoStatus,
 ) {
     const next = { ...current };
 
@@ -38,21 +41,22 @@ export async function updateVideoStatus(
     }
 
     // Persist (DB or local)
-    await persistProgress(playlistId, videoId, status);
+    await persistProgress(playlistId, next, videoId, status);
 
     return next;
 }
 
 async function persistProgress(
     playlistId: string,
+    next: PlaylistProgress,
     videoId: string,
-    status: VideoStatus
+    status: VideoStatus,
 ) {
     const { data } = await supabase.auth.getUser();
 
     // Guest → localStorage
     if (!data.user) {
-        await saveProgress(playlistId, {});
+        saveProgress(playlistId, next);
         return;
     }
 
@@ -63,5 +67,3 @@ async function persistProgress(
         body: JSON.stringify({ playlistId, videoId, status }),
     });
 }
-
-

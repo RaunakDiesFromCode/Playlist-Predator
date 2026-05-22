@@ -27,7 +27,7 @@ const PlaylistForm = () => {
     const [playlistId, setPlaylistId] = useState<string | null>(null);
 
     const watchedCount = videos.filter(
-        (v) => progress[v.videoId]?.status === "DONE"
+        (v) => progress[v.videoId]?.status === "DONE",
     ).length;
 
     const watchedDuration = videos
@@ -36,15 +36,15 @@ const PlaylistForm = () => {
 
     const totalDurationSeconds = videos.reduce(
         (acc, v) => acc + v.durationSeconds,
-        0
+        0,
     );
 
     const remainingDurationFormatted = formatDuration(
-        Math.max(totalDurationSeconds - watchedDuration, 0)
+        Math.max(totalDurationSeconds - watchedDuration, 0),
     );
 
     const skippedCount = videos.filter(
-        (v) => progress[v.videoId]?.status === "SKIP"
+        (v) => progress[v.videoId]?.status === "SKIP",
     ).length;
 
     useEffect(() => {
@@ -58,11 +58,7 @@ const PlaylistForm = () => {
         setProgress((prev) => {
             const next = { ...prev };
 
-            if (status === "NONE") {
-                delete next[videoId];
-            } else {
-                next[videoId] = { status };
-            }
+            next[videoId] = { status };
 
             saveProgress(playlistId, next);
             return next;
