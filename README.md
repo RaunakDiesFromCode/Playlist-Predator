@@ -1,8 +1,8 @@
 # 🐺 Playlist Predator
+> **Turn YouTube playlists into something you can actually *conquer*.**
 
 [![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/RaunakDiesFromCode/Playlist-Predator)
 
-> **Turn YouTube playlists into something you can actually *conquer*.**
 
 Playlist Predator is a modern web app that takes chaotic YouTube playlists and turns them into a clean, trackable, no-BS study / watch system. It tells you **how long the playlist really is**, how long it’ll take at different speeds, and lets you track exactly what you’ve **done**, **skipped**, or need to **rewatch**.
 
