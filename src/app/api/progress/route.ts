@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await supabase
         .from("playlist_progress")
-        .select("video_id, status")
+        .select("video_id, status, updated_at")
         .eq("playlist_id", playlistId)
         .eq("user_id", user.id);
 
@@ -32,9 +32,12 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const progress: Record<string, { status: string }> = {};
+    const progress: Record<string, { status: string; updatedAt?: string }> = {};
     for (const row of data) {
-        progress[row.video_id] = { status: row.status };
+        progress[row.video_id] = {
+            status: row.status,
+            updatedAt: row.updated_at,
+        };
     }
 
     return NextResponse.json(progress);

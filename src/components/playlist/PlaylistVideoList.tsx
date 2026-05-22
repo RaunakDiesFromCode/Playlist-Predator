@@ -93,7 +93,7 @@ const PlaylistVideoList = ({
                         key={video.videoId}
                         video={video}
                         currentStatus={
-                            progress[video.videoId]?.status || "STUDY"
+                            progress[video.videoId]?.status || "NONE"
                         }
                         onStatusChange={onStatusChange}
                     />

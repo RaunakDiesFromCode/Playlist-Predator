@@ -8,7 +8,7 @@ import {
 } from "@/types/playlist";
 import PlaylistOverview from "@/components/playlist/PlaylistOverview";
 import PlaylistVideoList from "@/components/playlist/PlaylistVideoList";
-import { loadProgress } from "@/lib/progress";
+import { loadProgress, updateVideoStatus } from "@/lib/progress";
 import { PlaylistProgress, VideoStatus } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -155,18 +155,13 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
     /* ---------------------------------- */
 
     async function changeStatus(videoId: string, status: VideoStatus) {
-        setProgress((prev) => {
-            const next = { ...prev };
-            if (status === "NONE") delete next[videoId];
-            else next[videoId] = { status };
-            return next;
-        });
-
-        await fetch("/api/progress", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ playlistId, videoId, status }),
-        });
+        const next = await updateVideoStatus(
+            playlistId,
+            progress,
+            videoId,
+            status,
+        );
+        setProgress(next);
     }
 
     /* ---------------------------------- */
@@ -177,31 +172,40 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
     if (error) return <p className="p-8 text-red-500">{error}</p>;
     if (!summary || !playlist) return null;
 
-    const watchedCount = videos.filter(
-        (v) => progress[v.videoId]?.status === "DONE"
+    const doneCount = videos.filter(
+        (v) => progress[v.videoId]?.status === "DONE",
+    ).length;
+
+    const rewatchCount = videos.filter(
+        (v) => progress[v.videoId]?.status === "REWATCH",
     ).length;
 
     const skippedCount = videos.filter(
-        (v) => progress[v.videoId]?.status === "SKIP"
+        (v) => progress[v.videoId]?.status === "SKIP",
     ).length;
 
     const totalDurationSeconds = videos.reduce(
         (a, v) => a + v.durationSeconds,
-        0
+        0,
     );
 
     const watchedDuration = videos
-        .filter((v) => progress[v.videoId]?.status === "DONE")
+        .filter(
+            (v) =>
+                progress[v.videoId]?.status === "DONE" ||
+                progress[v.videoId]?.status === "REWATCH",
+        )
         .reduce((a, v) => a + v.durationSeconds, 0);
 
     const remainingDuration = formatDuration(
-        Math.max(totalDurationSeconds - watchedDuration, 0)
+        Math.max(totalDurationSeconds - watchedDuration, 0),
     );
 
     const AnalysisPanel = (
         <PlaylistOverview
             totalVideos={summary.totalVideos}
-            watchedVideos={watchedCount}
+            doneVideos={doneCount}
+            rewatchVideos={rewatchCount}
             skippedVideos={skippedCount}
             totalDuration={summary.totalDuration}
             remainingDuration={remainingDuration}

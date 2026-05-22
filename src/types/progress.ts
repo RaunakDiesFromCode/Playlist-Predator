@@ -1,8 +1,8 @@
-export type VideoStatus = "NONE" | "DONE" | "SKIP";
+export type VideoStatus = "NONE" | "DONE" | "REWATCH" | "SKIP";
 
 export interface VideoProgress {
-    // watched: boolean;
     status: VideoStatus;
+    updatedAt?: string;
 }
 
 export type PlaylistProgress = Record<string, VideoProgress>;

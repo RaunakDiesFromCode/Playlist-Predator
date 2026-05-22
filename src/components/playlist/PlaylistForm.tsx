@@ -5,7 +5,8 @@ import { Loader2 } from "lucide-react";
 import { PlaylistAnalysis, VideoMetadata } from "@/types/playlist";
 import PlaylistOverview from "./PlaylistOverview";
 import PlaylistVideoList from "./PlaylistVideoList";
-import { loadProgress, saveProgress } from "@/lib/storage/progress";
+import { loadProgress } from "@/lib/storage/progress";
+import { updateVideoStatus } from "@/lib/progress";
 import { PlaylistProgress, VideoStatus } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
 import { Button } from "@/components/ui/button";
@@ -26,12 +27,20 @@ const PlaylistForm = () => {
 
     const [playlistId, setPlaylistId] = useState<string | null>(null);
 
-    const watchedCount = videos.filter(
+    const doneCount = videos.filter(
         (v) => progress[v.videoId]?.status === "DONE",
     ).length;
 
+    const rewatchCount = videos.filter(
+        (v) => progress[v.videoId]?.status === "REWATCH",
+    ).length;
+
     const watchedDuration = videos
-        .filter((v) => progress[v.videoId]?.status === "DONE")
+        .filter(
+            (v) =>
+                progress[v.videoId]?.status === "DONE" ||
+                progress[v.videoId]?.status === "REWATCH",
+        )
         .reduce((acc, v) => acc + v.durationSeconds, 0);
 
     const totalDurationSeconds = videos.reduce(
@@ -55,14 +64,9 @@ const PlaylistForm = () => {
     function handleStatusChange(videoId: string, status: VideoStatus) {
         if (!playlistId) return;
 
-        setProgress((prev) => {
-            const next = { ...prev };
-
-            next[videoId] = { status };
-
-            saveProgress(playlistId, next);
-            return next;
-        });
+        void updateVideoStatus(playlistId, progress, videoId, status).then(
+            setProgress,
+        );
     }
 
     function extractPlaylistId(url: string): string | null {
@@ -142,7 +146,8 @@ const PlaylistForm = () => {
                 <div className="mt-8 space-y-8">
                     <PlaylistOverview
                         totalVideos={summary.totalVideos}
-                        watchedVideos={watchedCount}
+                        doneVideos={doneCount}
+                        rewatchVideos={rewatchCount}
                         skippedVideos={skippedCount}
                         totalDuration={summary.totalDuration}
                         remainingDuration={remainingDurationFormatted}

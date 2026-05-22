@@ -17,7 +17,7 @@ import {
 
 interface Props {
     video: VideoMetadata;
-    currentStatus: VideoStatus; // DONE | SKIP | NONE
+    currentStatus: VideoStatus;
     onStatusChange: (id: string, status: VideoStatus) => void;
 }
 
@@ -31,12 +31,13 @@ const UI_TO_BACKEND: Record<UIStatus, VideoStatus> = {
     DONE: "DONE",
     SKIP: "SKIP",
     STUDY: "NONE",
-    REWATCH: "NONE",
+    REWATCH: "REWATCH",
 };
 
 // Map backend → UI (for Select value)
 function backendToUI(status: VideoStatus): UIStatus {
     if (status === "NONE") return "STUDY";
+    if (status === "REWATCH") return "REWATCH";
     return status;
 }
 
@@ -69,7 +70,9 @@ const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
     return (
         <Card
             className={`group flex items-center gap-3 p-2 transition-colors backdrop-blur-sm ${
-                currentStatus === "DONE" || currentStatus === "SKIP"
+                currentStatus === "DONE" ||
+                currentStatus === "SKIP" ||
+                currentStatus === "REWATCH"
                     ? "opacity-60"
                     : ""
             }`}
@@ -107,12 +110,6 @@ const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
                 value={uiValue}
                 onValueChange={(value) => {
                     const backendStatus = UI_TO_BACKEND[value as UIStatus];
-
-                    // 🔁 If user selects the same logical state → reset to NONE
-                    if (backendStatus === "NONE" && currentStatus === "NONE") {
-                        onStatusChange(video.videoId, "NONE");
-                        return;
-                    }
 
                     onStatusChange(video.videoId, backendStatus);
                 }}

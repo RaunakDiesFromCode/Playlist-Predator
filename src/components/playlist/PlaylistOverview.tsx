@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 
 interface Props {
     totalVideos: number;
-    watchedVideos: number;
+    doneVideos: number;
+    rewatchVideos: number;
     skippedVideos: number;
     totalDuration: string;
     remainingDuration: string;
@@ -59,7 +60,7 @@ function getRemainingHoursToday() {
 function getDynamicInsight(
     remainingSeconds: number,
     recommendedSpeed: number,
-    untouchedVideos: number
+    untouchedVideos: number,
 ) {
     const watchSeconds = remainingSeconds / recommendedSpeed;
     const hours = watchSeconds / 3600;
@@ -95,7 +96,8 @@ function getDynamicInsight(
 
 const PlaylistOverview = ({
     totalVideos,
-    watchedVideos,
+    doneVideos,
+    rewatchVideos,
     skippedVideos,
     totalDuration,
     remainingDuration,
@@ -116,27 +118,28 @@ const PlaylistOverview = ({
 
     /* ---------- progress math ---------- */
 
-    const watchedPercent =
-        totalVideos === 0 ? 0 : (watchedVideos / totalVideos) * 100;
+    const donePercent =
+        totalVideos === 0 ? 0 : (doneVideos / totalVideos) * 100;
+
+    const rewatchPercent =
+        totalVideos === 0 ? 0 : (rewatchVideos / totalVideos) * 100;
 
     const skippedPercent =
         totalVideos === 0 ? 0 : (skippedVideos / totalVideos) * 100;
 
-    const untouchedVideos = totalVideos - watchedVideos - skippedVideos;
+    const untouchedVideos =
+        totalVideos - doneVideos - rewatchVideos - skippedVideos;
 
     const insight = getDynamicInsight(
         remainingSeconds,
         recommendedSpeed,
-        untouchedVideos
+        untouchedVideos,
     );
 
     const completedPercent =
         totalVideos === 0
             ? 0
-            : ((parseToSeconds(totalDuration) -
-                  parseToSeconds(remainingDuration)) *
-                  100) /
-              parseToSeconds(totalDuration);
+            : ((doneVideos + rewatchVideos) / totalVideos) * 100;
 
     return (
         <Card>
@@ -151,12 +154,19 @@ const PlaylistOverview = ({
                     <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
                         <div
                             className="absolute left-0 top-0 h-full bg-green-500/80"
-                            style={{ width: `${watchedPercent}%` }}
+                            style={{ width: `${donePercent}%` }}
+                        />
+                        <div
+                            className="absolute top-0 h-full bg-yellow-500/80"
+                            style={{
+                                left: `${donePercent}%`,
+                                width: `${rewatchPercent}%`,
+                            }}
                         />
                         <div
                             className="absolute top-0 h-full bg-red-500/80"
                             style={{
-                                left: `${watchedPercent}%`,
+                                left: `${donePercent + rewatchPercent}%`,
                                 width: `${skippedPercent}%`,
                             }}
                         />
@@ -164,7 +174,10 @@ const PlaylistOverview = ({
 
                     <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                         <Badge className="whitespace-nowrap bg-green-500/80">
-                            DONE ({watchedVideos})
+                            DONE ({doneVideos})
+                        </Badge>
+                        <Badge className="whitespace-nowrap bg-yellow-500/80 text-yellow-950">
+                            Rewatch ({rewatchVideos})
                         </Badge>
                         <Badge className="whitespace-nowrap bg-red-500/80">
                             Skipped ({skippedVideos})
@@ -222,7 +235,7 @@ const PlaylistOverview = ({
                                     className={cn(
                                         "flex items-center justify-between rounded-md border px-3 py-2.5",
                                         isRecommended &&
-                                            "border-primary bg-primary/10"
+                                            "border-primary bg-primary/10",
                                     )}
                                 >
                                     <span className="text-muted-foreground">
@@ -263,7 +276,7 @@ const PlaylistOverview = ({
                                     "font-medium",
                                     canFinishToday
                                         ? "text-green-600"
-                                        : "text-red-600"
+                                        : "text-red-600",
                                 )}
                             >
                                 {canFinishToday ? "Fits" : "Overflows"}

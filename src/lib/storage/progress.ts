@@ -26,7 +26,10 @@ export function updateVideoStatus(
 ) {
     const progress = loadProgress(playlistId);
 
-    progress[videoId] = { status };
+    progress[videoId] = {
+        status,
+        updatedAt: new Date().toISOString(),
+    };
 
     saveProgress(playlistId, progress);
     return progress;
