@@ -196,7 +196,7 @@ const PlaylistOverview = ({
     }
 
     return (
-        <Card>
+        <Card className="h-full">
             <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
                 <CardTitle className="text-lg">Reality Check</CardTitle>
                 <Badge variant="secondary" className="whitespace-nowrap">
@@ -323,7 +323,79 @@ const PlaylistOverview = ({
                 <div className="space-y-3 text-sm">
                     <p className="font-medium">Quick insights</p>
 
-                    <div className="flex gap-5">
+                    <div className="space-y-3 md:hidden">
+                        <div className="flex gap-3">
+                            <div className="min-w-0 flex-1 rounded-md border px-3 py-2.5">
+                                <p className="text-xs text-muted-foreground">Today</p>
+                                <p
+                                    className={cn(
+                                        "font-medium",
+                                        canFinishToday
+                                            ? "text-green-600"
+                                            : "text-red-600",
+                                    )}
+                                >
+                                    {canFinishToday ? "Fits" : "Overflows"}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {effectiveStudyHours.toFixed(1)}h needed · {hoursLeftToday.toFixed(1)}h left
+                                </p>
+                            </div>
+
+                            <div className="min-w-0 rounded-md border px-3 py-2.5">
+                                <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                                    <span>Heatmap</span>
+                                    <span>56d</span>
+                                </div>
+                                <div className="overflow-x-auto pb-1">
+                                    <div className="grid w-max grid-cols-7 gap-1.5">
+                                        {heatmapDays.map((date) => {
+                                            const count =
+                                                dailyCompletionCounts[toDayKey(date)] ?? 0;
+
+                                            return (
+                                                <div
+                                                    key={toDayKey(date)}
+                                                    title={`${formatHeatmapDate(date)} · ${count} completed`}
+                                                    className={`h-2.5 w-2.5 rounded-sm ${getIntensityClass(count)}`}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-md border px-3 py-2.5">
+                            <p className="text-xs text-muted-foreground">Friction</p>
+                            <p className="font-medium">+{(NOTE_TAKING_OVERHEAD * 100).toFixed(0)}%</p>
+                            <p className="text-xs text-muted-foreground">Notes & pauses</p>
+                        </div>
+
+                        <div className="rounded-md border px-3 py-2.5">
+                            <p className="text-muted-foreground">
+                                At{" "}
+                                <span className="font-medium">{recommendedSpeed}×</span>
+                                , you have{" "}
+                                <span className="font-medium">{insight.watchTime}</span>{" "}
+                                of video left across{" "}
+                                <span className="font-medium">{untouchedVideos}</span>{" "}
+                                videos.
+                            </p>
+
+                            <p className="text-muted-foreground">
+                                This is a{" "}
+                                <span className="font-medium">{insight.scope}</span>
+                                ,{" "}
+                                <span className="font-medium">{insight.fragmentation}</span>{" "}
+                                workload — best handled as{" "}
+                                <span className="font-medium">{insight.strategy}</span>
+                                .
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="hidden md:flex gap-5">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="rounded-md border px-3 py-2.5">
                                 <p className="text-xs text-muted-foreground">

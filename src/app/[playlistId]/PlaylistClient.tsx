@@ -242,7 +242,7 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
 
     return (
         <div className="p-4 flex flex-col gap-4 h-[calc(100dvh-4rem)]">
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden ">
                 <PlaylistVideoList
                     videos={videos}
                     progress={progress}

@@ -52,12 +52,6 @@ const PlaylistVideoList = ({
 
     const filteredVideos = useMemo(() => {
         const lowerQuery = query.trim().toLowerCase();
-        const statusRank: Record<VideoStatus, number> = {
-            DONE: 0,
-            REWATCH: 1,
-            SKIP: 2,
-            NONE: 3,
-        };
 
         const next = videos.filter((video) => {
             const entry = progress[video.videoId];
@@ -76,11 +70,6 @@ const PlaylistVideoList = ({
         });
 
         next.sort((a, b) => {
-            const entryA = progress[a.videoId];
-            const entryB = progress[b.videoId];
-            const statusA = entryA?.status ?? "NONE";
-            const statusB = entryB?.status ?? "NONE";
-
             switch (sortBy) {
                 case "az":
                     return a.title.localeCompare(b.title);
@@ -90,8 +79,6 @@ const PlaylistVideoList = ({
                     return a.durationSeconds - b.durationSeconds;
                 case "length-desc":
                     return b.durationSeconds - a.durationSeconds;
-                case "status":
-                    return statusRank[statusA] - statusRank[statusB];
                 default:
                     return a.position - b.position;
             }
@@ -149,7 +136,7 @@ const PlaylistVideoList = ({
     return (
         <div
             ref={scrollRef}
-            className="h-full overflow-y-auto overscroll-contain rounded-xl"
+            className="flex h-full flex-col overflow-y-auto overscroll-contain rounded-xl border border-border"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             style={{ ["--blur" as any]: 0 }}
             onScroll={() => {
@@ -209,7 +196,7 @@ const PlaylistVideoList = ({
                 </div>
             </div>
 
-            <div className="relative z-10 mt-2 space-y-2 px-1">
+            <div className="relative z-10 mt-2 flex-1 space-y-2 px-1">
                 {filteredVideos.map((video) => (
                     <PlaylistVideoCard
                         key={video.videoId}
@@ -220,15 +207,15 @@ const PlaylistVideoList = ({
                 ))}
 
                 {filteredVideos.length === 0 && (
-                    <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
+                    <div className="pt-20 p-6 text-center text-sm text-muted-foreground">
                         No videos match your search or filter.
                     </div>
                 )}
             </div>
 
-            <div className="sticky bottom-0 z-20 mt-3 border-t border-border/60 bg-background/95 px-3 py-3 backdrop-blur">
+            <div className="sticky bottom-0 z-20 mt-auto border-t border-border/60 bg-background/95 px-3 py-3 backdrop-blur">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                    <div className="relative flex-1">
+                    <div className="relative flex-1 lg:flex-[2]">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             value={query}
@@ -238,7 +225,7 @@ const PlaylistVideoList = ({
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 lg:w-[360px]">
+                    <div className="grid grid-cols-2 gap-2 lg:w-[280px] lg:flex-none">
                         <Select
                             value={filterStatus}
                             onValueChange={(value) =>
@@ -288,9 +275,6 @@ const PlaylistVideoList = ({
                                     </SelectItem>
                                     <SelectItem value="length-desc">
                                         Length: Longest
-                                    </SelectItem>
-                                    <SelectItem value="status">
-                                        Status
                                     </SelectItem>
                                 </SelectGroup>
                             </SelectContent>
