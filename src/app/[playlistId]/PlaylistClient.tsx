@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Confetti from "react-confetti";
 import {
     PlaylistAnalysis,
     PlaylistMeta,
@@ -67,7 +68,11 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
     const [error, setError] = useState<string | null>(null);
 
     const [isMobile, setIsMobile] = useState(false);
+    const [celebrate, setCelebrate] = useState(false);
+    const [viewport, setViewport] = useState({ width: 0, height: 0 });
     const savedRef = useRef(false);
+    const hasResolvedPlaylistRef = useRef(false);
+    const celebrationTimerRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (playlist?.title) {
@@ -86,6 +91,20 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
         update();
         mq.addEventListener("change", update);
         return () => mq.removeEventListener("change", update);
+    }, []);
+
+    useEffect(() => {
+        const updateViewport = () => {
+            setViewport({
+                width: window.innerWidth,
+                height: window.innerHeight,
+            });
+        };
+
+        updateViewport();
+        window.addEventListener("resize", updateViewport);
+
+        return () => window.removeEventListener("resize", updateViewport);
     }, []);
 
     /* ---------------------------------- */
@@ -165,12 +184,8 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
     }
 
     /* ---------------------------------- */
-    /* States */
+    /* Completion + stats */
     /* ---------------------------------- */
-
-    if (loading) return <PlaylistPageSkeleton />;
-    if (error) return <p className="p-8 text-red-500">{error}</p>;
-    if (!summary || !playlist) return null;
 
     const doneCount = videos.filter(
         (v) => progress[v.videoId]?.status === "DONE",
@@ -201,6 +216,48 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
         Math.max(totalDurationSeconds - watchedDuration, 0),
     );
 
+    const isComplete = videos.length > 0 && doneCount === videos.length;
+
+    useEffect(() => {
+        if (loading || !summary || !playlist) {
+            return;
+        }
+
+        if (!hasResolvedPlaylistRef.current) {
+            hasResolvedPlaylistRef.current = true;
+            return;
+        }
+
+        if (!isComplete) {
+            return;
+        }
+
+        setCelebrate(true);
+
+        if (celebrationTimerRef.current) {
+            window.clearTimeout(celebrationTimerRef.current);
+        }
+
+        celebrationTimerRef.current = window.setTimeout(() => {
+            setCelebrate(false);
+            celebrationTimerRef.current = null;
+        }, 5000);
+
+        return () => {
+            if (celebrationTimerRef.current) {
+                window.clearTimeout(celebrationTimerRef.current);
+            }
+        };
+    }, [isComplete, loading, playlist, summary]);
+
+    /* ---------------------------------- */
+    /* States */
+    /* ---------------------------------- */
+
+    if (loading) return <PlaylistPageSkeleton />;
+    if (error) return <p className="p-8 text-red-500">{error}</p>;
+    if (!summary || !playlist) return null;
+
     const AnalysisPanel = (
         <PlaylistOverview
             totalVideos={summary.totalVideos}
@@ -219,7 +276,21 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
 
     if (!isMobile) {
         return (
-            <div className="flex gap-4 p-4">
+            <div className="relative flex gap-4 p-4">
+                {celebrate &&
+                viewport.width > 0 &&
+                viewport.height > 0 &&
+                isComplete ? (
+                    <Confetti
+                        width={viewport.width}
+                        height={viewport.height}
+                        recycle={false}
+                        numberOfPieces={220}
+                        gravity={0.18}
+                        className="pointer-events-none fixed inset-0 z-50"
+                    />
+                ) : null}
+
                 <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-hidden">
                     <PlaylistVideoList
                         videos={videos}
@@ -241,7 +312,21 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
     /* ---------------------------------- */
 
     return (
-        <div className="p-4 flex flex-col gap-4 h-[calc(100dvh-4rem)]">
+        <div className="relative flex h-[calc(100dvh-4rem)] flex-col gap-4 p-4">
+            {celebrate &&
+            viewport.width > 0 &&
+            viewport.height > 0 &&
+            isComplete ? (
+                <Confetti
+                    width={viewport.width}
+                    height={viewport.height}
+                    recycle={false}
+                    numberOfPieces={220}
+                    gravity={0.18}
+                    className="pointer-events-none fixed inset-0 z-50"
+                />
+            ) : null}
+
             <div className="flex-1 overflow-hidden ">
                 <PlaylistVideoList
                     videos={videos}

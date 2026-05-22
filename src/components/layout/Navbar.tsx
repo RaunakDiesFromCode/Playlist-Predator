@@ -9,8 +9,8 @@ import { Search, Sidebar, User, LogOut, SunMoon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { type AuthUser } from "@/hooks/use-auth";
 import ThemeToggle from "../ThemeToggle";
-import { useAuth } from "@/hooks/use-auth";
 
 import {
     DropdownMenu,
@@ -23,17 +23,17 @@ import {
 
 type NavbarProps = {
     toggleSidebar: () => void;
+    user: AuthUser | null;
+    loading: boolean;
 };
 
-const Navbar = ({ toggleSidebar }: NavbarProps) => {
+const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
     const pathname = usePathname();
     const router = useRouter();
     const [input, setInput] = useState("");
 
     const isHome = pathname === "/";
     const showSearch = !isHome;
-
-    const { user, loading } = useAuth();
 
     function extractPlaylistId(value: string) {
         try {
@@ -165,7 +165,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                                     className="flex items-center gap-2"
                                     onClick={() => {
                                         document.documentElement.classList.toggle(
-                                            "dark"
+                                            "dark",
                                         );
                                     }}
                                 >
