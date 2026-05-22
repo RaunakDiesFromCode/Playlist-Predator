@@ -209,6 +209,7 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
             skippedVideos={skippedCount}
             totalDuration={summary.totalDuration}
             remainingDuration={remainingDuration}
+            progress={progress}
         />
     );
 

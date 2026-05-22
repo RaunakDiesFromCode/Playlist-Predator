@@ -151,6 +151,7 @@ const PlaylistForm = () => {
                         skippedVideos={skippedCount}
                         totalDuration={summary.totalDuration}
                         remainingDuration={remainingDurationFormatted}
+                        progress={progress}
                     />
 
                     <PlaylistVideoList

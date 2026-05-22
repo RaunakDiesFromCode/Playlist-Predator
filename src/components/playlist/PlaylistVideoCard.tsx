@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { VideoMetadata } from "@/types/playlist";
-import { VideoStatus } from "@/types/progress";
+import { VideoProgress, VideoStatus } from "@/types/progress";
 
 import { Card } from "@/components/ui/card";
 import {
@@ -17,7 +17,7 @@ import {
 
 interface Props {
     video: VideoMetadata;
-    currentStatus: VideoStatus;
+    progressEntry?: VideoProgress;
     onStatusChange: (id: string, status: VideoStatus) => void;
 }
 
@@ -62,14 +62,48 @@ const STATUS_STYLES: Record<UIStatus, { trigger: string; item: string }> = {
     },
 };
 
+function formatCompletionDate(value?: string) {
+    if (!value) return null;
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return null;
+
+    const today = new Date();
+    const startOfToday = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+    );
+    const startOfThatDay = new Date(
+        parsed.getFullYear(),
+        parsed.getMonth(),
+        parsed.getDate(),
+    );
+
+    const dayDiff = Math.round(
+        (startOfToday.getTime() - startOfThatDay.getTime()) /
+            (1000 * 60 * 60 * 24),
+    );
+
+    if (dayDiff === 0) return "Today";
+    if (dayDiff === 1) return "Yesterday";
+
+    return new Intl.DateTimeFormat("en", {
+        month: "short",
+        day: "numeric",
+    }).format(parsed);
+}
+
 /* ---------------- COMPONENT ---------------- */
 
-const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
+const PlaylistVideoCard = ({ video, progressEntry, onStatusChange }: Props) => {
+    const currentStatus = progressEntry?.status ?? "NONE";
     const uiValue = backendToUI(currentStatus);
+    const completionLabel = formatCompletionDate(progressEntry?.updatedAt);
 
     return (
         <Card
-            className={`group flex items-center gap-3 p-2 transition-colors backdrop-blur-sm ${
+            className={`group flex flex-col gap-3 p-3 transition-colors backdrop-blur-sm md:flex-row md:items-center ${
                 currentStatus === "DONE" ||
                 currentStatus === "SKIP" ||
                 currentStatus === "REWATCH"
@@ -82,10 +116,10 @@ const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
                 href={`https://youtube.com/watch?v=${video.videoId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 flex-1 min-w-0"
+                className="flex w-full items-start gap-3 min-w-0 md:flex-1 md:items-center"
             >
                 {/* Thumbnail */}
-                <div className="relative w-[120px] aspect-video flex-shrink-0 overflow-hidden rounded-md bg-black/10">
+                <div className="relative w-[96px] aspect-video flex-shrink-0 overflow-hidden rounded-md bg-black/10 md:w-[120px]">
                     <Image
                         src={video.thumbnail}
                         alt={video.title}
@@ -95,12 +129,22 @@ const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
                 </div>
 
                 {/* Text */}
-                <div className="min-w-0">
-                    <p className="font-medium leading-snug truncate">
+                <div className="min-w-0 flex-1 space-y-1">
+                    <p className="font-medium leading-snug line-clamp-2">
                         {video.title}
                     </p>
-                    <p className="text-sm text-foreground/70 truncate">
+                    <p className="text-sm text-foreground/70 line-clamp-1">
                         {video.channelTitle} · {video.durationFormatted}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        {currentStatus === "DONE"
+                            ? "Completed"
+                            : currentStatus === "REWATCH"
+                              ? "Rewatch"
+                              : currentStatus === "SKIP"
+                                ? "Skipped"
+                                : "Study"}
+                        {completionLabel ? ` · ${completionLabel}` : ""}
                     </p>
                 </div>
             </Link>
@@ -115,7 +159,7 @@ const PlaylistVideoCard = ({ video, currentStatus, onStatusChange }: Props) => {
                 }}
             >
                 <SelectTrigger
-                    className={`w-[120px] h-8 text-xs border font-bold ${STATUS_STYLES[uiValue].trigger}`}
+                    className={`h-8 w-full border text-xs font-bold md:w-[120px] ${STATUS_STYLES[uiValue].trigger}`}
                 >
                     <SelectValue />
                 </SelectTrigger>

@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { PlaylistProgress } from "@/types/progress";
 
 /* ===================== PROPS ===================== */
 
@@ -12,6 +13,7 @@ interface Props {
     skippedVideos: number;
     totalDuration: string;
     remainingDuration: string;
+    progress: PlaylistProgress;
 }
 
 /* ===================== CONSTANTS ===================== */
@@ -92,6 +94,27 @@ function getDynamicInsight(
     };
 }
 
+function toDayKey(date: Date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+        date.getDate(),
+    ).padStart(2, "0")}`;
+}
+
+function formatHeatmapDate(date: Date) {
+    return new Intl.DateTimeFormat("en", {
+        month: "short",
+        day: "numeric",
+    }).format(date);
+}
+
+function getIntensityClass(count: number) {
+    if (count <= 0) return "bg-muted/50";
+    if (count === 1) return "bg-green-950/80";
+    if (count === 2) return "bg-green-800/80";
+    if (count === 3) return "bg-green-600/80";
+    return "bg-green-300/90";
+}
+
 /* ===================== COMPONENT ===================== */
 
 const PlaylistOverview = ({
@@ -101,6 +124,7 @@ const PlaylistOverview = ({
     skippedVideos,
     totalDuration,
     remainingDuration,
+    progress,
 }: Props) => {
     const remainingSeconds = parseToSeconds(remainingDuration);
     const recommendedSpeed = recommendSpeed(remainingSeconds);
@@ -141,10 +165,43 @@ const PlaylistOverview = ({
             ? 0
             : ((doneVideos + rewatchVideos) / totalVideos) * 100;
 
+    const completionEntries = Object.values(progress)
+        .filter((entry) => entry.status === "DONE")
+        .filter((entry) => entry.updatedAt);
+
+    const today = new Date();
+    const heatmapDays = Array.from({ length: 56 }, (_, index) => {
+        const date = new Date(today);
+        date.setHours(0, 0, 0, 0);
+        date.setDate(date.getDate() - (55 - index));
+        return date;
+    });
+
+    const dailyCompletionCounts = heatmapDays.reduce<Record<string, number>>(
+        (acc, date) => {
+            acc[toDayKey(date)] = 0;
+            return acc;
+        },
+        {},
+    );
+
+    for (const entry of completionEntries) {
+        const completedAt = new Date(entry.updatedAt as string);
+        if (Number.isNaN(completedAt.getTime())) continue;
+
+        const key = toDayKey(completedAt);
+        if (key in dailyCompletionCounts) {
+            dailyCompletionCounts[key] += 1;
+        }
+    }
+
     return (
         <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
                 <CardTitle className="text-lg">Reality Check</CardTitle>
+                <Badge variant="secondary" className="whitespace-nowrap">
+                    {doneVideos}/{totalVideos} done
+                </Badge>
             </CardHeader>
 
             <CardContent className="space-y-4 md:space-y-6">
@@ -266,71 +323,87 @@ const PlaylistOverview = ({
                 <div className="space-y-3 text-sm">
                     <p className="font-medium">Quick insights</p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="rounded-md border px-3 py-2.5">
-                            <p className="text-xs text-muted-foreground">
-                                Today
-                            </p>
-                            <p
-                                className={cn(
-                                    "font-medium",
-                                    canFinishToday
-                                        ? "text-green-600"
-                                        : "text-red-600",
-                                )}
-                            >
-                                {canFinishToday ? "Fits" : "Overflows"}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                                {effectiveStudyHours.toFixed(1)}h needed ·{" "}
-                                {hoursLeftToday.toFixed(1)}h left
-                            </p>
+                    <div className="flex gap-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="rounded-md border px-3 py-2.5">
+                                <p className="text-xs text-muted-foreground">
+                                    Today
+                                </p>
+                                <p
+                                    className={cn(
+                                        "font-medium",
+                                        canFinishToday
+                                            ? "text-green-600"
+                                            : "text-red-600",
+                                    )}
+                                >
+                                    {canFinishToday ? "Fits" : "Overflows"}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {effectiveStudyHours.toFixed(1)}h needed ·{" "}
+                                    {hoursLeftToday.toFixed(1)}h left
+                                </p>
+                            </div>
+
+                            <div className="rounded-md border px-3 py-2.5">
+                                <p className="text-xs text-muted-foreground">
+                                    Friction
+                                </p>
+                                <p className="font-medium">
+                                    +{(NOTE_TAKING_OVERHEAD * 100).toFixed(0)}%
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Notes & pauses
+                                </p>
+                            </div>
+
+                            <div className="sm:col-span-2 rounded-md border px-3 py-2.5">
+                                <p className="text-muted-foreground">
+                                    At{" "}
+                                    <span className="font-medium">
+                                        {recommendedSpeed}×
+                                    </span>
+                                    , you have{" "}
+                                    <span className="font-medium">
+                                        {insight.watchTime}
+                                    </span>{" "}
+                                    of video left across{" "}
+                                    <span className="font-medium">
+                                        {untouchedVideos}
+                                    </span>{" "}
+                                    videos.
+                                </p>
+
+                                <p className="text-muted-foreground">
+                                    This is a{" "}
+                                    <span className="font-medium">
+                                        {insight.scope}
+                                    </span>
+                                    ,{" "}
+                                    <span className="font-medium">
+                                        {insight.fragmentation}
+                                    </span>{" "}
+                                    workload — best handled as{" "}
+                                    <span className="font-medium">
+                                        {insight.strategy}
+                                    </span>
+                                    .
+                                </p>
+                            </div>
                         </div>
+                        <div className="grid grid-cols-7 gap-1.5 w-fit">
+                            {heatmapDays.map((date) => {
+                                const count =
+                                    dailyCompletionCounts[toDayKey(date)] ?? 0;
 
-                        <div className="rounded-md border px-3 py-2.5">
-                            <p className="text-xs text-muted-foreground">
-                                Friction
-                            </p>
-                            <p className="font-medium">
-                                +{(NOTE_TAKING_OVERHEAD * 100).toFixed(0)}%
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                                Notes & pauses
-                            </p>
-                        </div>
-
-                        <div className="sm:col-span-2 rounded-md border px-3 py-2.5">
-                            <p className="text-muted-foreground">
-                                At{" "}
-                                <span className="font-medium">
-                                    {recommendedSpeed}×
-                                </span>
-                                , you have{" "}
-                                <span className="font-medium">
-                                    {insight.watchTime}
-                                </span>{" "}
-                                of video left across{" "}
-                                <span className="font-medium">
-                                    {untouchedVideos}
-                                </span>{" "}
-                                videos.
-                            </p>
-
-                            <p className="text-muted-foreground">
-                                This is a{" "}
-                                <span className="font-medium">
-                                    {insight.scope}
-                                </span>
-                                ,{" "}
-                                <span className="font-medium">
-                                    {insight.fragmentation}
-                                </span>{" "}
-                                workload — best handled as{" "}
-                                <span className="font-medium">
-                                    {insight.strategy}
-                                </span>
-                                .
-                            </p>
+                                return (
+                                    <div
+                                        key={toDayKey(date)}
+                                        title={`${formatHeatmapDate(date)} · ${count} completed`}
+                                        className={`h-2.5 w-2.5 rounded-sm ${getIntensityClass(count)}`}
+                                    />
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

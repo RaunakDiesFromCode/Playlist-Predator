@@ -74,7 +74,7 @@ export async function updateVideoStatus(
     }
 
     // Persist (DB or local)
-    await persistProgress(playlistId, next, videoId, status);
+    void persistProgress(playlistId, next, videoId, status).catch(() => {});
 
     return next;
 }
