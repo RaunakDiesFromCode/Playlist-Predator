@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { LibraryBig, Search } from "lucide-react";
 
@@ -32,6 +32,7 @@ type SidebarProps = {
     mobileOpen: boolean;
     setMobileOpen: (open: boolean) => void;
     collapsed: boolean;
+    setCollapsed: Dispatch<SetStateAction<boolean>>;
     onNavigateAction: () => void;
 };
 
