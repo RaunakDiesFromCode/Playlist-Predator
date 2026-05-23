@@ -116,7 +116,7 @@ function SidebarContent({
 
             <div
                 className={cn(
-                    "border-b border-border/70 px-3 py-2.5",
+                    "border-b border-border/70 p-2.5",
                     collapsed && "sr-only",
                 )}
             >
@@ -127,7 +127,7 @@ function SidebarContent({
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search playlists..."
-                        className="h-10 rounded-xl border-border/70 bg-muted/30 pl-9"
+                        className="h-10 rounded-md border-border/70 bg-muted/30 pl-9"
                     />
                 </div>
 
@@ -151,16 +151,6 @@ function SidebarContent({
                     >
                         No playlists yet
                     </div>
-                )}
-
-                {!loading && !adminAccessLoading && showAdminLink && (
-                    <SidebarItem
-                        title="Admin dashboard"
-                        href="/admin"
-                        active={pathname === "/admin"}
-                        collapsed={collapsed}
-                        onClickAction={onNavigateAction}
-                    />
                 )}
 
                 {!loading &&
