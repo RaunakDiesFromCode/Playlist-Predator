@@ -71,9 +71,13 @@ function SidebarContent({
         useAdminAccess();
 
     if (!user && !authLoading) {
+        if (collapsed) {
+            return null;
+        }
+
         return (
             <div className="flex flex-1 min-h-0 items-center justify-center px-4 py-6">
-                <div className="w-full max-w-sm rounded-2xl border border-border/70 bg-muted/20 p-5 text-center shadow-sm">
+                <div className="w-full max-w-sm rounded-xl border border-border/70 bg-muted/20 p-5 text-center shadow-sm">
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <LibraryBig className="h-6 w-6" />
                     </div>

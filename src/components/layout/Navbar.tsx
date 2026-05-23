@@ -5,14 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { Search, Sidebar, User, LogOut, SunMoon } from "lucide-react";
+import { LogOut, Search, Sidebar, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { type AuthUser } from "@/hooks/use-auth";
-import { useAdminAccess } from "@/hooks/use-admin-access";
-import ThemeToggle from "../ThemeToggle";
-
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,6 +16,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import ThemeToggle from "../ThemeToggle";
+import { type AuthUser } from "@/hooks/use-auth";
+import { useAdminAccess } from "@/hooks/use-admin-access";
 
 type NavbarProps = {
     toggleSidebar: () => void;
@@ -65,7 +64,6 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
     return (
         <nav className="sticky top-0 z-50 bg-background backdrop-blur border-b border-border">
             <div className="max-w-7xl mx-auto px-3 py-2 flex items-center gap-3">
-                {/* LEFT */}
                 <div className="flex items-center gap-2 shrink-0">
                     <Button
                         variant="ghost"
@@ -92,7 +90,6 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                     </Link>
                 </div>
 
-                {/* CENTER */}
                 {showSearch && (
                     <form
                         onSubmit={handleSearch}
@@ -113,24 +110,63 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                     </form>
                 )}
 
-                {/* RIGHT — DESKTOP */}
-                <div className="hidden md:flex items-center gap-3 ml-auto">
-                    {showAdminLink && (
-                        <Button asChild variant="secondary" size="sm">
-                            <Link href="/admin">Dashboard</Link>
-                        </Button>
-                    )}
-
+                <div className="ml-auto flex items-center gap-2 md:gap-3">
                     {!loading &&
                         (user ? (
-                            <div className="flex items-center gap-1 text-sm">
-                                <span className="text-muted-foreground">
-                                    Hi,
-                                </span>
-                                <span className="font-medium truncate max-w-[120px]">
-                                    {user.name ?? user.email}
-                                </span>
-                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="h-11 max-w-[220px] justify-start gap-1 px-3"
+                                        aria-label="Open profile menu"
+                                    >
+                                        <span className="text-muted-foreground">
+                                            Hi,
+                                        </span>
+                                        <span className="truncate font-medium">
+                                            {user.name ?? user.email}
+                                        </span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-56"
+                                >
+                                    <DropdownMenuLabel>
+                                        <div className="space-y-1">
+                                            <p className="text-xs text-muted-foreground">
+                                                Signed in as
+                                            </p>
+                                            <p className="text-sm font-medium truncate">
+                                                {user.name ?? user.email}
+                                            </p>
+                                        </div>
+                                    </DropdownMenuLabel>
+
+                                    <DropdownMenuSeparator />
+
+                                    {showAdminLink && (
+                                        <DropdownMenuItem
+                                            className="flex items-center gap-2"
+                                            onClick={() =>
+                                                router.push("/admin")
+                                            }
+                                        >
+                                            <User className="h-4 w-4" />
+                                            Dashboard
+                                        </DropdownMenuItem>
+                                    )}
+
+                                    <DropdownMenuItem
+                                        className="flex items-center gap-2 text-red-600 focus:text-red-600"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                        Logout
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         ) : (
                             <Button asChild variant="outline">
                                 <Link href="/login">Login</Link>
@@ -138,87 +174,6 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                         ))}
 
                     <ThemeToggle />
-                </div>
-
-                {/* RIGHT — MOBILE */}
-                <div className="md:hidden ml-auto flex items-center gap-2">
-                    {showAdminLink && (
-                        <Button asChild variant="secondary" size="sm">
-                            <Link href="/admin">Dashboard</Link>
-                        </Button>
-                    )}
-
-                    {user ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    aria-label="Open profile menu"
-                                    className="h-11 w-11"
-                                >
-                                    <User className="h-5 w-5" />
-                                </Button>
-                            </DropdownMenuTrigger>
-
-                            <DropdownMenuContent align="end" className="w-56">
-                                <DropdownMenuLabel>
-                                    <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground">
-                                            Signed in as
-                                        </p>
-                                        <p className="text-sm font-medium truncate">
-                                            {user.name ?? user.email}
-                                        </p>
-                                    </div>
-                                </DropdownMenuLabel>
-
-                                <DropdownMenuSeparator />
-
-                                <DropdownMenuItem
-                                    className="flex items-center gap-2"
-                                    onClick={() => {
-                                        document.documentElement.classList.toggle(
-                                            "dark",
-                                        );
-                                    }}
-                                >
-                                    <SunMoon className="h-4 w-4" />
-                                    Toggle theme
-                                </DropdownMenuItem>
-
-                                <DropdownMenuSeparator />
-
-                                {showAdminLink && (
-                                    <>
-                                        <DropdownMenuItem
-                                            className="flex items-center gap-2"
-                                            onClick={() =>
-                                                router.push("/admin")
-                                            }
-                                        >
-                                            Admin dashboard
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                    </>
-                                )}
-
-                                <DropdownMenuItem
-                                    className="flex items-center gap-2 text-red-600 focus:text-red-600"
-                                    onClick={handleLogout}
-                                >
-                                    <LogOut className="h-4 w-4" />
-                                    Logout
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    ) : (
-                        !loading && (
-                            <Button asChild variant="outline" size="sm">
-                                <Link href="/login">Login</Link>
-                            </Button>
-                        )
-                    )}
                 </div>
             </div>
         </nav>
