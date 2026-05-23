@@ -20,6 +20,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { isAdminEmail } from "@/lib/admin/access";
 
 type NavbarProps = {
     toggleSidebar: () => void;
@@ -31,6 +32,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
     const pathname = usePathname();
     const router = useRouter();
     const [input, setInput] = useState("");
+    const showAdminLink = isAdminEmail(user?.email);
 
     const isHome = pathname === "/";
     const showSearch = !isHome;
@@ -113,6 +115,12 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
 
                 {/* RIGHT — DESKTOP */}
                 <div className="hidden md:flex items-center gap-3 ml-auto">
+                    {showAdminLink && (
+                        <Button asChild variant="secondary" size="sm">
+                            <Link href="/admin">Admin</Link>
+                        </Button>
+                    )}
+
                     {!loading &&
                         (user ? (
                             <div className="flex items-center gap-1 text-sm">
@@ -174,6 +182,20 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                 </DropdownMenuItem>
 
                                 <DropdownMenuSeparator />
+
+                                {showAdminLink && (
+                                    <>
+                                        <DropdownMenuItem
+                                            className="flex items-center gap-2"
+                                            onClick={() =>
+                                                router.push("/admin")
+                                            }
+                                        >
+                                            Admin dashboard
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                    </>
+                                )}
 
                                 <DropdownMenuItem
                                     className="flex items-center gap-2 text-red-600 focus:text-red-600"

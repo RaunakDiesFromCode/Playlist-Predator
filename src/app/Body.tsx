@@ -13,7 +13,7 @@ export default function Body({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
 
     return (
-        <body className="bg-background overflow-x-hidden">
+        <body className="bg-background overflow-x-hidden overflow-y-auto">
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                 <div className="min-h-screen md:flex">
                     <Sidebar

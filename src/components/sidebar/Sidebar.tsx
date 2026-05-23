@@ -19,6 +19,7 @@ import { type AuthUser } from "@/hooks/use-auth";
 import Footer from "../layout/Footer";
 import SidebarItem from "./SidebarItem";
 import SidebarSkeleton from "./SidebarSkeleton";
+import { isAdminEmail } from "@/lib/admin/access";
 
 type Playlist = {
     id: string;
@@ -66,6 +67,8 @@ function SidebarContent({
     onNavigateAction,
     onLogin,
 }: SidebarContentProps) {
+    const showAdminLink = isAdminEmail(user?.email);
+
     if (!user && !authLoading) {
         return (
             <div className="flex flex-1 min-h-0 items-center justify-center px-4 py-6">
@@ -147,6 +150,16 @@ function SidebarContent({
                     >
                         No playlists yet
                     </div>
+                )}
+
+                {!loading && showAdminLink && (
+                    <SidebarItem
+                        title="Admin dashboard"
+                        href="/admin"
+                        active={pathname === "/admin"}
+                        collapsed={collapsed}
+                        onClickAction={onNavigateAction}
+                    />
                 )}
 
                 {!loading &&
