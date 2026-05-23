@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase/client";
 
+function getSiteOrigin() {
+    const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
+    if (configuredOrigin) {
+        return configuredOrigin.replace(/\/$/, "");
+    }
+
+    return window.location.origin;
+}
+
 export default function ForgotPasswordPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -21,7 +31,7 @@ export default function ForgotPasswordPage() {
         const form = new FormData(e.currentTarget);
         const email = form.get("email") as string;
 
-        const redirectTo = `${window.location.origin}/auth/callback?next=/reset-password`;
+        const redirectTo = `${getSiteOrigin()}/auth/callback?next=/reset-password`;
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo,
         });
