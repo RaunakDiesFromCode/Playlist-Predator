@@ -42,11 +42,7 @@ export default function RegisterPage() {
             return;
         }
 
-        if (window.history.length > 1) {
-            router.back();
-        } else {
-            router.push("/");
-        }
+        router.replace("/");
     }
 
     return (
