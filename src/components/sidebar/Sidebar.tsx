@@ -93,12 +93,8 @@ function SidebarContent({
 
     return (
         <>
-            <div className="border-b border-border/70 px-4 py-5">
+            {/* <div className="border-b border-border/70 px-4 py-5">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <LibraryBig className="h-5 w-5" />
-                    </div>
-
                     <div className={cn("min-w-0", collapsed && "sr-only")}>
                         <p className="text-sm font-semibold">
                             {user ? "Your playlists" : "Welcome"}
@@ -112,11 +108,11 @@ function SidebarContent({
                         </p>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             <div
                 className={cn(
-                    "border-b border-border/70 px-3 py-3",
+                    "border-b border-border/70 px-3 py-2.5",
                     collapsed && "sr-only",
                 )}
             >
