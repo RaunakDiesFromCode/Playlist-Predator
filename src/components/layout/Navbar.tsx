@@ -10,6 +10,7 @@ import { Search, Sidebar, User, LogOut, SunMoon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { type AuthUser } from "@/hooks/use-auth";
+import { useAdminAccess } from "@/hooks/use-admin-access";
 import ThemeToggle from "../ThemeToggle";
 
 import {
@@ -20,7 +21,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { isAdminEmail } from "@/lib/admin/access";
 
 type NavbarProps = {
     toggleSidebar: () => void;
@@ -32,7 +32,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
     const pathname = usePathname();
     const router = useRouter();
     const [input, setInput] = useState("");
-    const showAdminLink = isAdminEmail(user?.email);
+    const { canAccess: showAdminLink } = useAdminAccess();
 
     const isHome = pathname === "/";
     const showSearch = !isHome;
@@ -117,7 +117,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                 <div className="hidden md:flex items-center gap-3 ml-auto">
                     {showAdminLink && (
                         <Button asChild variant="secondary" size="sm">
-                            <Link href="/admin">Admin</Link>
+                            <Link href="/admin">Dashboard</Link>
                         </Button>
                     )}
 
@@ -141,7 +141,13 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                 </div>
 
                 {/* RIGHT — MOBILE */}
-                <div className="md:hidden ml-auto flex items-center">
+                <div className="md:hidden ml-auto flex items-center gap-2">
+                    {showAdminLink && (
+                        <Button asChild variant="secondary" size="sm">
+                            <Link href="/admin">Dashboard</Link>
+                        </Button>
+                    )}
+
                     {user ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

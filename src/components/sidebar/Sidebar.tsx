@@ -16,10 +16,10 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { type AuthUser } from "@/hooks/use-auth";
+import { useAdminAccess } from "@/hooks/use-admin-access";
 import Footer from "../layout/Footer";
 import SidebarItem from "./SidebarItem";
 import SidebarSkeleton from "./SidebarSkeleton";
-import { isAdminEmail } from "@/lib/admin/access";
 
 type Playlist = {
     id: string;
@@ -67,7 +67,8 @@ function SidebarContent({
     onNavigateAction,
     onLogin,
 }: SidebarContentProps) {
-    const showAdminLink = isAdminEmail(user?.email);
+    const { canAccess: showAdminLink, loading: adminAccessLoading } =
+        useAdminAccess();
 
     if (!user && !authLoading) {
         return (
@@ -152,7 +153,7 @@ function SidebarContent({
                     </div>
                 )}
 
-                {!loading && showAdminLink && (
+                {!loading && !adminAccessLoading && showAdminLink && (
                     <SidebarItem
                         title="Admin dashboard"
                         href="/admin"

@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,8 @@ import { isAdminEmail, isAdminRole } from "@/lib/admin/access";
 import { getAdminDashboardData } from "@/lib/admin/dashboard";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+import { fetchPlaylistVideoIds } from "@/lib/youtube/client";
+import AdminUserSwitcher from "./AdminUserSwitcher";
 
 function formatDate(value: string | null): string {
     if (!value) return "-";
@@ -96,6 +97,15 @@ function getRoleBadgeClass(role: string) {
     return "border-cyan-300 bg-cyan-100 text-cyan-900 dark:border-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-300";
 }
 
+function getStatusOrder(status: string) {
+    const normalized = normalizeStatus(status);
+
+    if (normalized === "DONE") return 0;
+    if (normalized === "SKIP") return 1;
+    if (normalized === "REWATCH") return 2;
+    return 3;
+}
+
 async function getVideoTitleMap(videoIds: string[]) {
     const uniqueIds = [...new Set(videoIds.filter(Boolean))];
     const titleMap = new Map<string, string>();
@@ -124,6 +134,14 @@ async function getVideoTitleMap(videoIds: string[]) {
     }
 
     return titleMap;
+}
+
+async function getPlaylistTotalVideos(playlistId: string) {
+    try {
+        return (await fetchPlaylistVideoIds(playlistId)).length;
+    } catch {
+        return null;
+    }
 }
 
 export default async function AdminDashboardPage({
@@ -225,22 +243,66 @@ export default async function AdminDashboardPage({
           )
         : [];
 
-    const videoTitleMap = await getVideoTitleMap(
-        selectedUserProgressRows.map((progress) => progress.video_id),
-    );
-
+    const doneCountsByPlaylistId = new Map<string, number>();
     const selectedUserStatusMap = new Map<string, number>();
+
     for (const row of selectedUserProgressRows) {
-        const key = row.status || "UNKNOWN";
+        const status = normalizeStatus(row.status);
+
         selectedUserStatusMap.set(
-            key,
-            (selectedUserStatusMap.get(key) ?? 0) + 1,
+            status,
+            (selectedUserStatusMap.get(status) ?? 0) + 1,
         );
+
+        if (status === "DONE") {
+            doneCountsByPlaylistId.set(
+                row.playlist_id,
+                (doneCountsByPlaylistId.get(row.playlist_id) ?? 0) + 1,
+            );
+        }
     }
 
-    const selectedUserStatuses = [...selectedUserStatusMap.entries()]
+    const [videoTitleMap, selectedUserPlaylistStats] = await Promise.all([
+        getVideoTitleMap(
+            selectedUserProgressRows.map((progress) => progress.video_id),
+        ),
+        Promise.all(
+            selectedUserPlaylists.map(async (playlist) => {
+                const totalVideos = await getPlaylistTotalVideos(
+                    playlist.youtube_playlist_id,
+                );
+
+                return {
+                    ...playlist,
+                    doneVideos:
+                        doneCountsByPlaylistId.get(
+                            playlist.youtube_playlist_id,
+                        ) ?? 0,
+                    totalVideos:
+                        totalVideos ??
+                        selectedUserProgressRows.filter(
+                            (progress) =>
+                                progress.playlist_id ===
+                                playlist.youtube_playlist_id,
+                        ).length,
+                };
+            }),
+        ),
+    ]);
+
+    const selectedUserStatuses = ["DONE", "SKIP", "REWATCH"]
+        .map((status) => ({
+            status,
+            count: selectedUserStatusMap.get(status) ?? 0,
+        }))
+        .sort((a, b) => getStatusOrder(a.status) - getStatusOrder(b.status));
+
+    const selectedUserExtraStatuses = [...selectedUserStatusMap.entries()]
+        .filter(([status]) => !["DONE", "SKIP", "REWATCH"].includes(status))
         .map(([status, count]) => ({ status, count }))
         .sort((a, b) => b.count - a.count);
+
+    const selectedUserStatusTotal = selectedUserProgressRows.length;
 
     return (
         <section className="mx-auto w-full max-w-[1500px] space-y-6 p-4 md:p-6">
@@ -316,25 +378,22 @@ export default async function AdminDashboardPage({
             <div className="grid gap-4 lg:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Status Breakdown</CardTitle>
+                        <CardTitle>Selected User Status Breakdown</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {dashboard.statusBreakdown.length === 0 && (
+                        {selectedUserStatuses.length === 0 && (
                             <p className="text-sm text-muted-foreground">
                                 No progress data yet.
                             </p>
                         )}
 
-                        {dashboard.statusBreakdown.map((status) => {
-                            const normalizedStatus = normalizeStatus(
-                                status.status,
-                            );
+                        {selectedUserStatuses.map((status) => {
                             const width =
-                                dashboard.totals.progressRows === 0
+                                selectedUserStatusTotal === 0
                                     ? 0
                                     : Math.round(
                                           (status.count /
-                                              dashboard.totals.progressRows) *
+                                              selectedUserStatusTotal) *
                                               100,
                                       );
 
@@ -346,11 +405,11 @@ export default async function AdminDashboardPage({
                                                 className={cn(
                                                     "h-2.5 w-2.5 rounded-full",
                                                     getStatusBarClass(
-                                                        normalizedStatus,
+                                                        status.status,
                                                     ),
                                                 )}
                                             />
-                                            {normalizedStatus}
+                                            {normalizeStatus(status.status)}
                                         </span>
                                         <span className="text-muted-foreground">
                                             {status.count} ({width}%)
@@ -361,7 +420,7 @@ export default async function AdminDashboardPage({
                                             className={cn(
                                                 "h-2 rounded-full",
                                                 getStatusBarClass(
-                                                    normalizedStatus,
+                                                    status.status,
                                                 ),
                                             )}
                                             style={{ width: `${width}%` }}
@@ -370,6 +429,18 @@ export default async function AdminDashboardPage({
                                 </div>
                             );
                         })}
+
+                        {selectedUserExtraStatuses.length > 0 && (
+                            <div className="pt-2 text-xs text-muted-foreground">
+                                Other statuses:{" "}
+                                {selectedUserExtraStatuses
+                                    .map(
+                                        (status) =>
+                                            `${normalizeStatus(status.status)} (${status.count})`,
+                                    )
+                                    .join(", ")}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -378,54 +449,10 @@ export default async function AdminDashboardPage({
                         <CardTitle>User Accounts</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-2">
-                            {dashboard.userBreakdown.map((userInfo) => (
-                                <Link
-                                    key={userInfo.userId}
-                                    href={`/admin?userId=${userInfo.userId}`}
-                                    className={cn(
-                                        "flex items-center justify-between rounded-lg border px-3 py-2 text-sm transition-colors hover:bg-muted/50",
-                                        selectedUserId === userInfo.userId &&
-                                            "border-primary/40 bg-primary/10",
-                                    )}
-                                >
-                                    <div className="min-w-0">
-                                        <p className="truncate font-medium">
-                                            {userLabel(
-                                                userInfo.name,
-                                                userInfo.email,
-                                                userInfo.userId,
-                                            )}
-                                        </p>
-                                        <p className="truncate text-xs text-muted-foreground">
-                                            {compactId(userInfo.userId)}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Badge
-                                            variant="outline"
-                                            className={getRoleBadgeClass(
-                                                userInfo.role || "user",
-                                            )}
-                                        >
-                                            {userInfo.role || "user"}
-                                        </Badge>
-                                        <Badge
-                                            variant="outline"
-                                            className="border-emerald-300 bg-emerald-100 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
-                                        >
-                                            {userInfo.progressEvents}
-                                        </Badge>
-                                    </div>
-                                </Link>
-                            ))}
-
-                            {dashboard.userBreakdown.length === 0 && (
-                                <p className="text-sm text-muted-foreground">
-                                    No users yet.
-                                </p>
-                            )}
-                        </div>
+                        <AdminUserSwitcher
+                            users={dashboard.userBreakdown}
+                            selectedUserId={selectedUserId}
+                        />
                     </CardContent>
                 </Card>
             </div>
@@ -509,6 +536,7 @@ export default async function AdminDashboardPage({
                                 <TableHead>Playlist Row ID</TableHead>
                                 <TableHead>YouTube Playlist ID</TableHead>
                                 <TableHead>Title</TableHead>
+                                <TableHead>Done / Total</TableHead>
                                 <TableHead>Created</TableHead>
                                 <TableHead>Updated</TableHead>
                                 <TableHead className="text-right">
@@ -517,7 +545,7 @@ export default async function AdminDashboardPage({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {selectedUserPlaylists.map((playlist) => (
+                            {selectedUserPlaylistStats.map((playlist) => (
                                 <TableRow key={playlist.id}>
                                     <TableCell className="font-mono text-xs">
                                         {compactId(playlist.id)}
@@ -527,6 +555,15 @@ export default async function AdminDashboardPage({
                                     </TableCell>
                                     <TableCell>
                                         {playlist.title || "Untitled"}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant="outline"
+                                            className="border-emerald-300 bg-emerald-100 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                                        >
+                                            {playlist.doneVideos}/
+                                            {playlist.totalVideos}
+                                        </Badge>
                                     </TableCell>
                                     <TableCell className="text-muted-foreground">
                                         {formatDate(playlist.created_at)}
@@ -555,7 +592,7 @@ export default async function AdminDashboardPage({
                             {selectedUserPlaylists.length === 0 && (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={6}
+                                        colSpan={7}
                                         className="py-6 text-center text-muted-foreground"
                                     >
                                         No playlists for this user.
