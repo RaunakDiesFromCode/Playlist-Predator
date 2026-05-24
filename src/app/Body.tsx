@@ -5,11 +5,14 @@ import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/sidebar/Sidebar";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Body({ children }: { children: React.ReactNode }) {
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
     const { user, loading } = useAuth();
+    const pathname = usePathname();
+    const isHome = pathname === "/";
 
     useEffect(() => {
         if (process.env.NODE_ENV !== "production") {
@@ -30,9 +33,15 @@ export default function Body({ children }: { children: React.ReactNode }) {
     }, []);
 
     return (
-        <body className="bg-background overflow-x-hidden overflow-y-auto">
+        <body
+            className={
+                isHome
+                    ? "bg-background overflow-hidden"
+                    : "bg-background overflow-x-hidden overflow-y-auto"
+            }
+        >
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                <div className="min-h-screen md:flex">
+                <div className="flex min-h-[100dvh] flex-col md:flex-row">
                     <Sidebar
                         user={user}
                         loading={loading}
@@ -43,7 +52,7 @@ export default function Body({ children }: { children: React.ReactNode }) {
                         onNavigateAction={() => setMobileSidebarOpen(false)}
                     />
 
-                    <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+                    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
                         <Navbar
                             user={user}
                             loading={loading}

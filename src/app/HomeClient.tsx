@@ -62,9 +62,11 @@ export default function HomeClient() {
     }
 
     return (
-        <main className="flex min-h-[70vh] items-center justify-center px-4 py-10">
+        <main className="flex h-full min-h-0 items-center justify-center px-4 py-4 sm:py-6">
             <div className="flex w-full max-w-xl flex-col gap-4">
-                <h1 className="text-center text-2xl font-bold">{greeting}</h1>
+                <h1 className="text-center text-2xl font-bold sm:text-3xl">
+                    {greeting}
+                </h1>
 
                 <form
                     onSubmit={handleSubmit}
