@@ -31,7 +31,7 @@ export async function generateMetadata({
 
 export default async function Page(props: { params: Promise<RouteParams> }) {
     const { playlistId } = await props.params;
-    const userAgent = headers().get("user-agent") ?? "";
+    const userAgent = (await headers()).get("user-agent") ?? "";
     const isMobile = /Mobi|Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(
         userAgent,
     );
