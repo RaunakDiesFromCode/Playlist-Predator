@@ -16,7 +16,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                 data-collapsed={collapsed ? "true" : "false"}
                 className={cn(
                     "group/sidebar relative flex h-full min-h-0 flex-col overflow-hidden border-r border-border/70 bg-background/95 backdrop-blur transition-[width] duration-200 ease-out",
-                    collapsed ? "w-20" : "w-72",
+                    collapsed ? "w-16" : "w-72",
                     className,
                 )}
                 {...props}

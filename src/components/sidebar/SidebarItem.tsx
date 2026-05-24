@@ -21,9 +21,10 @@ export default function SidebarItem({
             href={href}
             onClick={onClickAction}
             className={cn(
-                "group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-all my-1",
+                "group flex items-center rounded-md py-2 text-sm transition-all my-1",
+                collapsed ? "justify-center px-2" : "gap-3 px-3",
                 active
-                    ? "border border-primary/20 bg-primary/10 font-medium text-foreground shadow-sm"
+                    ? "border border-primary/10 bg-primary/10 font-medium text-foreground shadow-sm"
                     : "text-muted-foreground hover:border-border hover:bg-muted/60 hover:text-foreground",
             )}
         >

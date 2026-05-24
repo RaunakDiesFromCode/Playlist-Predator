@@ -20,10 +20,11 @@ const ThemeToggle = () => {
     return (
         <Button
             onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
-            size={"icon"}
             aria-label="Toggle theme"
+            className="w-full justify-start"
         >
             {currentTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            {currentTheme === "dark" ? "Light" : "Dark"}
         </Button>
     );
 };

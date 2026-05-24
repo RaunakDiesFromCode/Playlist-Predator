@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { PlaylistMeta, VideoMetadata } from "@/types/playlist";
 import { PlaylistProgress, VideoStatus } from "@/types/progress";
+import { cn } from "@/lib/utils";
 
 import PlaylistVideoCard from "./PlaylistVideoCard";
 
@@ -33,6 +34,12 @@ type SortOption =
     | "length-asc"
     | "length-desc"
     | "status";
+
+function toDayKey(date: Date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+        date.getDate(),
+    ).padStart(2, "0")}`;
+}
 
 const PlaylistVideoList = ({
     videos,
@@ -110,26 +117,46 @@ const PlaylistVideoList = ({
         return earliest;
     }, [progress]);
 
-    const dayNumber = useMemo(() => {
-        if (!startedAt) return null;
+    const streakInfo = useMemo(() => {
+        const activeDays = new Set<string>();
+        let latestActivity: Date | null = null;
 
-        const startedDate = new Date(startedAt);
-        if (Number.isNaN(startedDate.getTime())) return null;
+        for (const entry of Object.values(progress)) {
+            if (entry.status === "NONE" || !entry.updatedAt) continue;
 
-        const startOfToday = new Date();
-        startOfToday.setHours(0, 0, 0, 0);
+            const activityDate = new Date(entry.updatedAt);
+            if (Number.isNaN(activityDate.getTime())) continue;
 
-        const startOfStarted = new Date(startedDate);
-        startOfStarted.setHours(0, 0, 0, 0);
+            activeDays.add(toDayKey(activityDate));
 
-        return Math.max(
-            1,
-            Math.floor(
-                (startOfToday.getTime() - startOfStarted.getTime()) /
-                    (1000 * 60 * 60 * 24),
-            ) + 1,
-        );
-    }, [startedAt]);
+            if (
+                !latestActivity ||
+                activityDate.getTime() > latestActivity.getTime()
+            ) {
+                latestActivity = activityDate;
+            }
+        }
+
+        if (!latestActivity) {
+            return { streakDay: null, hasActivityToday: false };
+        }
+
+        const todayKey = toDayKey(new Date());
+        const hasActivityToday = activeDays.has(todayKey);
+        const streakAnchor = hasActivityToday ? new Date() : latestActivity;
+
+        const cursor = new Date(streakAnchor);
+        cursor.setHours(0, 0, 0, 0);
+
+        let streakDay = 0;
+
+        while (activeDays.has(toDayKey(cursor))) {
+            streakDay += 1;
+            cursor.setDate(cursor.getDate() - 1);
+        }
+
+        return { streakDay, hasActivityToday };
+    }, [progress]);
 
     if (videos.length === 0 || !playlistThumbnail) return null;
 
@@ -181,9 +208,16 @@ const PlaylistVideoList = ({
                             opacity: "calc(1 - var(--blur, 0) / 5)",
                         }}
                     >
-                        {dayNumber ? (
-                            <Badge className="mb-2 w-fit border-blue-500/30 bg-blue-500/15 text-blue-600">
-                                Day {dayNumber}
+                        {streakInfo.streakDay ? (
+                            <Badge
+                                className={cn(
+                                    "mb-2 w-fit",
+                                    streakInfo.hasActivityToday
+                                        ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600"
+                                        : "border-amber-500/30 bg-amber-500/15 text-amber-600",
+                                )}
+                            >
+                                Day {streakInfo.streakDay}
                             </Badge>
                         ) : null}
                         <h2 className="text-2xl font-semibold leading-tight line-clamp-2 md:text-3xl">

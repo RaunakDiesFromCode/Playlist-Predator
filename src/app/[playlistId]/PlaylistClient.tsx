@@ -276,7 +276,7 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
 
     if (!isMobile) {
         return (
-            <div className="relative flex gap-4 p-4">
+            <div className="relative flex gap-2 p-2">
                 {celebrate &&
                 viewport.width > 0 &&
                 viewport.height > 0 &&
@@ -291,7 +291,7 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
                     />
                 ) : null}
 
-                <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-hidden">
+                <div className="w-1/2 h-[calc(100dvh-5rem)] overflow-hidden">
                     <PlaylistVideoList
                         videos={videos}
                         progress={progress}
@@ -300,7 +300,7 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
                     />
                 </div>
 
-                <div className="w-1/2 h-[calc(100dvh-6rem)] overflow-y-auto">
+                <div className="w-1/2 h-[calc(100dvh-5em)] overflow-y-auto">
                     {AnalysisPanel}
                 </div>
             </div>
@@ -312,7 +312,7 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
     /* ---------------------------------- */
 
     return (
-        <div className="relative flex h-[calc(100dvh-4rem)] flex-col gap-4 p-4">
+        <div className="relative flex h-[calc(100dvh-4rem)] flex-col gap-4 md:p-4 p-2">
             {celebrate &&
             viewport.width > 0 &&
             viewport.height > 0 &&
@@ -346,7 +346,7 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
                         <DrawerTitle>Playlist Analysis</DrawerTitle>
                     </DrawerHeader>
 
-                    <div className="px-4 pb-6 overflow-y-auto">
+                    <div className="md:px-4 px-2 pb-6 overflow-y-auto">
                         {AnalysisPanel}
                     </div>
                 </DrawerContent>

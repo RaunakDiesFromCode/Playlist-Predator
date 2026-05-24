@@ -120,7 +120,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                         className="h-11 max-w-[220px] justify-start gap-1 px-3"
                                         aria-label="Open profile menu"
                                     >
-                                        <span className="text-muted-foreground">
+                                        <span className="text-muted-foreground md:block hidden">
                                             Hi,
                                         </span>
                                         <span className="truncate font-medium">
@@ -131,7 +131,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
 
                                 <DropdownMenuContent
                                     align="end"
-                                    className="w-56"
+                                    className="w-36"
                                 >
                                     <DropdownMenuLabel>
                                         <div className="space-y-1">
@@ -145,6 +145,10 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                     </DropdownMenuLabel>
 
                                     <DropdownMenuSeparator />
+
+                                    <DropdownMenuItem>
+                                        <ThemeToggle />
+                                    </DropdownMenuItem>
 
                                     {showAdminLink && (
                                         <DropdownMenuItem
@@ -172,8 +176,6 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                 <Link href="/login">Login</Link>
                             </Button>
                         ))}
-
-                    <ThemeToggle />
                 </div>
             </div>
         </nav>
