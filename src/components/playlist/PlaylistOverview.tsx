@@ -495,7 +495,7 @@ const PlaylistOverview = ({
                             </div>
                         </div>
 
-                        <div className="hidden md:flex gap-5">
+                        <div className="hidden md:flex gap-3">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="rounded-md border px-3 py-2.5">
                                     <p className="text-xs text-muted-foreground">
@@ -543,7 +543,7 @@ const PlaylistOverview = ({
                                     </p>
                                 </div>
                             </div>
-                            <div className="grid w-fit grid-cols-7 gap-1.5">
+                            <div className="grid w-fit grid-cols-7 gap-2.5">
                                 {heatmapDays.map((date) => {
                                     const count =
                                         dailyCompletionCounts[toDayKey(date)] ??
