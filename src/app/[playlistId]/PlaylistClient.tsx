@@ -26,9 +26,6 @@ import {
 const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
 
 const EMPTY_VIDEOS: VideoMetadata[] = [];
-const THEME_TRANSITION_CLASS = "theme-transitioning";
-const THEME_TRANSITION_MS = 700;
-
 type PlaylistClientProps = {
     playlistId: string;
     initialData: {
@@ -39,178 +36,6 @@ type PlaylistClientProps = {
     initialError: string | null;
     initialProgress: PlaylistProgress;
 };
-
-type HslTuple = [number, number, number];
-
-type PaletteSwatch = {
-    hsl: HslTuple;
-    titleTextColor: string;
-    bodyTextColor: string;
-};
-
-type VibrantPalette = {
-    Vibrant: PaletteSwatch | null;
-    Muted: PaletteSwatch | null;
-    DarkVibrant: PaletteSwatch | null;
-    DarkMuted: PaletteSwatch | null;
-    LightVibrant: PaletteSwatch | null;
-    LightMuted: PaletteSwatch | null;
-};
-
-const THEME_VARS = [
-    "--background",
-    "--card",
-    "--popover",
-    "--primary",
-    "--primary-foreground",
-    "--secondary",
-    "--secondary-foreground",
-    "--muted",
-    "--muted-foreground",
-    "--accent",
-    "--accent-foreground",
-    "--border",
-    "--input",
-    "--ring",
-    "--chart-1",
-    "--chart-2",
-    "--chart-3",
-    "--chart-4",
-    "--chart-5",
-    "--sidebar-background",
-    "--sidebar-foreground",
-    "--sidebar-primary",
-    "--sidebar-primary-foreground",
-    "--sidebar-accent",
-    "--sidebar-accent-foreground",
-    "--sidebar-border",
-    "--sidebar-ring",
-] as const;
-
-function clamp(value: number, min: number, max: number) {
-    return Math.min(max, Math.max(min, value));
-}
-
-function pickSwatch(...swatches: Array<PaletteSwatch | null | undefined>) {
-    return swatches.find(Boolean) ?? null;
-}
-
-function formatHsl([h, s, l]: HslTuple) {
-    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-}
-
-function textColorToHsl(value?: string | null) {
-    return value === "#000" ? "0 0% 9%" : "0 0% 98%";
-}
-
-function adjustHsl(
-    swatch: PaletteSwatch | null,
-    options: {
-        hueShift?: number;
-        saturationTarget?: number;
-        saturationScale?: number;
-        saturationOffset?: number;
-        lightnessTarget?: number;
-        lightnessScale?: number;
-        lightnessOffset?: number;
-    } = {},
-) {
-    const [h, s, l] = swatch?.hsl ?? [0, 0, 0];
-
-    const nextH = (((h + (options.hueShift ?? 0) / 360) % 1) + 1) % 1;
-    const nextS =
-        options.saturationTarget ??
-        clamp(
-            s * (options.saturationScale ?? 1) +
-                (options.saturationOffset ?? 0),
-            0,
-            1,
-        );
-    const nextL =
-        options.lightnessTarget ??
-        clamp(
-            l * (options.lightnessScale ?? 1) + (options.lightnessOffset ?? 0),
-            0,
-            1,
-        );
-
-    return [nextH, nextS, nextL] as HslTuple;
-}
-
-function buildThemeVars(palette: VibrantPalette, isDarkMode: boolean) {
-    const primary = pickSwatch(
-        palette.Vibrant,
-        palette.Muted,
-        palette.DarkVibrant,
-        palette.LightVibrant,
-        palette.DarkMuted,
-        palette.LightMuted,
-    );
-
-    const surface = pickSwatch(
-        isDarkMode ? palette.DarkMuted : palette.LightMuted,
-        palette.Muted,
-        primary,
-    );
-
-    const elevated = pickSwatch(
-        isDarkMode ? palette.DarkVibrant : palette.LightVibrant,
-        primary,
-        surface,
-    );
-
-    const accent = adjustHsl(primary, {
-        saturationScale: 1.05,
-        lightnessScale: isDarkMode ? 0.98 : 1.02,
-    });
-
-    const mutedSurface = adjustHsl(surface, {
-        saturationTarget: isDarkMode ? 0.22 : 0.16,
-        lightnessTarget: isDarkMode ? 0.13 : 0.965,
-    });
-
-    const cardSurface = adjustHsl(elevated, {
-        saturationTarget: isDarkMode ? 0.2 : 0.14,
-        lightnessTarget: isDarkMode ? 0.16 : 0.99,
-    });
-
-    const borderSurface = adjustHsl(surface, {
-        saturationTarget: isDarkMode ? 0.18 : 0.12,
-        lightnessTarget: isDarkMode ? 0.22 : 0.88,
-    });
-
-    const chartBase = primary ?? surface;
-
-    return {
-        "--background": formatHsl(mutedSurface),
-        "--card": formatHsl(cardSurface),
-        "--popover": formatHsl(cardSurface),
-        "--primary": formatHsl(accent),
-        "--primary-foreground": textColorToHsl(primary?.titleTextColor),
-        "--secondary": formatHsl(mutedSurface),
-        "--secondary-foreground": textColorToHsl(primary?.bodyTextColor),
-        "--muted": formatHsl(mutedSurface),
-        "--muted-foreground": isDarkMode ? "0 0% 68%" : "0 0% 38%",
-        "--accent": formatHsl(mutedSurface),
-        "--accent-foreground": textColorToHsl(primary?.bodyTextColor),
-        "--border": formatHsl(borderSurface),
-        "--input": formatHsl(borderSurface),
-        "--ring": formatHsl(accent),
-        "--chart-1": formatHsl(accent),
-        "--chart-2": formatHsl(adjustHsl(chartBase, { hueShift: 32 })),
-        "--chart-3": formatHsl(adjustHsl(chartBase, { hueShift: -28 })),
-        "--chart-4": formatHsl(adjustHsl(chartBase, { hueShift: 140 })),
-        "--chart-5": formatHsl(adjustHsl(chartBase, { hueShift: -140 })),
-        "--sidebar-background": formatHsl(mutedSurface),
-        "--sidebar-foreground": isDarkMode ? "0 0% 96%" : "0 0% 14%",
-        "--sidebar-primary": formatHsl(accent),
-        "--sidebar-primary-foreground": textColorToHsl(primary?.titleTextColor),
-        "--sidebar-accent": formatHsl(cardSurface),
-        "--sidebar-accent-foreground": textColorToHsl(primary?.bodyTextColor),
-        "--sidebar-border": formatHsl(borderSurface),
-        "--sidebar-ring": formatHsl(accent),
-    } as Record<string, string>;
-}
 
 /* ---------------------------------- */
 /* Skeleton */
@@ -268,83 +93,6 @@ export default function PlaylistClient({
     const playlist = initialData?.playlist ?? null;
     const loading = !initialData && !initialError;
     const error = initialError;
-    const playlistCover = playlist?.thumbnail ?? videos[0]?.thumbnail ?? null;
-
-    useEffect(() => {
-        if (!playlistCover) return;
-
-        const root = document.documentElement;
-        const previousVars = new Map<string, string | null>();
-        const prefersReducedMotion = window.matchMedia(
-            "(prefers-reduced-motion: reduce)",
-        ).matches;
-        let transitionTimerId: number | null = null;
-
-        for (const name of THEME_VARS) {
-            previousVars.set(name, root.style.getPropertyValue(name));
-        }
-
-        let cancelled = false;
-
-        async function applyPalette() {
-            try {
-                const { Vibrant } = await import("node-vibrant/browser");
-                const palette = await Vibrant.from(playlistCover).getPalette();
-                if (cancelled) return;
-
-                const isDarkMode = root.classList.contains("dark");
-                const nextVars = buildThemeVars(palette, isDarkMode);
-
-                if (!prefersReducedMotion) {
-                    root.classList.add(THEME_TRANSITION_CLASS);
-                    window.requestAnimationFrame(() => {
-                        if (cancelled) {
-                            root.classList.remove(THEME_TRANSITION_CLASS);
-                            return;
-                        }
-
-                        for (const [name, value] of Object.entries(nextVars)) {
-                            root.style.setProperty(name, value);
-                        }
-
-                        transitionTimerId = window.setTimeout(() => {
-                            root.classList.remove(THEME_TRANSITION_CLASS);
-                            transitionTimerId = null;
-                        }, THEME_TRANSITION_MS);
-                    });
-
-                    return;
-                }
-
-                for (const [name, value] of Object.entries(nextVars)) {
-                    root.style.setProperty(name, value);
-                }
-            } catch (error) {
-                console.error("Failed to extract playlist theme", error);
-            }
-        }
-
-        applyPalette();
-
-        return () => {
-            cancelled = true;
-
-            if (transitionTimerId) {
-                window.clearTimeout(transitionTimerId);
-                transitionTimerId = null;
-            }
-
-            root.classList.remove(THEME_TRANSITION_CLASS);
-
-            for (const [name, value] of previousVars.entries()) {
-                if (value) {
-                    root.style.setProperty(name, value);
-                } else {
-                    root.style.removeProperty(name);
-                }
-            }
-        };
-    }, [playlistCover]);
 
     useEffect(() => {
         if (playlist?.title) {
@@ -563,13 +311,7 @@ export default function PlaylistClient({
 
     if (!isMobile) {
         return (
-            <div
-                className="relative flex gap-2 p-2"
-                style={{
-                    backgroundImage:
-                        "radial-gradient(circle at top, hsl(var(--primary) / 0.12), transparent 42%), radial-gradient(circle at bottom right, hsl(var(--accent) / 0.08), transparent 28%)",
-                }}
-            >
+            <div className="relative flex gap-2 p-2">
                 {showConfetti ? (
                     <Confetti
                         width={viewport.width}
@@ -602,13 +344,7 @@ export default function PlaylistClient({
     /* ---------------------------------- */
 
     return (
-        <div
-            className="relative flex h-[calc(100dvh-4rem)] flex-col gap-4 md:p-4 p-2 transition-colors"
-            style={{
-                backgroundImage:
-                    "radial-gradient(circle at top, hsl(var(--primary) / 0.12), transparent 42%), radial-gradient(circle at bottom right, hsl(var(--accent) / 0.08), transparent 28%)",
-            }}
-        >
+        <div className="relative flex h-[calc(100dvh-4rem)] flex-col gap-4 p-2 transition-colors md:p-4">
             {showConfetti ? (
                 <Confetti
                     width={viewport.width}
