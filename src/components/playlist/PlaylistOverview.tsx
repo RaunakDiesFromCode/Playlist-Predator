@@ -100,6 +100,64 @@ function getDynamicInsight(
     };
 }
 
+function pickVariant(key: string, variants: string[]) {
+    const hash = key
+        .split("")
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return variants[hash % variants.length];
+}
+
+function getQuickInsightCopy({
+    recommendedSpeed,
+    watchTime,
+    untouchedVideos,
+    scope,
+    fragmentation,
+    strategy,
+}: {
+    recommendedSpeed: number;
+    watchTime: string;
+    untouchedVideos: number;
+    scope: string;
+    fragmentation: string;
+    strategy: string;
+}) {
+    const summary = pickVariant(
+        `${recommendedSpeed}-${watchTime}-${untouchedVideos}`,
+        [
+            `At ${recommendedSpeed}×, you have ${watchTime} of video left across ${untouchedVideos} videos.`,
+            `At ${recommendedSpeed}× speed, ${watchTime} of video remains across ${untouchedVideos} videos.`,
+            `Running at ${recommendedSpeed}× leaves ${watchTime} of video across ${untouchedVideos} videos.`,
+            `${untouchedVideos} videos are still untouched, totaling ${watchTime} at ${recommendedSpeed}× playback.`,
+            `With playback set to ${recommendedSpeed}×, you'll need about ${watchTime} to finish ${untouchedVideos} remaining videos.`,
+            `You're looking at ${watchTime} of remaining content spread across ${untouchedVideos} videos at ${recommendedSpeed}×.`,
+            `At your current pace of ${recommendedSpeed}×, the remaining ${untouchedVideos} videos add up to ${watchTime}.`,
+            `${watchTime} of content still remains across ${untouchedVideos} videos when watched at ${recommendedSpeed}×.`,
+            `Finishing the last ${untouchedVideos} videos will take roughly ${watchTime} at ${recommendedSpeed}× speed.`,
+            `The untouched queue sits at ${untouchedVideos} videos, with around ${watchTime} left at ${recommendedSpeed}×.`,
+            `At ${recommendedSpeed}× playback, the backlog comes down to ${watchTime} over ${untouchedVideos} videos.`,
+            `Your remaining watch stack is ${untouchedVideos} videos long, totaling ${watchTime} at ${recommendedSpeed}×.`,
+        ],
+    );
+
+    const workload = pickVariant(`${scope}-${fragmentation}-${strategy}`, [
+        `This is a ${scope}, ${fragmentation} workload — best handled as ${strategy}.`,
+        `That makes it a ${scope}, ${fragmentation} workload, and ${strategy} is the cleanest way through it.`,
+        `Overall: ${scope} workload, ${fragmentation} spread — plan on ${strategy}.`,
+        `You're dealing with a ${scope} workload with ${fragmentation} distribution, so ${strategy} makes the most sense.`,
+        `Given the ${scope} scope and ${fragmentation} structure, ${strategy} is the safest approach.`,
+        `This workload leans ${scope} and ${fragmentation}, meaning ${strategy} should keep things manageable.`,
+        `The combination of ${scope} volume and ${fragmentation} spread points toward ${strategy}.`,
+        `Because the workload is ${scope} and fairly ${fragmentation}, ${strategy} is probably your best route.`,
+        `A ${scope}, ${fragmentation} setup like this usually works best with ${strategy}.`,
+        `Considering the ${fragmentation} spread and ${scope} scale, you'd want to approach it as ${strategy}.`,
+        `This falls into the ${scope}/${fragmentation} category — treat it as ${strategy}.`,
+        `The workload profile here is ${scope} with ${fragmentation} distribution, making ${strategy} the ideal plan.`,
+    ]);
+
+    return { summary, workload };
+}
+
 function toDayKey(date: Date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
         date.getDate(),
@@ -176,6 +234,15 @@ const PlaylistOverview = ({
         recommendedSpeed,
         untouchedVideos,
     );
+
+    const quickInsightCopy = getQuickInsightCopy({
+        recommendedSpeed,
+        watchTime: insight.watchTime,
+        untouchedVideos,
+        scope: insight.scope,
+        fragmentation: insight.fragmentation,
+        strategy: insight.strategy,
+    });
 
     const completedPercent =
         totalVideos === 0
@@ -419,35 +486,11 @@ const PlaylistOverview = ({
 
                             <div className="rounded-md border px-3 py-2.5">
                                 <p className="text-muted-foreground">
-                                    At{" "}
-                                    <span className="font-medium">
-                                        {recommendedSpeed}×
-                                    </span>
-                                    , you have{" "}
-                                    <span className="font-medium">
-                                        {insight.watchTime}
-                                    </span>{" "}
-                                    of video left across{" "}
-                                    <span className="font-medium">
-                                        {untouchedVideos}
-                                    </span>{" "}
-                                    videos.
+                                    {quickInsightCopy.summary}
                                 </p>
 
                                 <p className="text-muted-foreground">
-                                    This is a{" "}
-                                    <span className="font-medium">
-                                        {insight.scope}
-                                    </span>
-                                    ,{" "}
-                                    <span className="font-medium">
-                                        {insight.fragmentation}
-                                    </span>{" "}
-                                    workload — best handled as{" "}
-                                    <span className="font-medium">
-                                        {insight.strategy}
-                                    </span>
-                                    .
+                                    {quickInsightCopy.workload}
                                 </p>
                             </div>
                         </div>
@@ -492,35 +535,11 @@ const PlaylistOverview = ({
 
                                 <div className="sm:col-span-2 rounded-md border px-3 py-2.5">
                                     <p className="text-muted-foreground">
-                                        At{" "}
-                                        <span className="font-medium">
-                                            {recommendedSpeed}×
-                                        </span>
-                                        , you have{" "}
-                                        <span className="font-medium">
-                                            {insight.watchTime}
-                                        </span>{" "}
-                                        of video left across{" "}
-                                        <span className="font-medium">
-                                            {untouchedVideos}
-                                        </span>{" "}
-                                        videos.
+                                        {quickInsightCopy.summary}
                                     </p>
 
                                     <p className="text-muted-foreground">
-                                        This is a{" "}
-                                        <span className="font-medium">
-                                            {insight.scope}
-                                        </span>
-                                        ,{" "}
-                                        <span className="font-medium">
-                                            {insight.fragmentation}
-                                        </span>{" "}
-                                        workload — best handled as{" "}
-                                        <span className="font-medium">
-                                            {insight.strategy}
-                                        </span>
-                                        .
+                                        {quickInsightCopy.workload}
                                     </p>
                                 </div>
                             </div>
