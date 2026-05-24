@@ -5,6 +5,7 @@ import Link from "next/link";
 import AuthCard from "@/components/auth/AuthCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase/client";
 
 function getSiteOrigin() {
@@ -49,7 +50,19 @@ export default function ForgotPasswordPage() {
     return (
         <AuthCard title="Reset your password">
             <form onSubmit={handleSubmit} className="space-y-4">
-                <Input name="email" type="email" placeholder="Email" required />
+                <div className="space-y-2">
+                    <Label htmlFor="forgot-password-email" className="sr-only">
+                        Email
+                    </Label>
+                    <Input
+                        id="forgot-password-email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="Email"
+                        required
+                    />
+                </div>
 
                 {error && <p className="text-sm text-destructive">{error}</p>}
 

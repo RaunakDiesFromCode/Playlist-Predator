@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import AuthCard from "@/components/auth/AuthCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase/client";
 import { Eye, EyeClosed } from "lucide-react";
 
@@ -52,9 +53,14 @@ export default function ResetPasswordPage() {
         <AuthCard title="Set a new password">
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="relative">
+                    <Label htmlFor="reset-password" className="sr-only">
+                        New password
+                    </Label>
                     <Input
+                        id="reset-password"
                         name="password"
                         type={showPassword ? "text" : "password"}
+                        autoComplete="new-password"
                         placeholder="New password"
                         minLength={8}
                         required
@@ -62,6 +68,10 @@ export default function ResetPasswordPage() {
                     <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
+                        aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                        }
+                        aria-pressed={showPassword}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground hover:text-foreground"
                     >
                         {showPassword ? <Eye /> : <EyeClosed />}
@@ -69,9 +79,14 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div className="relative">
+                    <Label htmlFor="reset-confirm-password" className="sr-only">
+                        Confirm new password
+                    </Label>
                     <Input
+                        id="reset-confirm-password"
                         name="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"}
+                        autoComplete="new-password"
                         placeholder="Confirm new password"
                         minLength={8}
                         required
@@ -79,6 +94,12 @@ export default function ResetPasswordPage() {
                     <button
                         type="button"
                         onClick={() => setShowConfirmPassword((v) => !v)}
+                        aria-label={
+                            showConfirmPassword
+                                ? "Hide password"
+                                : "Show password"
+                        }
+                        aria-pressed={showConfirmPassword}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground hover:text-foreground"
                     >
                         {showConfirmPassword ? <Eye /> : <EyeClosed />}

@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 import AuthCard from "@/components/auth/AuthCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeClosed } from "lucide-react";
@@ -42,18 +43,39 @@ export default function LoginPage() {
     return (
         <AuthCard title="Welcome back">
             <form onSubmit={handleLogin} className="space-y-4">
-                <Input name="email" type="email" placeholder="Email" required />
+                <div className="space-y-2">
+                    <Label htmlFor="login-email" className="sr-only">
+                        Email
+                    </Label>
+                    <Input
+                        id="login-email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="Email"
+                        required
+                    />
+                </div>
 
                 <div className="relative">
+                    <Label htmlFor="login-password" className="sr-only">
+                        Password
+                    </Label>
                     <Input
+                        id="login-password"
                         name="password"
                         type={showPassword ? "text" : "password"}
+                        autoComplete="current-password"
                         placeholder="Password"
                         required
                     />
                     <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
+                        aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                        }
+                        aria-pressed={showPassword}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground hover:text-foreground"
                     >
                         {showPassword ? <Eye /> : <EyeClosed />}

@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 
 const GREETINGS = [
@@ -69,7 +70,11 @@ export default function HomeClient() {
                     onSubmit={handleSubmit}
                     className="flex w-full gap-2 rounded-lg border p-1"
                 >
+                    <Label htmlFor="home-playlist-input" className="sr-only">
+                        YouTube playlist link or ID
+                    </Label>
                     <Input
+                        id="home-playlist-input"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Paste YouTube playlist link or ID"

@@ -17,6 +17,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import ThemeToggle from "../ThemeToggle";
 import { type AuthUser } from "@/hooks/use-auth";
 import { useAdminAccess } from "@/hooks/use-admin-access";
@@ -96,11 +97,18 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                         className="flex-1 max-w-xl mx-auto"
                     >
                         <div className="relative">
+                            <Label
+                                htmlFor="navbar-playlist-search"
+                                className="sr-only"
+                            >
+                                Paste playlist link or ID
+                            </Label>
                             <Search
                                 size={18}
                                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
                             />
                             <Input
+                                id="navbar-playlist-search"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Paste playlist link or ID"

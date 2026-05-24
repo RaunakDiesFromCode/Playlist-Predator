@@ -6,7 +6,7 @@ import { LibraryBig, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sidebar as UiSidebar } from "@/components/ui/sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     Sheet,
     SheetContent,
@@ -135,48 +135,50 @@ function SidebarContent({
                 ) : null}
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto px-2 py-3 overscroll-contain">
-                {loading && <SidebarSkeleton />}
+            <ScrollArea className="flex-1 min-h-0">
+                <div className="px-2 py-3 overscroll-contain">
+                    {loading && <SidebarSkeleton />}
 
-                {!loading && playlists.length === 0 && user && (
-                    <div
-                        className={cn(
-                            "rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground",
-                            collapsed && "sr-only",
-                        )}
-                    >
-                        No playlists yet
-                    </div>
-                )}
+                    {!loading && playlists.length === 0 && user && (
+                        <div
+                            className={cn(
+                                "rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground",
+                                collapsed && "sr-only",
+                            )}
+                        >
+                            No playlists yet
+                        </div>
+                    )}
 
-                {!loading &&
-                    filteredPlaylists.map((pl) => {
-                        const href = `/${pl.youtube_playlist_id}`;
-                        const active = pathname === href;
+                    {!loading &&
+                        filteredPlaylists.map((pl) => {
+                            const href = `/${pl.youtube_playlist_id}`;
+                            const active = pathname === href;
 
-                        return (
-                            <SidebarItem
-                                key={pl.id}
-                                title={pl.title ?? pl.youtube_playlist_id}
-                                href={href}
-                                active={active}
-                                collapsed={collapsed}
-                                onClickAction={onNavigateAction}
-                            />
-                        );
-                    })}
+                            return (
+                                <SidebarItem
+                                    key={pl.id}
+                                    title={pl.title ?? pl.youtube_playlist_id}
+                                    href={href}
+                                    active={active}
+                                    collapsed={collapsed}
+                                    onClickAction={onNavigateAction}
+                                />
+                            );
+                        })}
 
-                {!loading && filteredPlaylists.length === 0 && query && (
-                    <div
-                        className={cn(
-                            "rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground",
-                            collapsed && "sr-only",
-                        )}
-                    >
-                        No matching playlists
-                    </div>
-                )}
-            </div>
+                    {!loading && filteredPlaylists.length === 0 && query && (
+                        <div
+                            className={cn(
+                                "rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground",
+                                collapsed && "sr-only",
+                            )}
+                        >
+                            No matching playlists
+                        </div>
+                    )}
+                </div>
+            </ScrollArea>
 
             <div
                 className={cn(
@@ -273,9 +275,11 @@ export default function Sidebar({
 
     return (
         <>
-            <UiSidebar
-                collapsed={collapsed}
-                className="hidden md:flex md:sticky md:top-0 md:h-screen md:shrink-0"
+            <aside
+                className={cn(
+                    "hidden md:flex md:sticky md:top-0 md:h-screen md:shrink-0 flex-col overflow-hidden border-r border-border/70 bg-background/95 backdrop-blur transition-[width] duration-200 ease-out",
+                    collapsed ? "w-16" : "w-72",
+                )}
             >
                 <SidebarContent
                     user={user}
@@ -290,7 +294,7 @@ export default function Sidebar({
                     onNavigateAction={onNavigateAction}
                     onLogin={loginAction}
                 />
-            </UiSidebar>
+            </aside>
 
             <div className="md:hidden">
                 <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
