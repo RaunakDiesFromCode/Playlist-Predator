@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { analyzePlaylist } from "@/lib/youtube/playlist";
 import { fetchPlaylistDetails } from "@/lib/youtube/client";
 import { loadServerProgress } from "@/lib/progress/server";
@@ -30,6 +31,10 @@ export async function generateMetadata({
 
 export default async function Page(props: { params: Promise<RouteParams> }) {
     const { playlistId } = await props.params;
+    const userAgent = headers().get("user-agent") ?? "";
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(
+        userAgent,
+    );
 
     const playlistUrl = `https://youtube.com/playlist?list=${playlistId}`;
 
@@ -49,6 +54,7 @@ export default async function Page(props: { params: Promise<RouteParams> }) {
     return (
         <PlaylistClient
             playlistId={playlistId}
+            isMobile={isMobile}
             initialData={initialData}
             initialError={initialError}
             initialProgress={initialProgress}

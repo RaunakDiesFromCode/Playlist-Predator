@@ -28,6 +28,7 @@ const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
 const EMPTY_VIDEOS: VideoMetadata[] = [];
 type PlaylistClientProps = {
     playlistId: string;
+    isMobile: boolean;
     initialData: {
         summary: PlaylistAnalysis;
         videos: VideoMetadata[];
@@ -73,6 +74,7 @@ function PlaylistPageSkeleton() {
 
 export default function PlaylistClient({
     playlistId,
+    isMobile,
     initialData,
     initialError,
     initialProgress,
@@ -81,7 +83,6 @@ export default function PlaylistClient({
 
     const [progress, setProgress] = useState<PlaylistProgress>(initialProgress);
 
-    const [isMobile, setIsMobile] = useState(false);
     const [celebrate, setCelebrate] = useState(false);
     const [viewport, setViewport] = useState({ width: 0, height: 0 });
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -99,19 +100,6 @@ export default function PlaylistClient({
             document.title = `${playlist.title} | Playlist Predator`;
         }
     }, [playlist?.title]);
-
-    /* ---------------------------------- */
-    /* Detect mobile */
-    /* ---------------------------------- */
-
-    useEffect(() => {
-        const mq = window.matchMedia("(max-width: 768px)");
-        const update = () => setIsMobile(mq.matches);
-
-        update();
-        mq.addEventListener("change", update);
-        return () => mq.removeEventListener("change", update);
-    }, []);
 
     useEffect(() => {
         const updateViewport = () => {
