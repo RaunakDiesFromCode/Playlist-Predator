@@ -55,7 +55,7 @@ const PlaylistVideoList = ({
     );
     const [sortBy, setSortBy] = useState<SortOption>("default");
 
-    const playlistThumbnail = videos[0]?.thumbnail;
+    const playlistThumbnail = playlist?.thumbnail ?? videos[0]?.thumbnail;
 
     const filteredVideos = useMemo(() => {
         const lowerQuery = query.trim().toLowerCase();
@@ -93,29 +93,6 @@ const PlaylistVideoList = ({
 
         return next;
     }, [filterStatus, progress, query, sortBy, videos]);
-
-    const startedAt = useMemo(() => {
-        let earliest: string | null = null;
-
-        for (const entry of Object.values(progress)) {
-            if (entry.status !== "DONE" && entry.status !== "REWATCH") continue;
-            if (!entry.updatedAt) continue;
-
-            if (!earliest) {
-                earliest = entry.updatedAt;
-                continue;
-            }
-
-            if (
-                new Date(entry.updatedAt).getTime() <
-                new Date(earliest).getTime()
-            ) {
-                earliest = entry.updatedAt;
-            }
-        }
-
-        return earliest;
-    }, [progress]);
 
     const streakInfo = useMemo(() => {
         const activeDays = new Set<string>();
@@ -200,7 +177,7 @@ const PlaylistVideoList = ({
                         }}
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-primary/20 to-transparent" />
 
                     <div
                         className="absolute bottom-4 left-4 right-4 transition-none"
