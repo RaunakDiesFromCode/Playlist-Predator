@@ -1,16 +1,33 @@
 "use client";
 
-import React from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/sidebar/Sidebar";
 import { useAuth } from "@/hooks/use-auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Body({ children }: { children: React.ReactNode }) {
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
     const { user, loading } = useAuth();
+
+    useEffect(() => {
+        if (process.env.NODE_ENV !== "production") {
+            return;
+        }
+
+        if (!("serviceWorker" in navigator)) {
+            return;
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+        }, 0);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, []);
 
     return (
         <body className="bg-background overflow-x-hidden overflow-y-auto">

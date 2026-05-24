@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Confetti from "react-confetti";
-import { Vibrant } from "node-vibrant/browser";
+import dynamic from "next/dynamic";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     PlaylistAnalysis,
     PlaylistMeta,
@@ -23,6 +22,23 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer";
+
+const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
+
+const EMPTY_VIDEOS: VideoMetadata[] = [];
+const THEME_TRANSITION_CLASS = "theme-transitioning";
+const THEME_TRANSITION_MS = 700;
+
+type PlaylistClientProps = {
+    playlistId: string;
+    initialData: {
+        summary: PlaylistAnalysis;
+        videos: VideoMetadata[];
+        playlist: PlaylistMeta;
+    } | null;
+    initialError: string | null;
+    initialProgress: PlaylistProgress;
+};
 
 type HslTuple = [number, number, number];
 
@@ -230,22 +246,28 @@ function PlaylistPageSkeleton() {
 /* Main Component */
 /* ---------------------------------- */
 
-export default function PlaylistClient({ playlistId }: { playlistId: string }) {
+export default function PlaylistClient({
+    playlistId,
+    initialData,
+    initialError,
+    initialProgress,
+}: PlaylistClientProps) {
     const { user, loading: authLoading } = useAuth();
 
-    const [summary, setSummary] = useState<PlaylistAnalysis | null>(null);
-    const [videos, setVideos] = useState<VideoMetadata[]>([]);
-    const [progress, setProgress] = useState<PlaylistProgress>({});
-    const [playlist, setPlaylist] = useState<PlaylistMeta | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [progress, setProgress] = useState<PlaylistProgress>(initialProgress);
 
     const [isMobile, setIsMobile] = useState(false);
     const [celebrate, setCelebrate] = useState(false);
     const [viewport, setViewport] = useState({ width: 0, height: 0 });
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
     const savedRef = useRef(false);
     const hasResolvedPlaylistRef = useRef(false);
     const celebrationTimerRef = useRef<number | null>(null);
+    const summary = initialData?.summary ?? null;
+    const videos = initialData?.videos ?? EMPTY_VIDEOS;
+    const playlist = initialData?.playlist ?? null;
+    const loading = !initialData && !initialError;
+    const error = initialError;
     const playlistCover = playlist?.thumbnail ?? videos[0]?.thumbnail ?? null;
 
     useEffect(() => {
@@ -253,6 +275,10 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
 
         const root = document.documentElement;
         const previousVars = new Map<string, string | null>();
+        const prefersReducedMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+        ).matches;
+        let transitionTimerId: number | null = null;
 
         for (const name of THEME_VARS) {
             previousVars.set(name, root.style.getPropertyValue(name));
@@ -262,11 +288,33 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
 
         async function applyPalette() {
             try {
+                const { Vibrant } = await import("node-vibrant/browser");
                 const palette = await Vibrant.from(playlistCover).getPalette();
                 if (cancelled) return;
 
                 const isDarkMode = root.classList.contains("dark");
                 const nextVars = buildThemeVars(palette, isDarkMode);
+
+                if (!prefersReducedMotion) {
+                    root.classList.add(THEME_TRANSITION_CLASS);
+                    window.requestAnimationFrame(() => {
+                        if (cancelled) {
+                            root.classList.remove(THEME_TRANSITION_CLASS);
+                            return;
+                        }
+
+                        for (const [name, value] of Object.entries(nextVars)) {
+                            root.style.setProperty(name, value);
+                        }
+
+                        transitionTimerId = window.setTimeout(() => {
+                            root.classList.remove(THEME_TRANSITION_CLASS);
+                            transitionTimerId = null;
+                        }, THEME_TRANSITION_MS);
+                    });
+
+                    return;
+                }
 
                 for (const [name, value] of Object.entries(nextVars)) {
                     root.style.setProperty(name, value);
@@ -280,6 +328,13 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
 
         return () => {
             cancelled = true;
+
+            if (transitionTimerId) {
+                window.clearTimeout(transitionTimerId);
+                transitionTimerId = null;
+            }
+
+            root.classList.remove(THEME_TRANSITION_CLASS);
 
             for (const [name, value] of previousVars.entries()) {
                 if (value) {
@@ -329,41 +384,9 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
     /* ---------------------------------- */
 
     useEffect(() => {
-        if (!playlistId) return;
-
-        let cancelled = false;
-
-        async function init() {
-            try {
-                const p = await loadProgress(playlistId);
-                if (!cancelled) setProgress(p);
-
-                const res = await fetch("/api/playlist/analyze", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        playlistUrl: `https://youtube.com/playlist?list=${playlistId}`,
-                    }),
-                });
-
-                const data = await res.json();
-                if (cancelled) return;
-
-                setSummary(data.summary);
-                setVideos(data.videos);
-                setPlaylist(data.playlist);
-            } catch (err) {
-                console.error(err);
-                if (!cancelled) setError("Failed to load playlist");
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
-        }
-
-        init();
-        return () => {
-            cancelled = true;
-        };
+        void loadProgress(playlistId)
+            .then(setProgress)
+            .catch(() => undefined);
     }, [playlistId]);
 
     /* ---------------------------------- */
@@ -404,34 +427,46 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
     /* Completion + stats */
     /* ---------------------------------- */
 
-    const doneCount = videos.filter(
-        (v) => progress[v.videoId]?.status === "DONE",
-    ).length;
+    const { doneCount, rewatchCount, skippedCount, remainingDuration } =
+        useMemo(() => {
+            let done = 0;
+            let rewatch = 0;
+            let skipped = 0;
+            let totalSeconds = 0;
+            let watchedSeconds = 0;
 
-    const rewatchCount = videos.filter(
-        (v) => progress[v.videoId]?.status === "REWATCH",
-    ).length;
+            for (const video of videos) {
+                totalSeconds += video.durationSeconds;
 
-    const skippedCount = videos.filter(
-        (v) => progress[v.videoId]?.status === "SKIP",
-    ).length;
+                const status = progress[video.videoId]?.status;
 
-    const totalDurationSeconds = videos.reduce(
-        (a, v) => a + v.durationSeconds,
-        0,
-    );
+                if (status === "DONE") {
+                    done += 1;
+                    watchedSeconds += video.durationSeconds;
+                    continue;
+                }
 
-    const watchedDuration = videos
-        .filter(
-            (v) =>
-                progress[v.videoId]?.status === "DONE" ||
-                progress[v.videoId]?.status === "REWATCH",
-        )
-        .reduce((a, v) => a + v.durationSeconds, 0);
+                if (status === "REWATCH") {
+                    rewatch += 1;
+                    watchedSeconds += video.durationSeconds;
+                    continue;
+                }
 
-    const remainingDuration = formatDuration(
-        Math.max(totalDurationSeconds - watchedDuration, 0),
-    );
+                if (status === "SKIP") {
+                    skipped += 1;
+                }
+            }
+
+            return {
+                doneCount: done,
+                rewatchCount: rewatch,
+                skippedCount: skipped,
+                totalDurationSeconds: totalSeconds,
+                remainingDuration: formatDuration(
+                    Math.max(totalSeconds - watchedSeconds, 0),
+                ),
+            };
+        }, [progress, videos]);
 
     const isComplete = videos.length > 0 && doneCount === videos.length;
 
@@ -467,6 +502,41 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
         };
     }, [isComplete, loading, playlist, summary]);
 
+    useEffect(() => {
+        const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+        const update = () => setPrefersReducedMotion(mq.matches);
+
+        update();
+        mq.addEventListener("change", update);
+
+        return () => mq.removeEventListener("change", update);
+    }, []);
+
+    useEffect(() => {
+        if (!celebrate || prefersReducedMotion || !isComplete) {
+            return;
+        }
+
+        const updateViewport = () => {
+            setViewport({
+                width: window.innerWidth,
+                height: window.innerHeight,
+            });
+        };
+
+        updateViewport();
+        window.addEventListener("resize", updateViewport);
+
+        return () => window.removeEventListener("resize", updateViewport);
+    }, [celebrate, prefersReducedMotion, isComplete]);
+
+    const showConfetti =
+        celebrate &&
+        !prefersReducedMotion &&
+        isComplete &&
+        viewport.width > 0 &&
+        viewport.height > 0;
+
     /* ---------------------------------- */
     /* States */
     /* ---------------------------------- */
@@ -500,10 +570,7 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
                         "radial-gradient(circle at top, hsl(var(--primary) / 0.12), transparent 42%), radial-gradient(circle at bottom right, hsl(var(--accent) / 0.08), transparent 28%)",
                 }}
             >
-                {celebrate &&
-                viewport.width > 0 &&
-                viewport.height > 0 &&
-                isComplete ? (
+                {showConfetti ? (
                     <Confetti
                         width={viewport.width}
                         height={viewport.height}
@@ -536,16 +603,13 @@ export default function PlaylistClient({ playlistId }: { playlistId: string }) {
 
     return (
         <div
-            className="relative flex h-[calc(100dvh-4rem)] flex-col gap-4 md:p-4 p-2"
+            className="relative flex h-[calc(100dvh-4rem)] flex-col gap-4 md:p-4 p-2 transition-colors"
             style={{
                 backgroundImage:
                     "radial-gradient(circle at top, hsl(var(--primary) / 0.12), transparent 42%), radial-gradient(circle at bottom right, hsl(var(--accent) / 0.08), transparent 28%)",
             }}
         >
-            {celebrate &&
-            viewport.width > 0 &&
-            viewport.height > 0 &&
-            isComplete ? (
+            {showConfetti ? (
                 <Confetti
                     width={viewport.width}
                     height={viewport.height}

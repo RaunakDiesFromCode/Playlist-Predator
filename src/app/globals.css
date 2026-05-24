@@ -7,6 +7,14 @@ body {
   overflow-y: auto;
 }
 
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition-property: background-color, border-color, color, fill, stroke, text-decoration-color, box-shadow, outline-color;
+  transition-duration: 700ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 
 @layer base {
   :root {

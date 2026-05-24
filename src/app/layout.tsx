@@ -1,6 +1,6 @@
 import "./globals.css";
 import Body from "./Body";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
@@ -8,6 +8,31 @@ export const metadata: Metadata = {
         default: "Playlist Predator",
         template: "%s | Playlist Predator",
     },
+    description: "An app to manage and enhance your YouTube playlists.",
+    applicationName: "Playlist Predator",
+    manifest: "/manifest.webmanifest",
+    icons: {
+        icon: ["/favicon.svg", "/favicon.ico"],
+        apple: "/apple-touch-icon.png",
+    },
+    appleWebApp: {
+        capable: true,
+        title: "Playlist Predator",
+        statusBarStyle: "default",
+    },
+    formatDetection: {
+        telephone: false,
+    },
+};
+
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+    themeColor: [
+        { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+        { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+    ],
 };
 
 export default function RootLayout({
@@ -15,7 +40,6 @@ export default function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-
     return (
         <html lang="en" suppressHydrationWarning>
             <Body>{children}</Body>
