@@ -142,5 +142,5 @@ Licensed under the MIT License. See `LICENSE`.
 
 ---
 
-*Cloned from Aymaan Shabbir's [Playlist Predator](https://github.com/Aymaan-Shabbir/Playlist-Predator)
-Special thanks to [Dipannita Sharma](https://github.com/dipannitasharma)*
+*Cloned from Aymaan Shabbir's [Playlist Predator](https://github.com/Aymaan-Shabbir/Playlist-Predator)*
+*Special thanks to [Dipannita Sharma](https://github.com/dipannitasharma)*
