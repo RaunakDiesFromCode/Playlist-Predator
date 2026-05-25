@@ -9,7 +9,7 @@ Playlist Predator converts messy YouTube playlists into a clean study and watch 
 It works without login using local storage, and upgrades to Supabase sync when you sign in. The app also includes a saved-playlists sidebar, password reset flows, an admin dashboard, and offline support via a service worker.
 
 ![Playlist Predator preview](public/preview.png)
- <sub>(Playlist: [Binary Search Beginner to Advanced | C++, Java, Python | Notes + Contest](https://www.youtube.com/playlist?list=PLgUwDviBIf0pMFMWuuvDNMAkoQFi-h0ZF))</sub>
+ <sup>(Playlist: [Binary Search Beginner to Advanced | C++, Java, Python | Notes + Contest](https://www.youtube.com/playlist?list=PLgUwDviBIf0pMFMWuuvDNMAkoQFi-h0ZF))</sup>
 
 ---
 
