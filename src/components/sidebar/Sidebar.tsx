@@ -290,12 +290,18 @@ export default function Sidebar({
     }, [user, authLoading]);
 
     useEffect(() => {
+        if (!user?.id) return;
+
+        const currentUserId = user.id;
+
         function handlePlaylistsUpdated(event: Event) {
             const customEvent = event as CustomEvent<{ userId?: string }>;
 
-            if (customEvent.detail?.userId !== user?.id) return;
+            if (customEvent.detail?.userId !== currentUserId) {
+                return;
+            }
 
-            const cachedPlaylists = getCachedSidebarPlaylists(user.id);
+            const cachedPlaylists = getCachedSidebarPlaylists(currentUserId);
             if (!cachedPlaylists) return;
 
             setPlaylists(cachedPlaylists);
