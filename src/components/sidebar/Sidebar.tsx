@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { type AuthUser } from "@/hooks/use-auth";
+import { DbPlaylist } from "@/types/playlist-db";
 import {
     clearSidebarPlaylistRequest,
     getCachedSidebarPlaylists,
@@ -263,7 +264,7 @@ export default function Sidebar({
 
             const request = fetch("/api/playlists")
                 .then((res) => res.json())
-                .then((data: Playlist[]) => {
+                .then((data: DbPlaylist[]) => {
                     const merged = mergeSidebarPlaylists(
                         getCachedSidebarPlaylists(userId) ?? [],
                         data,
