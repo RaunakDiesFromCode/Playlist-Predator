@@ -4,9 +4,9 @@
 
 [![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/RaunakDiesFromCode/Playlist-Predator)
 
-Playlist Predator converts messy YouTube playlists into a clean study and watch system. It shows how long a playlist really is, how long it will take at different playback speeds, and helps you track what you have done, skipped, or want to rewatch.
+Playlist Predator converts messy YouTube playlists and chaptered videos into a clean study and watch system. It shows how long a playlist or chapter breakdown really is, how long it will take at different playback speeds, and helps you track what you have done, skipped, or want to rewatch.
 
-It works without login using local storage, and upgrades to Supabase sync when you sign in. The app also includes a saved-playlists sidebar, password reset flows, an admin dashboard, and offline support via a service worker.
+It works without login using local storage, and upgrades to Supabase sync when you sign in. The app also includes a saved-playlists sidebar that keeps new items visible immediately, password reset flows, an admin dashboard, and offline support via a service worker.
 
 ![Playlist Predator preview](public/preview.png)
  <sup>(Playlist: [Binary Search Beginner to Advanced | C++, Java, Python | Notes + Contest](https://www.youtube.com/playlist?list=PLgUwDviBIf0pMFMWuuvDNMAkoQFi-h0ZF))</sup>
@@ -15,8 +15,8 @@ It works without login using local storage, and upgrades to Supabase sync when y
 
 ## ✨ Features
 
-* 🎯 Playlist analysis
-  Total videos, total duration, remaining time, and speed-based estimates.
+* 🎯 Playlist and video analysis
+  Total videos, total duration, remaining time, and speed-based estimates for playlists, plus chapter extraction for single videos with timestamps in the description.
 
 * ✅ Progress tracking
   Mark videos as `DONE`, `SKIP`, `REWATCH`, or clear them back to `NONE`.
@@ -24,14 +24,17 @@ It works without login using local storage, and upgrades to Supabase sync when y
 * ⚡ Optimistic updates
   Progress changes feel instant, with local caching for resilience.
 
+* 🎬 Chapter extraction
+  Single video links can be turned into chapter-style playlist rows when timestamps are present in the description.
+
 * 👤 Local-first auth flow
   Guests keep progress in local storage; signed-in users sync through Supabase.
 
 * 💾 Saved playlists
-  Logged-in users automatically save playlists they open, including title and thumbnail.
+  Logged-in users automatically save playlists or video-derived study sets they open, including title, thumbnail, and YouTube link.
 
 * 📚 Playlist sidebar
-  Quick access to saved playlists, with search and loading states.
+  Quick access to saved playlists, with search and loading states. Newly opened items appear immediately and stay visible as you change progress states.
 
 * 🔒 Account recovery
   Login, register, forgot-password, and reset-password flows are built in.
@@ -60,9 +63,10 @@ It works without login using local storage, and upgrades to Supabase sync when y
 
 ## ⚙️ How It Works
 
-* Playlist analysis happens on the server in `src/app/[playlistId]/page.tsx`, which fetches playlist metadata and computes durations.
+* Playlist analysis happens on the server in `src/app/[playlistId]/page.tsx`, which fetches playlist metadata or single-video metadata and computes durations.
+* Single-video inputs are parsed from the YouTube URL and chapter timestamps are extracted from the description when available.
 * Progress is local-first. Guests read and write to local storage, while signed-in users merge local state with server state from `/api/progress`.
-* Saved playlists are written through `/api/playlists` when a signed-in user opens a playlist.
+* Saved playlists are written through `/api/playlists` when a signed-in user opens a playlist or chaptered video, and the sidebar cache is updated immediately.
 * Password reset uses Supabase email recovery, then returns through `/auth/callback` to `/reset-password`.
 * The service worker in `public/sw.js` precaches the app shell and serves `/offline.html` when navigation requests fail.
 
@@ -70,7 +74,7 @@ It works without login using local storage, and upgrades to Supabase sync when y
 
 ## 📡 API Routes
 
-* `POST /api/playlist/analyze` - Accepts `{ playlistUrl, completedVideos? }` and returns playlist metadata plus the analyzed video list.
+* `POST /api/playlist/analyze` - Accepts `{ playlistUrl, completedVideos? }` and returns playlist metadata plus the analyzed video list. Playlist URLs return playlist rows; single video URLs can return chapter rows when description timestamps are present.
 * `GET /api/playlists` - Returns saved playlists for the signed-in user.
 * `POST /api/playlists` - Saves a playlist for the current user.
 * `GET /api/progress?playlistId=...` - Returns saved progress for the current user.
@@ -123,8 +127,8 @@ If you change environment variables, restart the dev server.
 
 ## 🧩 Usage
 
-1. Paste a YouTube playlist link or ID on the homepage.
-2. The app analyzes the playlist and shows total duration, remaining time, and speed-adjusted estimates.
+1. Paste a YouTube playlist link or ID, or a normal video link, on the homepage.
+2. The app analyzes the playlist or extracts chapters from the video description, then shows total duration, remaining time, and speed-adjusted estimates.
 3. Mark videos as done, skipped, or rewatch as you move through the playlist.
 4. Sign in if you want progress and saved playlists to sync across devices.
 

@@ -329,6 +329,7 @@ export default function PlaylistClient({
                         progress={progress}
                         onStatusChange={changeStatus}
                         playlist={playlist}
+                        playlistId={playlistId}
                     />
                 </div>
 

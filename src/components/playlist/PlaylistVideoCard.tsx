@@ -19,6 +19,7 @@ interface Props {
     video: VideoMetadata;
     progressEntry?: VideoProgress;
     onStatusChange: (id: string, status: VideoStatus) => void;
+    playlistId?: string;
 }
 
 /* ---------------- UI STATUS LAYER ---------------- */
@@ -96,10 +97,20 @@ function formatCompletionDate(value?: string) {
 
 /* ---------------- COMPONENT ---------------- */
 
-const PlaylistVideoCard = ({ video, progressEntry, onStatusChange }: Props) => {
+const PlaylistVideoCard = ({
+    video,
+    progressEntry,
+    onStatusChange,
+    playlistId,
+}: Props) => {
     const currentStatus = progressEntry?.status ?? "NONE";
     const uiValue = backendToUI(currentStatus);
     const completionLabel = formatCompletionDate(progressEntry?.updatedAt);
+    const href =
+        video.watchUrl ??
+        (playlistId
+            ? `https://www.youtube.com/watch?v=${video.videoId}&list=${playlistId}`
+            : `https://youtube.com/watch?v=${video.videoId}`);
 
     return (
         <Card
@@ -113,10 +124,7 @@ const PlaylistVideoCard = ({ video, progressEntry, onStatusChange }: Props) => {
         >
             {/* Clickable content */}
             <Link
-                href={
-                    video.watchUrl ??
-                    `https://youtube.com/watch?v=${video.videoId}`
-                }
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex w-full items-start gap-3 min-w-0 md:flex-1 md:items-center"

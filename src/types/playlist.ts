@@ -34,4 +34,5 @@ export interface PlaylistMeta {
     title: string;
     channelTitle: string;
     thumbnail?: string;
+    youtubeUrl: string;
 }

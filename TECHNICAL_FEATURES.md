@@ -11,10 +11,11 @@ This document describes the application from a developer's point of view: archit
 
 ## Playlist analysis pipeline
 
-- Accepts a YouTube playlist link or playlist ID.
+- Accepts a YouTube playlist link, playlist ID, or normal video link.
 - Resolves playlist metadata and video details from the YouTube Data API.
+- For single videos, extracts chapter timestamps from the description and converts them into chapter-style rows.
 - Computes total duration, remaining time, and speed-adjusted estimates.
-- Generates route metadata dynamically for playlist pages.
+- Generates route metadata dynamically for playlist pages and video-derived study sets.
 
 ## Progress model
 
@@ -28,6 +29,7 @@ This document describes the application from a developer's point of view: archit
 
 - Saves playlists for signed-in users when they open a playlist.
 - Stores playlist history in the database for sidebar display.
+- Upserts the currently opened playlist or video-derived study set into the sidebar cache immediately, then merges it with the server playlist list so it stays visible even if progress status changes.
 - Uses API routes for playlist save, progress read/write, and analysis.
 - Merges server state and cached local state to reduce data loss.
 
@@ -53,7 +55,9 @@ This document describes the application from a developer's point of view: archit
 ## Key implementation areas
 
 - Playlist logic: `src/lib/youtube`
+- YouTube input parsing and chapter extraction: `src/lib/youtube/input.ts` and `src/lib/youtube/chapters.ts`
 - Progress logic: `src/lib/progress` and `src/lib/storage/progress`
+- Sidebar playlist cache: `src/lib/sidebar/playlists.ts`
 - Supabase helpers: `src/lib/supabase`
 - Admin helpers: `src/lib/admin`
 - API routes: `src/app/api`

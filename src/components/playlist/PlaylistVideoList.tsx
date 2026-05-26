@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpDown, Filter, Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ interface Props {
     progress: PlaylistProgress;
     onStatusChange: (id: string, status: VideoStatus) => void;
     playlist: PlaylistMeta | null;
+    playlistId?: string;
 }
 
 type SortOption =
@@ -46,6 +48,7 @@ const PlaylistVideoList = ({
     progress,
     onStatusChange,
     playlist,
+    playlistId,
 }: Props) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const ticking = useRef(false);
@@ -198,7 +201,13 @@ const PlaylistVideoList = ({
                             </Badge>
                         ) : null}
                         <h2 className="text-2xl font-semibold leading-tight line-clamp-2 md:text-3xl">
-                            {playlist?.title}
+                            <Link
+                                href={playlist?.youtubeUrl ?? "#"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {playlist?.title}
+                            </Link>
                         </h2>
                         <p className="text-sm text-muted-foreground md:text-lg">
                             {playlist?.channelTitle}
@@ -214,6 +223,7 @@ const PlaylistVideoList = ({
                         video={video}
                         progressEntry={progress[video.videoId]}
                         onStatusChange={onStatusChange}
+                        playlistId={playlistId}
                     />
                 ))}
 

@@ -82,11 +82,17 @@ async function analyzePlaylistResource(playlistId: string) {
             durationSeconds: seconds,
             durationFormatted: formatDuration(seconds),
             position: index + 1,
-            watchUrl: `https://www.youtube.com/watch?v=${video.id}`,
+            watchUrl: `https://www.youtube.com/watch?v=${video.id}&list=${playlistId}&index=${index + 1}`,
         };
     });
 
-    return { playlistDetails, videos };
+    return {
+        playlistDetails: {
+            ...playlistDetails,
+            youtubeUrl: `https://www.youtube.com/playlist?list=${playlistId}`,
+        },
+        videos,
+    };
 }
 
 async function analyzeVideoResource(videoId: string) {
@@ -132,6 +138,7 @@ async function analyzeVideoResource(videoId: string) {
             title: video.snippet.title,
             channelTitle: video.snippet.channelTitle,
             thumbnail,
+            youtubeUrl: `https://www.youtube.com/watch?v=${videoId}`,
         },
         videos,
     };
