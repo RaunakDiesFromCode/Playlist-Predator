@@ -16,6 +16,15 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { type AuthUser } from "@/hooks/use-auth";
+import {
+    clearSidebarPlaylistRequest,
+    getCachedSidebarPlaylists,
+    getSidebarPlaylistRequest,
+    mergeSidebarPlaylists,
+    setCachedSidebarPlaylists,
+    setSidebarPlaylistRequest,
+    SIDEBAR_PLAYLISTS_UPDATED_EVENT,
+} from "@/lib/sidebar/playlists";
 import Footer from "../layout/Footer";
 import SidebarItem from "./SidebarItem";
 import SidebarSkeleton from "./SidebarSkeleton";
@@ -49,9 +58,6 @@ type SidebarContentProps = {
     onNavigateAction: () => void;
     onLogin: () => void;
 };
-
-const playlistCache = new Map<string, Playlist[]>();
-const playlistRequestCache = new Map<string, Promise<Playlist[]>>();
 
 function SidebarContent({
     user,
@@ -233,7 +239,7 @@ export default function Sidebar({
 
         const userId = user.id;
 
-        const cachedPlaylists = playlistCache.get(userId);
+        const cachedPlaylists = getCachedSidebarPlaylists(userId);
         if (cachedPlaylists) {
             setPlaylists(cachedPlaylists);
             setLoading(false);
@@ -241,11 +247,16 @@ export default function Sidebar({
         }
 
         async function load() {
-            const pendingRequest = playlistRequestCache.get(userId);
+            const pendingRequest = getSidebarPlaylistRequest(userId);
 
             if (pendingRequest) {
                 const data = await pendingRequest;
-                setPlaylists(data);
+                const merged = mergeSidebarPlaylists(
+                    getCachedSidebarPlaylists(userId) ?? [],
+                    data,
+                );
+                setCachedSidebarPlaylists(userId, merged);
+                setPlaylists(merged);
                 setLoading(false);
                 return;
             }
@@ -253,16 +264,20 @@ export default function Sidebar({
             const request = fetch("/api/playlists")
                 .then((res) => res.json())
                 .then((data: Playlist[]) => {
-                    playlistCache.set(userId, data);
-                    playlistRequestCache.delete(userId);
-                    return data;
+                    const merged = mergeSidebarPlaylists(
+                        getCachedSidebarPlaylists(userId) ?? [],
+                        data,
+                    );
+                    setCachedSidebarPlaylists(userId, merged);
+                    clearSidebarPlaylistRequest(userId);
+                    return merged;
                 })
                 .catch((error) => {
-                    playlistRequestCache.delete(userId);
+                    clearSidebarPlaylistRequest(userId);
                     throw error;
                 });
 
-            playlistRequestCache.set(userId, request);
+            setSidebarPlaylistRequest(userId, request);
 
             const data = await request;
             setPlaylists(data);
@@ -272,6 +287,32 @@ export default function Sidebar({
         setLoading(true);
         void load();
     }, [user, authLoading]);
+
+    useEffect(() => {
+        function handlePlaylistsUpdated(event: Event) {
+            const customEvent = event as CustomEvent<{ userId?: string }>;
+
+            if (customEvent.detail?.userId !== user?.id) return;
+
+            const cachedPlaylists = getCachedSidebarPlaylists(user.id);
+            if (!cachedPlaylists) return;
+
+            setPlaylists(cachedPlaylists);
+            setLoading(false);
+        }
+
+        window.addEventListener(
+            SIDEBAR_PLAYLISTS_UPDATED_EVENT,
+            handlePlaylistsUpdated,
+        );
+
+        return () => {
+            window.removeEventListener(
+                SIDEBAR_PLAYLISTS_UPDATED_EVENT,
+                handlePlaylistsUpdated,
+            );
+        };
+    }, [user?.id]);
 
     return (
         <>

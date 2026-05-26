@@ -2,6 +2,7 @@ import {
     fetchPlaylistVideoIds,
     fetchVideoDetails,
     fetchPlaylistDetails,
+    fetchVideoDetail,
     parseISODuration,
 } from "./client";
 import {
@@ -14,33 +15,21 @@ import {
     PlaylistAnalysisResponse,
     VideoMetadata,
 } from "@/types/playlist";
+import { extractChaptersFromDescription } from "./chapters";
+import { parseYouTubeInput } from "./input";
 
 export async function analyzePlaylist(
-    input: AnalyzePlaylistRequest
+    input: AnalyzePlaylistRequest,
 ): Promise<PlaylistAnalysisResponse> {
     const { playlistUrl, completedVideos = 0 } = input;
 
-    const playlistId = extractPlaylistId(playlistUrl);
-    if (!playlistId) throw new Error("Invalid playlist URL");
+    const resource = parseYouTubeInput(playlistUrl);
+    if (!resource) throw new Error("Invalid YouTube URL");
 
-    const playlistDetails = await fetchPlaylistDetails(playlistId);
-
-    const videoIds = await fetchPlaylistVideoIds(playlistId);
-    const videoData = await fetchVideoDetails(videoIds);
-
-    const videos: VideoMetadata[] = videoData.map((video, index) => {
-        const seconds = parseISODuration(video.contentDetails.duration);
-
-        return {
-            videoId: video.id,
-            title: video.snippet.title,
-            thumbnail: video.snippet.thumbnails.medium.url,
-            channelTitle: video.snippet.channelTitle,
-            durationSeconds: seconds,
-            durationFormatted: formatDuration(seconds),
-            position: index + 1,
-        };
-    });
+    const { playlistDetails, videos } =
+        resource.kind === "playlist"
+            ? await analyzePlaylistResource(resource.id)
+            : await analyzeVideoResource(resource.id);
 
     const durations = videos.map((v) => v.durationSeconds);
 
@@ -59,13 +48,13 @@ export async function analyzePlaylist(
         totalVideos,
         totalDuration: formatDuration(totalDurationSeconds),
         averageVideoDuration: formatDuration(
-            totalDurationSeconds / totalVideos
+            totalDurationSeconds / totalVideos,
         ),
         remainingVideos: totalVideos - completedSafe,
         remainingDuration: formatDuration(remainingDurationSeconds),
         adjustedDurations: calculateAdjustedDurations(totalDurationSeconds),
         adjustedRemainingDurations: calculateAdjustedDurations(
-            remainingDurationSeconds
+            remainingDurationSeconds,
         ),
     };
 
@@ -76,10 +65,74 @@ export async function analyzePlaylist(
     };
 }
 
-function extractPlaylistId(url: string): string | null {
-    try {
-        return new URL(url).searchParams.get("list");
-    } catch {
-        return null;
+async function analyzePlaylistResource(playlistId: string) {
+    const playlistDetails = await fetchPlaylistDetails(playlistId);
+
+    const videoIds = await fetchPlaylistVideoIds(playlistId);
+    const videoData = await fetchVideoDetails(videoIds);
+
+    const videos: VideoMetadata[] = videoData.map((video, index) => {
+        const seconds = parseISODuration(video.contentDetails.duration);
+
+        return {
+            videoId: video.id,
+            title: video.snippet.title,
+            thumbnail: video.snippet.thumbnails.medium.url,
+            channelTitle: video.snippet.channelTitle,
+            durationSeconds: seconds,
+            durationFormatted: formatDuration(seconds),
+            position: index + 1,
+            watchUrl: `https://www.youtube.com/watch?v=${video.id}`,
+        };
+    });
+
+    return { playlistDetails, videos };
+}
+
+async function analyzeVideoResource(videoId: string) {
+    const video = await fetchVideoDetail(videoId);
+    const durationSeconds = parseISODuration(video.contentDetails.duration);
+    const thumbnail = video.snippet.thumbnails.medium?.url;
+
+    if (!thumbnail) {
+        throw new Error("Video thumbnail not found");
     }
+
+    const chapters = extractChaptersFromDescription(
+        video.snippet.description ?? "",
+    );
+
+    const markers =
+        chapters.length > 0
+            ? chapters
+            : [{ title: video.snippet.title, startSeconds: 0 }];
+
+    const videos: VideoMetadata[] = markers.map((chapter, index) => {
+        const nextMarker = markers[index + 1];
+        const endSeconds = nextMarker?.startSeconds ?? durationSeconds;
+        const chapterDurationSeconds = Math.max(
+            endSeconds - chapter.startSeconds,
+            0,
+        );
+
+        return {
+            videoId: `${video.id}-chapter-${index + 1}`,
+            title: chapter.title,
+            thumbnail,
+            channelTitle: video.snippet.channelTitle,
+            durationSeconds: chapterDurationSeconds,
+            durationFormatted: formatDuration(chapterDurationSeconds),
+            position: index + 1,
+            watchUrl: `https://www.youtube.com/watch?v=${video.id}&t=${chapter.startSeconds}s`,
+        };
+    });
+
+    return {
+        playlistDetails: {
+            title: video.snippet.title,
+            channelTitle: video.snippet.channelTitle,
+            thumbnail,
+        },
+        videos,
+    };
 }

@@ -21,6 +21,7 @@ export interface VideoMetadata {
     durationSeconds: number;
     durationFormatted: string;
     position: number;
+    watchUrl?: string;
 }
 
 export interface PlaylistAnalysisResponse {

@@ -13,6 +13,7 @@ import { formatDuration } from "@/lib/time/duration";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { parseYouTubeInput } from "@/lib/youtube/input";
 
 // import { formatDuration } from "@/lib/time/duration";
 
@@ -72,18 +73,14 @@ const PlaylistForm = () => {
     }
 
     function extractPlaylistId(url: string): string | null {
-        try {
-            return new URL(url).searchParams.get("list");
-        } catch {
-            return null;
-        }
+        return parseYouTubeInput(url)?.id ?? null;
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!playlistUrl.trim()) {
-            setError("Please enter a playlist URL.");
+            setError("Please enter a playlist or video URL.");
             return;
         }
 
@@ -93,7 +90,7 @@ const PlaylistForm = () => {
         try {
             const id = extractPlaylistId(playlistUrl);
             if (!id) {
-                setError("Invalid playlist URL");
+                setError("Invalid playlist or video URL");
                 setLoading(false);
                 return;
             }
@@ -125,14 +122,14 @@ const PlaylistForm = () => {
         <div className="max-w-2xl mx-auto p-4">
             <form onSubmit={handleSubmit} className="space-y-4">
                 <Label htmlFor="playlist-url" className="sr-only">
-                    YouTube playlist URL
+                    YouTube playlist or video URL
                 </Label>
                 <Input
                     id="playlist-url"
                     type="text"
                     value={playlistUrl}
                     onChange={(e) => setPlaylistUrl(e.target.value)}
-                    placeholder="YouTube playlist URL"
+                    placeholder="YouTube playlist or video URL"
                     className="w-full"
                 />
 

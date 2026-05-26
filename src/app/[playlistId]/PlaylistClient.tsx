@@ -14,6 +14,7 @@ import { PlaylistProgress, VideoStatus } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
+import { upsertSidebarPlaylist } from "@/lib/sidebar/playlists";
 
 import {
     Drawer,
@@ -133,6 +134,17 @@ export default function PlaylistClient({
         if (authLoading || !user || !playlist || savedRef.current) return;
 
         savedRef.current = true;
+
+        const timestamp = new Date().toISOString();
+        upsertSidebarPlaylist(user.id, {
+            id: playlistId,
+            user_id: user.id,
+            youtube_playlist_id: playlistId,
+            title: playlist.title,
+            thumbnail: playlist.thumbnail ?? null,
+            created_at: timestamp,
+            updated_at: timestamp,
+        });
 
         fetch("/api/playlists", {
             method: "POST",

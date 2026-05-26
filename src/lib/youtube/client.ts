@@ -7,7 +7,7 @@ if (!API_KEY) {
 }
 
 export async function fetchPlaylistVideoIds(
-    playlistId: string
+    playlistId: string,
 ): Promise<string[]> {
     const videoIds: string[] = [];
     let pageToken: string | undefined;
@@ -16,7 +16,7 @@ export async function fetchPlaylistVideoIds(
         const res = await fetch(
             `${API_BASE}/playlistItems?part=contentDetails&playlistId=${playlistId}&maxResults=50&key=${API_KEY}&pageToken=${
                 pageToken ?? ""
-            }`
+            }`,
         );
 
         const data = await res.json();
@@ -24,7 +24,7 @@ export async function fetchPlaylistVideoIds(
 
         videoIds.push(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ...data.items.map((item: any) => item.contentDetails.videoId)
+            ...data.items.map((item: any) => item.contentDetails.videoId),
         );
 
         pageToken = data.nextPageToken;
@@ -34,7 +34,7 @@ export async function fetchPlaylistVideoIds(
 }
 
 export async function fetchVideoDurations(
-    videoIds: string[]
+    videoIds: string[],
 ): Promise<number[]> {
     const durations: number[] = [];
 
@@ -43,8 +43,8 @@ export async function fetchVideoDurations(
 
         const res = await fetch(
             `${API_BASE}/videos?part=contentDetails&id=${chunk.join(
-                ","
-            )}&key=${API_KEY}`
+                ",",
+            )}&key=${API_KEY}`,
         );
 
         const data = await res.json();
@@ -66,15 +66,15 @@ export async function fetchVideoDetails(videoIds: string[]) {
 
         const res = await fetch(
             `${API_BASE}/videos?part=contentDetails,snippet&id=${chunk.join(
-                ","
-            )}&key=${API_KEY}`
+                ",",
+            )}&key=${API_KEY}`,
         );
 
         const data = await res.json();
 
         if (!data.items) {
             throw new Error(
-                data.error?.message || "Failed to fetch video details"
+                data.error?.message || "Failed to fetch video details",
             );
         }
 
@@ -84,9 +84,19 @@ export async function fetchVideoDetails(videoIds: string[]) {
     return videos;
 }
 
+export async function fetchVideoDetail(videoId: string) {
+    const [video] = await fetchVideoDetails([videoId]);
+
+    if (!video) {
+        throw new Error("Video not found");
+    }
+
+    return video;
+}
+
 export async function fetchPlaylistDetails(playlistId: string) {
     const res = await fetch(
-        `${API_BASE}/playlists?part=snippet&id=${playlistId}&key=${API_KEY}`
+        `${API_BASE}/playlists?part=snippet&id=${playlistId}&key=${API_KEY}`,
     );
 
     const data = await res.json();

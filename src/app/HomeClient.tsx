@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
+import { parseYouTubeInput } from "@/lib/youtube/input";
 
 const GREETINGS = [
     "Make sense of your YouTube playlist",
@@ -31,18 +32,6 @@ function pickGreeting() {
     return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 }
 
-function extractPlaylistId(value: string) {
-    try {
-        if (value.includes("youtube.com")) {
-            return new URL(value).searchParams.get("list");
-        }
-
-        return value.trim();
-    } catch {
-        return null;
-    }
-}
-
 export default function HomeClient() {
     const [input, setInput] = useState("");
     const [greetingBase] = useState(pickGreeting);
@@ -54,7 +43,7 @@ export default function HomeClient() {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        const id = extractPlaylistId(input);
+        const id = parseYouTubeInput(input)?.id;
 
         if (!id) return;
 
@@ -73,16 +62,16 @@ export default function HomeClient() {
                     className="flex w-full gap-2 rounded-lg border p-1"
                 >
                     <Label htmlFor="home-playlist-input" className="sr-only">
-                        YouTube playlist link or ID
+                        YouTube playlist or video link
                     </Label>
                     <Input
                         id="home-playlist-input"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder="Paste YouTube playlist link or ID"
+                        placeholder="Paste YouTube playlist or video link"
                         className="border-none outline-none focus:ring-0"
                     />
-                    <Button size="icon" aria-label="Analyze playlist">
+                    <Button size="icon" aria-label="Analyze playlist or video">
                         <ArrowRight />
                     </Button>
                 </form>

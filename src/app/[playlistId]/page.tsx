@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { analyzePlaylist } from "@/lib/youtube/playlist";
-import { fetchPlaylistDetails } from "@/lib/youtube/client";
 import { loadServerProgress } from "@/lib/progress/server";
 import type { PlaylistAnalysisResponse } from "@/types/playlist";
 import type { PlaylistProgress } from "@/types/progress";
@@ -17,15 +16,17 @@ export async function generateMetadata({
     params: Promise<RouteParams>;
 }): Promise<Metadata> {
     const { playlistId } = await params;
-    const playlist = await fetchPlaylistDetails(playlistId).catch(() => null);
+    const playlist = await analyzeFromIdentifier(playlistId)
+        .then((result) => result?.playlist ?? null)
+        .catch(() => null);
 
     return {
         title: playlist?.title
             ? `${playlist.title} | Playlist Predator`
-            : "Playlist | Playlist Predator",
+            : "Playlist Predator",
         description: playlist?.channelTitle
             ? `Analyze and track progress for ${playlist.title} from ${playlist.channelTitle}.`
-            : "Analyze and track progress across a YouTube playlist.",
+            : "Analyze and track progress across a YouTube playlist or video chapters.",
     };
 }
 
@@ -36,13 +37,11 @@ export default async function Page(props: { params: Promise<RouteParams> }) {
         userAgent,
     );
 
-    const playlistUrl = `https://youtube.com/playlist?list=${playlistId}`;
-
     let initialData: PlaylistAnalysisResponse | null = null;
     let initialError: string | null = null;
 
     try {
-        initialData = await analyzePlaylist({ playlistUrl });
+        initialData = await analyzeFromIdentifier(playlistId);
     } catch (error) {
         initialError =
             error instanceof Error ? error.message : "Failed to load playlist";
@@ -60,4 +59,15 @@ export default async function Page(props: { params: Promise<RouteParams> }) {
             initialProgress={initialProgress}
         />
     );
+}
+
+async function analyzeFromIdentifier(playlistId: string) {
+    const playlistUrl = `https://youtube.com/playlist?list=${playlistId}`;
+    const videoUrl = `https://youtube.com/watch?v=${playlistId}`;
+
+    try {
+        return await analyzePlaylist({ playlistUrl });
+    } catch {
+        return analyzePlaylist({ playlistUrl: videoUrl });
+    }
 }
