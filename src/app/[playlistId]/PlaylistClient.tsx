@@ -9,12 +9,14 @@ import {
 } from "@/types/playlist";
 import PlaylistOverview from "@/components/playlist/PlaylistOverview";
 import PlaylistVideoList from "@/components/playlist/PlaylistVideoList";
+import StudyPlanner from "@/components/study-planner";
 import { loadProgress, updateVideoStatus } from "@/lib/progress";
 import { PlaylistProgress, VideoStatus } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { upsertSidebarPlaylist } from "@/lib/sidebar/playlists";
+import { useStudyPlannerPreferences } from "@/hooks/use-study-planner-preferences";
 
 import {
     Drawer,
@@ -95,6 +97,9 @@ export default function PlaylistClient({
     const playlist = initialData?.playlist ?? null;
     const loading = !initialData && !initialError;
     const error = initialError;
+    const plannerStorageKey = `study-planner:${playlistId}`;
+    const { preferences, setStudyTime, setPreferredSpeed } =
+        useStudyPlannerPreferences(plannerStorageKey);
 
     useEffect(() => {
         if (playlist?.title) {
@@ -175,46 +180,57 @@ export default function PlaylistClient({
     /* Completion + stats */
     /* ---------------------------------- */
 
-    const { doneCount, rewatchCount, skippedCount, remainingDuration } =
-        useMemo(() => {
-            let done = 0;
-            let rewatch = 0;
-            let skipped = 0;
-            let totalSeconds = 0;
-            let watchedSeconds = 0;
+    const {
+        doneCount,
+        rewatchCount,
+        skippedCount,
+        remainingDuration,
+        remainingDurationSeconds,
+    } = useMemo(() => {
+        let done = 0;
+        let rewatch = 0;
+        let skipped = 0;
+        let totalSeconds = 0;
+        let watchedSeconds = 0;
 
-            for (const video of videos) {
-                totalSeconds += video.durationSeconds;
+        for (const video of videos) {
+            totalSeconds += video.durationSeconds;
 
-                const status = progress[video.videoId]?.status;
+            const status = progress[video.videoId]?.status;
 
-                if (status === "DONE") {
-                    done += 1;
-                    watchedSeconds += video.durationSeconds;
-                    continue;
-                }
-
-                if (status === "REWATCH") {
-                    rewatch += 1;
-                    watchedSeconds += video.durationSeconds;
-                    continue;
-                }
-
-                if (status === "SKIP") {
-                    skipped += 1;
-                }
+            if (status === "DONE") {
+                done += 1;
+                watchedSeconds += video.durationSeconds;
+                continue;
             }
 
-            return {
-                doneCount: done,
-                rewatchCount: rewatch,
-                skippedCount: skipped,
-                totalDurationSeconds: totalSeconds,
-                remainingDuration: formatDuration(
-                    Math.max(totalSeconds - watchedSeconds, 0),
-                ),
-            };
-        }, [progress, videos]);
+            if (status === "REWATCH") {
+                rewatch += 1;
+                watchedSeconds += video.durationSeconds;
+                continue;
+            }
+
+            if (status === "SKIP") {
+                skipped += 1;
+            }
+        }
+
+        const nextRemainingSeconds = Math.max(totalSeconds - watchedSeconds, 0);
+
+        return {
+            doneCount: done,
+            rewatchCount: rewatch,
+            skippedCount: skipped,
+            totalDurationSeconds: totalSeconds,
+            remainingDurationSeconds: nextRemainingSeconds,
+            remainingDuration: formatDuration(nextRemainingSeconds),
+        };
+    }, [progress, videos]);
+
+    const remainingVideos = Math.max(
+        videos.length - doneCount - rewatchCount - skippedCount,
+        0,
+    );
 
     const isComplete = videos.length > 0 && doneCount === videos.length;
 
@@ -294,15 +310,28 @@ export default function PlaylistClient({
     if (!summary || !playlist) return null;
 
     const AnalysisPanel = (
-        <PlaylistOverview
-            totalVideos={summary.totalVideos}
-            doneVideos={doneCount}
-            rewatchVideos={rewatchCount}
-            skippedVideos={skippedCount}
-            totalDuration={summary.totalDuration}
-            remainingDuration={remainingDuration}
-            progress={progress}
-        />
+        <div className="space-y-4">
+            <PlaylistOverview
+                totalVideos={summary.totalVideos}
+                doneVideos={doneCount}
+                rewatchVideos={rewatchCount}
+                skippedVideos={skippedCount}
+                totalDuration={summary.totalDuration}
+                remainingDuration={remainingDuration}
+                progress={progress}
+                preferredSpeed={preferences.preferredSpeed}
+                onPreferredSpeedChange={setPreferredSpeed}
+            />
+
+            <StudyPlanner
+                remainingMinutes={remainingDurationSeconds / 60}
+                remainingVideos={remainingVideos}
+                studyHours={preferences.hours}
+                studyMinutes={preferences.minutes}
+                preferredSpeed={preferences.preferredSpeed}
+                onStudyTimeChange={setStudyTime}
+            />
+        </div>
     );
 
     /* ---------------------------------- */

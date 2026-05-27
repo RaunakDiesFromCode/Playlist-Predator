@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { parseYouTubeInput } from "@/lib/youtube/input";
+import StudyPlanner from "@/components/study-planner";
+import { useStudyPlannerPreferences } from "@/hooks/use-study-planner-preferences";
 
 // import { formatDuration } from "@/lib/time/duration";
 
@@ -29,6 +31,9 @@ const PlaylistForm = () => {
     const [progress, setProgress] = useState<PlaylistProgress>({});
 
     const [playlistId, setPlaylistId] = useState<string | null>(null);
+    const plannerStorageKey = `study-planner:${playlistId ?? "global"}`;
+    const { preferences, setStudyTime, setPreferredSpeed } =
+        useStudyPlannerPreferences(plannerStorageKey);
 
     const doneCount = videos.filter(
         (v) => progress[v.videoId]?.status === "DONE",
@@ -51,13 +56,23 @@ const PlaylistForm = () => {
         0,
     );
 
-    const remainingDurationFormatted = formatDuration(
-        Math.max(totalDurationSeconds - watchedDuration, 0),
-    );
-
     const skippedCount = videos.filter(
         (v) => progress[v.videoId]?.status === "SKIP",
     ).length;
+
+    const remainingDurationSeconds = Math.max(
+        totalDurationSeconds - watchedDuration,
+        0,
+    );
+
+    const remainingVideos = Math.max(
+        videos.length - doneCount - rewatchCount - skippedCount,
+        0,
+    );
+
+    const remainingDurationFormatted = formatDuration(
+        Math.max(totalDurationSeconds - watchedDuration, 0),
+    );
 
     useEffect(() => {
         if (!playlistId) return;
@@ -157,6 +172,17 @@ const PlaylistForm = () => {
                         totalDuration={summary.totalDuration}
                         remainingDuration={remainingDurationFormatted}
                         progress={progress}
+                        preferredSpeed={preferences.preferredSpeed}
+                        onPreferredSpeedChange={setPreferredSpeed}
+                    />
+
+                    <StudyPlanner
+                        remainingMinutes={remainingDurationSeconds / 60}
+                        remainingVideos={remainingVideos}
+                        studyHours={preferences.hours}
+                        studyMinutes={preferences.minutes}
+                        preferredSpeed={preferences.preferredSpeed}
+                        onStudyTimeChange={setStudyTime}
                     />
 
                     <PlaylistVideoList

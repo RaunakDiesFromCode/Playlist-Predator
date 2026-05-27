@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,6 +10,10 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { PlaylistProgress } from "@/types/progress";
+import {
+    calculateSpeedAdjustedMinutes,
+    FASTEST_SANE_SPEEDS,
+} from "@/lib/planner/planner";
 
 /* ===================== PROPS ===================== */
 
@@ -20,6 +25,8 @@ interface Props {
     totalDuration: string;
     remainingDuration: string;
     progress: PlaylistProgress;
+    preferredSpeed: number;
+    onPreferredSpeedChange: (speed: number) => void;
 }
 
 /* ===================== CONSTANTS ===================== */
@@ -27,15 +34,6 @@ interface Props {
 // brutally realistic assumptions
 const NOTE_TAKING_OVERHEAD = 0.25; // +25% time
 const DAILY_END_HOUR = 24; // midnight
-
-const speeds = [
-    { label: "1×", value: 1 },
-    { label: "1.25×", value: 1.25 },
-    { label: "1.5×", value: 1.5 },
-    { label: "2×", value: 2 },
-    { label: "3×", value: 3 },
-    { label: "4×", value: 4 },
-];
 
 /* ===================== HELPERS ===================== */
 
@@ -67,10 +65,12 @@ function getRemainingHoursToday() {
 
 function getDynamicInsight(
     remainingSeconds: number,
-    recommendedSpeed: number,
+    selectedSpeed: number,
     untouchedVideos: number,
 ) {
-    const watchSeconds = remainingSeconds / recommendedSpeed;
+    const watchSeconds =
+        calculateSpeedAdjustedMinutes(remainingSeconds / 60, selectedSpeed) *
+        60;
     const hours = watchSeconds / 3600;
 
     let scope: string;
@@ -108,6 +108,7 @@ function pickVariant(key: string, variants: string[]) {
 }
 
 function getQuickInsightCopy({
+    selectedSpeed,
     recommendedSpeed,
     watchTime,
     untouchedVideos,
@@ -115,6 +116,7 @@ function getQuickInsightCopy({
     fragmentation,
     strategy,
 }: {
+    selectedSpeed: number;
     recommendedSpeed: number;
     watchTime: string;
     untouchedVideos: number;
@@ -123,22 +125,27 @@ function getQuickInsightCopy({
     strategy: string;
 }) {
     const summary = pickVariant(
-        `${recommendedSpeed}-${watchTime}-${untouchedVideos}`,
+        `${selectedSpeed}-${watchTime}-${untouchedVideos}`,
         [
-            `At ${recommendedSpeed}×, you have ${watchTime} of video left across ${untouchedVideos} videos.`,
-            `At ${recommendedSpeed}× speed, ${watchTime} of video remains across ${untouchedVideos} videos.`,
-            `Running at ${recommendedSpeed}× leaves ${watchTime} of video across ${untouchedVideos} videos.`,
-            `${untouchedVideos} videos are still untouched, totaling ${watchTime} at ${recommendedSpeed}× playback.`,
-            `With playback set to ${recommendedSpeed}×, you'll need about ${watchTime} to finish ${untouchedVideos} remaining videos.`,
-            `You're looking at ${watchTime} of remaining content spread across ${untouchedVideos} videos at ${recommendedSpeed}×.`,
-            `At your current pace of ${recommendedSpeed}×, the remaining ${untouchedVideos} videos add up to ${watchTime}.`,
-            `${watchTime} of content still remains across ${untouchedVideos} videos when watched at ${recommendedSpeed}×.`,
-            `Finishing the last ${untouchedVideos} videos will take roughly ${watchTime} at ${recommendedSpeed}× speed.`,
-            `The untouched queue sits at ${untouchedVideos} videos, with around ${watchTime} left at ${recommendedSpeed}×.`,
-            `At ${recommendedSpeed}× playback, the backlog comes down to ${watchTime} over ${untouchedVideos} videos.`,
-            `Your remaining watch stack is ${untouchedVideos} videos long, totaling ${watchTime} at ${recommendedSpeed}×.`,
+            `At ${selectedSpeed}×, you have ${watchTime} of video left across ${untouchedVideos} videos.`,
+            `At ${selectedSpeed}× speed, ${watchTime} of video remains across ${untouchedVideos} videos.`,
+            `Running at ${selectedSpeed}× leaves ${watchTime} of video across ${untouchedVideos} videos.`,
+            `${untouchedVideos} videos are still untouched, totaling ${watchTime} at ${selectedSpeed}× playback.`,
+            `With playback set to ${selectedSpeed}×, you'll need about ${watchTime} to finish ${untouchedVideos} remaining videos.`,
+            `You're looking at ${watchTime} of remaining content spread across ${untouchedVideos} videos at ${selectedSpeed}×.`,
+            `At your current pace of ${selectedSpeed}×, the remaining ${untouchedVideos} videos add up to ${watchTime}.`,
+            `${watchTime} of content still remains across ${untouchedVideos} videos when watched at ${selectedSpeed}×.`,
+            `Finishing the last ${untouchedVideos} videos will take roughly ${watchTime} at ${selectedSpeed}× speed.`,
+            `The untouched queue sits at ${untouchedVideos} videos, with around ${watchTime} left at ${selectedSpeed}×.`,
+            `At ${selectedSpeed}× playback, the backlog comes down to ${watchTime} over ${untouchedVideos} videos.`,
+            `Your remaining watch stack is ${untouchedVideos} videos long, totaling ${watchTime} at ${selectedSpeed}×.`,
         ],
     );
+
+    const recommendation =
+        selectedSpeed === recommendedSpeed
+            ? `You're already at the recommended pace of ${recommendedSpeed}×.`
+            : `Recommended pace is ${recommendedSpeed}× if you want the safest default.`;
 
     const workload = pickVariant(`${scope}-${fragmentation}-${strategy}`, [
         `This is a ${scope}, ${fragmentation} workload — best handled as ${strategy}.`,
@@ -155,7 +162,7 @@ function getQuickInsightCopy({
         `The workload profile here is ${scope} with ${fragmentation} distribution, making ${strategy} the ideal plan.`,
     ]);
 
-    return { summary, workload };
+    return { summary, workload: `${recommendation} ${workload}` };
 }
 
 function toDayKey(date: Date) {
@@ -200,16 +207,19 @@ const PlaylistOverview = ({
     totalDuration,
     remainingDuration,
     progress,
+    preferredSpeed,
+    onPreferredSpeedChange,
 }: Props) => {
     const remainingSeconds = parseToSeconds(remainingDuration);
     const recommendedSpeed = recommendSpeed(remainingSeconds);
+    const selectedSpeed = preferredSpeed || recommendedSpeed;
 
     /* ---------- commitment math ---------- */
 
     const hoursLeftToday = getRemainingHoursToday();
 
     const effectiveStudySeconds =
-        (remainingSeconds / recommendedSpeed) * (1 + NOTE_TAKING_OVERHEAD);
+        (remainingSeconds / selectedSpeed) * (1 + NOTE_TAKING_OVERHEAD);
 
     const effectiveStudyHours = effectiveStudySeconds / 3600;
 
@@ -231,11 +241,12 @@ const PlaylistOverview = ({
 
     const insight = getDynamicInsight(
         remainingSeconds,
-        recommendedSpeed,
+        selectedSpeed,
         untouchedVideos,
     );
 
     const quickInsightCopy = getQuickInsightCopy({
+        selectedSpeed,
         recommendedSpeed,
         watchTime: insight.watchTime,
         untouchedVideos,
@@ -370,37 +381,47 @@ const PlaylistOverview = ({
                 {/* ================= SPEED OPTIONS ================= */}
 
                 <div className="space-y-3">
-                    <p className="text-sm font-medium">Fastest sane options</p>
+                    <p className="text-sm font-medium">
+                        Select your preferred speed{" "}
+                        <span className="text-xs text-muted-foreground">
+                            (Recommended: {recommendedSpeed}×)
+                        </span>
+                    </p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                        {speeds.map((s) => {
-                            const isRecommended = s.value === recommendedSpeed;
+                    <div className="grid w-full md:grid-flow-col auto-cols-fr gap-2 text-sm grid-cols-2">
+                        {FASTEST_SANE_SPEEDS.map((s) => {
+                            const isSelected = s.value === selectedSpeed;
 
                             return (
-                                <div
+                                <Button
                                     key={s.value}
-                                    className={cn(
-                                        "flex items-center justify-between rounded-md border px-3 py-2.5",
-                                        isRecommended &&
-                                            "border-primary bg-primary/10",
-                                    )}
+                                    type="button"
+                                    variant={isSelected ? "default" : "outline"}
+                                    size="sm"
+                                    className="h-auto min-h-11 w-full flex-col items-start gap-0.5 px-3 py-2"
+                                    onClick={() =>
+                                        onPreferredSpeedChange(s.value)
+                                    }
                                 >
-                                    <span className="text-muted-foreground">
-                                        {s.label}
+                                    <span className="flex items-center gap-2">
+                                        <span>{s.label}</span>
                                     </span>
-
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-medium">
-                                            {format(remainingSeconds / s.value)}
-                                        </span>
-
-                                        {isRecommended && (
-                                            <Badge variant="secondary">
-                                                Recommended
-                                            </Badge>
+                                    <span
+                                        className={cn(
+                                            "text-xs",
+                                            isSelected
+                                                ? "text-primary-foreground/80"
+                                                : "text-muted-foreground",
                                         )}
-                                    </div>
-                                </div>
+                                    >
+                                        {format(
+                                            calculateSpeedAdjustedMinutes(
+                                                remainingSeconds / 60,
+                                                s.value,
+                                            ) * 60,
+                                        )}
+                                    </span>
+                                </Button>
                             );
                         })}
                     </div>
@@ -415,73 +436,83 @@ const PlaylistOverview = ({
                         <p className="font-medium">Quick insights</p>
 
                         <div className="space-y-3 md:hidden">
-                            <div className="flex gap-3">
-                                <div className="min-w-0 flex-1 rounded-md border px-3 py-2.5">
-                                    <p className="text-xs text-muted-foreground">
-                                        Today
-                                    </p>
-                                    <p
-                                        className={cn(
-                                            "font-medium",
-                                            canFinishToday
-                                                ? "text-green-600"
-                                                : "text-red-600",
-                                        )}
-                                    >
-                                        {canFinishToday ? "Fits" : "Overflows"}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {effectiveStudyHours.toFixed(1)}h needed
-                                        · {hoursLeftToday.toFixed(1)}h left
-                                    </p>
-                                </div>
-
-                                <div className="min-w-0 rounded-md border px-3 py-2.5">
-                                    <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                                        <span>Heatmap</span>
-                                        <span>56d</span>
-                                    </div>
-                                    <div className="overflow-x-auto pb-1">
-                                        <div className="grid w-max grid-cols-7 gap-1.5">
-                                            {heatmapDays.map((date) => {
-                                                const count =
-                                                    dailyCompletionCounts[
-                                                        toDayKey(date)
-                                                    ] ?? 0;
-
-                                                return (
-                                                    <Tooltip
-                                                        key={toDayKey(date)}
-                                                    >
-                                                        <TooltipTrigger asChild>
-                                                            <div
-                                                                className={`h-2.5 w-2.5 rounded-sm ${getIntensityClass(count, maxHeatmapCount)}`}
-                                                            />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            {getHeatmapTooltipLabel(
-                                                                date,
-                                                                count,
-                                                            )}
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div className="rounded-md border px-3 py-2.5">
                                 <p className="text-xs text-muted-foreground">
-                                    Friction
+                                    Today
                                 </p>
-                                <p className="font-medium">
-                                    +{(NOTE_TAKING_OVERHEAD * 100).toFixed(0)}%
+                                <p
+                                    className={cn(
+                                        "font-medium",
+                                        canFinishToday
+                                            ? "text-green-600"
+                                            : "text-red-600",
+                                    )}
+                                >
+                                    {canFinishToday ? "Fits" : "Overflows"}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                    Notes & pauses
+                                    {effectiveStudyHours.toFixed(1)}h needed ·{" "}
+                                    {hoursLeftToday.toFixed(1)}h left
                                 </p>
+                            </div>
+
+                            <div className="grid grid-cols-[1fr,1.1fr] gap-3 items-stretch">
+                                <div className="flex min-w-0 flex-col gap-3">
+                                    <div className="rounded-md border px-3 py-2.5">
+                                        <p className="text-xs text-muted-foreground">
+                                            Speed
+                                        </p>
+                                        <p className="font-medium">
+                                            {selectedSpeed}×
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {untouchedVideos} videos left
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-md border px-3 py-2.5">
+                                        <p className="text-xs text-muted-foreground">
+                                            Friction
+                                        </p>
+                                        <p className="font-medium">
+                                            +
+                                            {(
+                                                NOTE_TAKING_OVERHEAD * 100
+                                            ).toFixed(0)}
+                                            %
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Notes & pauses
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-md border px-3 py-2.5 overflow-x-auto pb-1 justify-center items-center flex">
+                                    <div className="grid w-full h-full grid-cols-7 gap-1.5">
+                                        {heatmapDays.map((date) => {
+                                            const count =
+                                                dailyCompletionCounts[
+                                                    toDayKey(date)
+                                                ] ?? 0;
+
+                                            return (
+                                                <Tooltip key={toDayKey(date)}>
+                                                    <TooltipTrigger asChild>
+                                                        <div
+                                                            className={`h-2.5 w-2.5 rounded-sm ${getIntensityClass(count, maxHeatmapCount)}`}
+                                                        />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {getHeatmapTooltipLabel(
+                                                            date,
+                                                            count,
+                                                        )}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="rounded-md border px-3 py-2.5">
@@ -543,7 +574,7 @@ const PlaylistOverview = ({
                                     </p>
                                 </div>
                             </div>
-                            <div className="grid w-fit grid-cols-7 gap-2.5">
+                            <div className="grid grid-cols-7 gap-2.5 w-[50%]">
                                 {heatmapDays.map((date) => {
                                     const count =
                                         dailyCompletionCounts[toDayKey(date)] ??
