@@ -10,14 +10,18 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { PlaylistProgress } from "@/types/progress";
+import { VideoMetadata } from "@/types/playlist";
 import {
     calculateSpeedAdjustedMinutes,
     FASTEST_SANE_SPEEDS,
 } from "@/lib/planner/planner";
+import { getPlaylistResumeTarget } from "@/lib/playlist/resume";
+import ResumeWatchingPanel from "./ResumeWatchingPanel";
 
 /* ===================== PROPS ===================== */
 
 interface Props {
+    videos: VideoMetadata[];
     totalVideos: number;
     doneVideos: number;
     rewatchVideos: number;
@@ -200,6 +204,7 @@ function getHeatmapTooltipLabel(date: Date, count: number) {
 /* ===================== COMPONENT ===================== */
 
 const PlaylistOverview = ({
+    videos,
     totalVideos,
     doneVideos,
     rewatchVideos,
@@ -238,6 +243,8 @@ const PlaylistOverview = ({
 
     const untouchedVideos =
         totalVideos - doneVideos - rewatchVideos - skippedVideos;
+
+    const resumeTarget = getPlaylistResumeTarget(videos, progress);
 
     const insight = getDynamicInsight(
         remainingSeconds,
@@ -375,6 +382,8 @@ const PlaylistOverview = ({
                         </div>
                     </div>
                 </div>
+
+                <ResumeWatchingPanel target={resumeTarget} />
 
                 <Separator />
 

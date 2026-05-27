@@ -165,6 +165,7 @@ const PlaylistForm = () => {
             ) : summary ? (
                 <div className="mt-8 space-y-8">
                     <PlaylistOverview
+                        videos={videos}
                         totalVideos={summary.totalVideos}
                         doneVideos={doneCount}
                         rewatchVideos={rewatchCount}
