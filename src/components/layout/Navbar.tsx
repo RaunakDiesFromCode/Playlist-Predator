@@ -63,7 +63,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
     }
 
     return (
-        <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+        <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
             <div className="mx-auto flex max-w-7xl items-center gap-3 px-3 py-2 pt-[calc(0.5rem+env(safe-area-inset-top))]">
                 <div className="flex items-center gap-2 shrink-0">
                     <Button

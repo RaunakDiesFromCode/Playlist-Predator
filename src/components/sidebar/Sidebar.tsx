@@ -80,7 +80,7 @@ function SidebarContent({
 
         return (
             <div className="flex flex-1 min-h-0 items-center justify-center px-4 py-6">
-                <div className="w-full max-w-sm rounded-xl border border-border/70 bg-muted/20 p-5 text-center shadow-sm">
+                <div className="w-full max-w-sm rounded-xl bg-muted/20 p-5 text-center shadow-sm">
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <LibraryBig className="h-6 w-6" />
                     </div>
@@ -100,26 +100,10 @@ function SidebarContent({
 
     return (
         <>
-            {/* <div className="border-b border-border/70 px-4 py-5">
-                <div className="flex items-center gap-3">
-                    <div className={cn("min-w-0", collapsed && "sr-only")}>
-                        <p className="text-sm font-semibold">
-                            {user ? "Your playlists" : "Welcome"}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                            {user
-                                ? `${playlists.length} saved playlist${
-                                      playlists.length === 1 ? "" : "s"
-                                  }`
-                                : "Study smarter, not longer"}
-                        </p>
-                    </div>
-                </div>
-            </div> */}
 
             <div
                 className={cn(
-                    "border-b border-border/70 p-2.5",
+                    " p-2.5",
                     collapsed && "sr-only",
                 )}
             >
@@ -130,7 +114,7 @@ function SidebarContent({
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search playlists..."
-                        className="h-10 rounded-md border-border/70 bg-muted/30 pl-9"
+                        className="h-10 rounded-md bg-muted/30 pl-9"
                     />
                 </div>
 
@@ -149,7 +133,7 @@ function SidebarContent({
                     {!loading && playlists.length === 0 && user && (
                         <div
                             className={cn(
-                                "rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground",
+                                "rounded-xl px-4 py-6 text-sm text-muted-foreground",
                                 collapsed && "sr-only",
                             )}
                         >
@@ -177,7 +161,7 @@ function SidebarContent({
                     {!loading && filteredPlaylists.length === 0 && query && (
                         <div
                             className={cn(
-                                "rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground",
+                                "rounded-xl px-4 py-6 text-sm text-muted-foreground",
                                 collapsed && "sr-only",
                             )}
                         >
@@ -189,7 +173,7 @@ function SidebarContent({
 
             <div
                 className={cn(
-                    "border-t border-border/70 bg-muted/20 px-4 py-4",
+                    " bg-muted/20 px-4 py-4",
                     collapsed && "sr-only",
                 )}
             >
@@ -325,7 +309,7 @@ export default function Sidebar({
         <>
             <aside
                 className={cn(
-                    "hidden md:flex md:sticky md:top-0 md:h-screen md:shrink-0 flex-col overflow-hidden border-r border-border/70 bg-background/95 backdrop-blur transition-[width] duration-200 ease-out",
+                    "hidden md:flex md:sticky md:top-0 md:h-screen md:shrink-0 flex-col overflow-hidden  bg-background/95 backdrop-blur transition-[width] duration-200 ease-out",
                     collapsed ? "w-16" : "w-72",
                 )}
             >
