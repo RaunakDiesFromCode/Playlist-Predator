@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { LogOut, Search, Sidebar, User } from "lucide-react";
+import { BarChart3, LogOut, Search, Sidebar, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -169,6 +169,14 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                             Dashboard
                                         </DropdownMenuItem>
                                     )}
+
+                                    <DropdownMenuItem
+                                        className="flex items-center gap-2"
+                                        onClick={() => router.push("/stats")}
+                                    >
+                                        <BarChart3 className="h-4 w-4" />
+                                        Statistics
+                                    </DropdownMenuItem>
 
                                     <DropdownMenuItem
                                         className="flex items-center gap-2 text-red-600 focus:text-red-600"
