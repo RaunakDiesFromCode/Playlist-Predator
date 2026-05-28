@@ -3,24 +3,40 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PlaylistMeta, VideoMetadata } from "@/types/playlist";
 import { PlaylistProgress } from "@/types/progress";
-import { VideoMetadata } from "@/types/playlist";
 import {
     calculateSpeedAdjustedMinutes,
     FASTEST_SANE_SPEEDS,
 } from "@/lib/planner/planner";
 import { getPlaylistResumeTarget } from "@/lib/playlist/resume";
+import {
+    buildPlaylistCsvExport,
+    buildPlaylistJsonExport,
+    downloadExportFile,
+} from "@/lib/export";
 import ResumeWatchingPanel from "./ResumeWatchingPanel";
 
 /* ===================== PROPS ===================== */
 
 interface Props {
+    playlist: PlaylistMeta | null;
     videos: VideoMetadata[];
     totalVideos: number;
     doneVideos: number;
@@ -204,6 +220,7 @@ function getHeatmapTooltipLabel(date: Date, count: number) {
 /* ===================== COMPONENT ===================== */
 
 const PlaylistOverview = ({
+    playlist,
     videos,
     totalVideos,
     doneVideos,
@@ -303,13 +320,66 @@ const PlaylistOverview = ({
 
     const maxHeatmapCount = Math.max(...heatmapCounts, 0);
 
+    function handleExport(format: "json" | "csv") {
+        if (!playlist?.title) return;
+
+        const exporter =
+            format === "json"
+                ? buildPlaylistJsonExport
+                : buildPlaylistCsvExport;
+        const file = exporter({ playlist, videos, progress });
+
+        downloadExportFile(file);
+    }
+
     return (
         <Card className="h-full flex flex-col justify-center ">
             <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
                 <CardTitle className="text-lg">Reality Check</CardTitle>
-                <Badge variant="secondary" className="whitespace-nowrap">
-                    {doneVideos}/{totalVideos} done
-                </Badge>
+                <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="whitespace-nowrap">
+                        {doneVideos}/{totalVideos} done
+                    </Badge>
+
+                    {playlist?.title ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 gap-2 px-3"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Export
+                                </Button>
+                            </DropdownMenuTrigger>
+
+                            <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuLabel>
+                                    Export progress
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onSelect={() => handleExport("json")}
+                                >
+                                    JSON
+                                    <DropdownMenuShortcut>
+                                        .json
+                                    </DropdownMenuShortcut>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={() => handleExport("csv")}
+                                >
+                                    CSV
+                                    <DropdownMenuShortcut>
+                                        .csv
+                                    </DropdownMenuShortcut>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : null}
+                </div>
             </CardHeader>
 
             <CardContent className="space-y-4 md:space-y-6">

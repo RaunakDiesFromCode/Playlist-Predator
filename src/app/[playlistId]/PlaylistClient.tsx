@@ -312,6 +312,7 @@ export default function PlaylistClient({
     const AnalysisPanel = (
         <div className="space-y-4">
             <PlaylistOverview
+                playlist={playlist}
                 videos={videos}
                 totalVideos={summary.totalVideos}
                 doneVideos={doneCount}

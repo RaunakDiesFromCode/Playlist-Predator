@@ -2,8 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Sun, Moon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Moon, Sun } from "lucide-react";
 
 const ThemeToggle = () => {
     const { theme, setTheme, systemTheme } = useTheme();
@@ -18,14 +17,17 @@ const ThemeToggle = () => {
     const currentTheme = theme === "system" ? systemTheme : theme;
 
     return (
-        <Button
+        <div
             onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
-            aria-label="Toggle theme"
-            className="w-full justify-start"
+            className="flex w-full cursor-pointer items-center gap-2"
         >
-            {currentTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-            {currentTheme === "dark" ? "Light" : "Dark"}
-        </Button>
+            {currentTheme === "dark" ? (
+                <Sun className="h-4 w-4" />
+            ) : (
+                <Moon className="h-4 w-4" />
+            )}
+            <span>{currentTheme === "dark" ? "Light" : "Dark"}</span>
+        </div>
     );
 };
 

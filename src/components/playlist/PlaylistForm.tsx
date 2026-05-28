@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { PlaylistAnalysis, VideoMetadata } from "@/types/playlist";
+import {
+    PlaylistAnalysis,
+    PlaylistMeta,
+    VideoMetadata,
+} from "@/types/playlist";
 import PlaylistOverview from "./PlaylistOverview";
 import PlaylistVideoList from "./PlaylistVideoList";
 import PlaylistAnalysisSkeleton from "./PlaylistAnalysisSkeleton";
@@ -24,6 +28,7 @@ const PlaylistForm = () => {
 
     const [summary, setSummary] = useState<PlaylistAnalysis | null>(null);
     const [videos, setVideos] = useState<VideoMetadata[]>([]);
+    const [playlist, setPlaylist] = useState<PlaylistMeta | null>(null);
 
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -126,6 +131,7 @@ const PlaylistForm = () => {
 
             setSummary(data.summary);
             setVideos(data.videos);
+            setPlaylist(data.playlist ?? null);
         } catch {
             setError("Network error. Please try again.");
         } finally {
@@ -165,6 +171,7 @@ const PlaylistForm = () => {
             ) : summary ? (
                 <div className="mt-8 space-y-8">
                     <PlaylistOverview
+                        playlist={playlist}
                         videos={videos}
                         totalVideos={summary.totalVideos}
                         doneVideos={doneCount}
@@ -190,7 +197,7 @@ const PlaylistForm = () => {
                         videos={videos}
                         progress={progress}
                         onStatusChange={handleStatusChange}
-                        playlist={null}
+                        playlist={playlist}
                     />
                 </div>
             ) : null}
