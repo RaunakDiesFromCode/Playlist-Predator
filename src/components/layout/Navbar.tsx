@@ -119,6 +119,14 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                 )}
 
                 <div className="ml-auto flex items-center gap-2 md:gap-3">
+                    <Button
+                        asChild
+                        variant="outline"
+                        className="hidden sm:inline-flex"
+                    >
+                        <Link href="/compare">Compare</Link>
+                    </Button>
+
                     {!loading &&
                         (user ? (
                             <DropdownMenu>

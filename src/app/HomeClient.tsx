@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -75,6 +76,12 @@ export default function HomeClient() {
                         <ArrowRight />
                     </Button>
                 </form>
+
+                <div className="flex justify-center">
+                    <Button asChild variant="outline" className="gap-2">
+                        <Link href="/compare">Compare playlists</Link>
+                    </Button>
+                </div>
             </div>
         </main>
     );
