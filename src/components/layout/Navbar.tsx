@@ -2,10 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-import { BarChart3, LogOut, Scale, Search, Sidebar, User } from "lucide-react";
+import { BarChart3, LogOut, Scale, Sidebar, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +15,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import ThemeToggle from "../ThemeToggle";
 import { type AuthUser } from "@/hooks/use-auth";
 import { useAdminAccess } from "@/hooks/use-admin-access";
@@ -29,32 +26,10 @@ type NavbarProps = {
 };
 
 const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
-    const pathname = usePathname();
     const router = useRouter();
-    const [input, setInput] = useState("");
     const { canAccess: showAdminLink } = useAdminAccess();
 
-    const isHome = pathname === "/";
-    const showSearch = !isHome;
 
-    function extractPlaylistId(value: string) {
-        try {
-            if (value.includes("youtube.com")) {
-                return new URL(value).searchParams.get("list");
-            }
-            return value.trim();
-        } catch {
-            return null;
-        }
-    }
-
-    function handleSearch(e: React.FormEvent) {
-        e.preventDefault();
-        const id = extractPlaylistId(input);
-        if (!id) return;
-        setInput("");
-        router.push(`/${id}`);
-    }
 
     async function handleLogout() {
         const { supabase } = await import("@/lib/supabase/client");
@@ -71,7 +46,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                         size="icon"
                         onClick={toggleSidebar}
                         aria-label="Toggle sidebar"
-                        className="h-11 w-11"
+                        className="h-11 w-11 md:hidden"
                     >
                         <Sidebar className="h-6 w-6" />
                     </Button>
@@ -90,33 +65,6 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                         Playlist Predator
                     </Link>
                 </div>
-
-                {showSearch && (
-                    <form
-                        onSubmit={handleSearch}
-                        className="flex-1 max-w-xl mx-auto"
-                    >
-                        <div className="relative">
-                            <Label
-                                htmlFor="navbar-playlist-search"
-                                className="sr-only"
-                            >
-                                Paste playlist link or ID
-                            </Label>
-                            <Search
-                                size={18}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                            />
-                            <Input
-                                id="navbar-playlist-search"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Paste playlist link or ID"
-                                className="pl-9"
-                            />
-                        </div>
-                    </form>
-                )}
 
                 <div className="ml-auto flex items-center gap-2 md:gap-3">
                     {!loading &&

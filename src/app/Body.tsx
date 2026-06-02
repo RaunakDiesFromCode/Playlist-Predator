@@ -56,14 +56,9 @@ export default function Body({ children }: { children: React.ReactNode }) {
                         <Navbar
                             user={user}
                             loading={loading}
-                            toggleSidebar={() => {
-                                if (window.innerWidth >= 768) {
-                                    setSidebarCollapsed((value) => !value);
-                                    return;
-                                }
-
-                                setMobileSidebarOpen((value) => !value);
-                            }}
+                            toggleSidebar={() =>
+                                setMobileSidebarOpen((value) => !value)
+                            }
                         />
 
                         <main className="min-h-0 flex-1 transition-all duration-200">

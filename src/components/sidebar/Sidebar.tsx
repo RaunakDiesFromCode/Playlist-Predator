@@ -2,7 +2,7 @@
 
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { LibraryBig, Search } from "lucide-react";
+import { LibraryBig, PanelLeft, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,7 @@ type Playlist = {
     id: string;
     youtube_playlist_id: string;
     title: string | null;
+    thumbnail: string | null;
 };
 
 type SidebarProps = {
@@ -56,6 +57,7 @@ type SidebarContentProps = {
     filteredPlaylists: Playlist[];
     pathname: string | null;
     collapsed?: boolean;
+    onSearchButtonClick?: () => void;
     onNavigateAction: () => void;
     onLogin: () => void;
 };
@@ -70,6 +72,7 @@ function SidebarContent({
     filteredPlaylists,
     pathname,
     collapsed,
+    onSearchButtonClick,
     onNavigateAction,
     onLogin,
 }: SidebarContentProps) {
@@ -100,25 +103,34 @@ function SidebarContent({
 
     return (
         <>
-
-            <div
-                className={cn(
-                    " p-2.5",
-                    collapsed && "sr-only",
+            <div className="p-2.5">
+                {collapsed ? (
+                    <div className="flex w-full items-center justify-start">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10"
+                            aria-label="Expand sidebar to search playlists"
+                            onClick={onSearchButtonClick}
+                        >
+                            <Search className="h-4 w-4" />
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="relative">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Search playlists..."
+                            className="h-10 rounded-md bg-muted/30 pl-9"
+                        />
+                    </div>
                 )}
-            >
-                <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search playlists..."
-                        className="h-10 rounded-md bg-muted/30 pl-9"
-                    />
-                </div>
 
-                {query ? (
+                {!collapsed && query ? (
                     <p className="mt-2 text-xs text-muted-foreground">
                         {filteredPlaylists.length} match
                         {filteredPlaylists.length === 1 ? "" : "es"}
@@ -152,6 +164,7 @@ function SidebarContent({
                                     title={pl.title ?? pl.youtube_playlist_id}
                                     href={href}
                                     active={active}
+                                    thumbnail={pl.thumbnail}
                                     collapsed={collapsed}
                                     onClickAction={onNavigateAction}
                                 />
@@ -172,10 +185,7 @@ function SidebarContent({
             </ScrollArea>
 
             <div
-                className={cn(
-                    " bg-muted/20 px-4 py-4",
-                    collapsed && "sr-only",
-                )}
+                className={cn(" bg-muted/20 px-4 py-4", collapsed && "sr-only")}
             >
                 <Footer />
             </div>
@@ -189,6 +199,7 @@ export default function Sidebar({
     mobileOpen,
     setMobileOpen,
     collapsed,
+    setCollapsed,
     onNavigateAction,
 }: SidebarProps) {
     const pathname = usePathname();
@@ -313,6 +324,19 @@ export default function Sidebar({
                     collapsed ? "w-16" : "w-72",
                 )}
             >
+                <div className="flex items-center justify-start p-2.5">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Toggle sidebar"
+                        className="h-10 w-10"
+                        onClick={() => setCollapsed((value) => !value)}
+                    >
+                        <PanelLeft className="h-5 w-5" />
+                    </Button>
+                </div>
+
                 <SidebarContent
                     user={user}
                     authLoading={authLoading}
@@ -323,6 +347,7 @@ export default function Sidebar({
                     filteredPlaylists={filteredPlaylists}
                     pathname={pathname}
                     collapsed={collapsed}
+                    onSearchButtonClick={() => setCollapsed(false)}
                     onNavigateAction={onNavigateAction}
                     onLogin={loginAction}
                 />

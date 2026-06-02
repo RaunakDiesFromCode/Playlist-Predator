@@ -81,6 +81,9 @@ export default function HomeClient() {
                     <Button asChild variant="ghost" className="gap-2">
                         <Link href="/compare">Compare playlists</Link>
                     </Button>
+                    <Button asChild variant="ghost" className="gap-2">
+                        <Link href="/stats">My Statistics</Link>
+                    </Button>
                 </div>
             </div>
         </main>

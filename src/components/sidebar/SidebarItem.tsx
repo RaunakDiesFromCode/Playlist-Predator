@@ -11,6 +11,7 @@ export default function SidebarItem({
     title: string;
     href: string;
     active?: boolean;
+    thumbnail?: string | null;
     collapsed?: boolean;
     onClickAction?: () => void;
 }) {
@@ -21,8 +22,8 @@ export default function SidebarItem({
             href={href}
             onClick={onClickAction}
             className={cn(
-                "group flex items-center justify-center rounded-md py-2 text-sm transition-all my-1",
-                collapsed ? "justify-center px-2" : "gap-3 px-3",
+                "group flex items-center justify-start rounded-md py-2 text-sm transition-all my-1",
+                collapsed ? "px-2" : "gap-3 px-3",
                 active
                     ? "border border-primary/10 bg-primary/10 font-medium text-foreground shadow-sm"
                     : "text-muted-foreground hover:border-border hover:bg-muted/60 hover:text-foreground",
