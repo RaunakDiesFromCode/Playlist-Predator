@@ -41,11 +41,10 @@ const INITIAL_ROWS: InputRow[] = [
 const MAX_ROWS = 4;
 
 const toneClasses: Record<HighlightTone, string> = {
-    emerald:
-        "from-emerald-500/10 via-background to-background border-emerald-500/20",
-    amber: "from-amber-500/10 via-background to-background border-amber-500/20",
-    sky: "from-sky-500/10 via-background to-background border-sky-500/20",
-    rose: "from-rose-500/10 via-background to-background border-rose-500/20",
+    emerald: "border-emerald-500/20 bg-emerald-500/5",
+    amber: "border-amber-500/20 bg-amber-500/5",
+    sky: "border-sky-500/20 bg-sky-500/5",
+    rose: "border-rose-500/20 bg-rose-500/5",
 };
 
 function createRow(): InputRow {
@@ -139,7 +138,7 @@ export default function ComparisonClient() {
 
     return (
         <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 md:px-6">
-            <section className="space-y-4 rounded-3xl border bg-gradient-to-br from-muted/70 via-background to-background p-6 shadow-sm md:p-8">
+            <section className="space-y-4 rounded-3xl border bg-card p-6 shadow-sm md:p-8">
                 <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-3">
                         <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
@@ -259,7 +258,7 @@ export default function ComparisonClient() {
                                 >
                                     <Card
                                         className={cn(
-                                            "h-full overflow-hidden border bg-gradient-to-br shadow-sm transition-colors",
+                                            "h-full overflow-hidden border shadow-sm transition-colors",
                                             toneClasses[
                                                 toneForHighlight(highlight.kind)
                                             ],

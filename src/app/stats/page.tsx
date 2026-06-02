@@ -151,7 +151,7 @@ export default async function StatsPage() {
                     </p>
                 </div>
 
-                <Card className="border-dashed bg-gradient-to-br from-muted/70 to-background">
+                <Card className="border-dashed bg-muted/30">
                     <CardContent className="flex flex-col gap-5 p-6 sm:p-8">
                         <div className="space-y-3">
                             <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
