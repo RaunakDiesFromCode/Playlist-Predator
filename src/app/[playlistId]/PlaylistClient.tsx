@@ -357,7 +357,7 @@ export default function PlaylistClient({
                     />
                 ) : null}
 
-                <div className="w-1/2 h-[calc(100dvh-5rem)] overflow-hidden">
+                <div className="w-1/2 h-[calc(100dvh-4.3em)] overflow-hidden">
                     <PlaylistVideoList
                         videos={videos}
                         progress={progress}
@@ -367,7 +367,7 @@ export default function PlaylistClient({
                     />
                 </div>
 
-                <div className="w-1/2 h-[calc(100dvh-5em)] overflow-y-auto">
+                <div className="w-1/2 h-[calc(100dvh-4.3em)] overflow-y-auto">
                     {AnalysisPanel}
                 </div>
             </div>
