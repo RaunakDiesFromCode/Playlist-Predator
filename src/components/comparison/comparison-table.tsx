@@ -17,6 +17,7 @@ import type {
     ComparisonItem,
     ComparisonSuccessItem,
 } from "@/lib/comparison/compare-playlists";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
 type ComparisonTableProps = {
     items: ComparisonItem[];
@@ -32,16 +33,16 @@ export default function ComparisonTable({
     );
 
     return (
-        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-            <div className="border-b px-5 py-4">
-                <h3 className="text-lg font-semibold">Comparison Table</h3>
-                <p className="text-sm text-muted-foreground">
+        <Card>
+            <CardHeader >
+                <CardTitle className="text-lg">Comparison Table</CardTitle>
+                <CardDescription>
                     Duration estimates are based on the playlist content fetched
                     from YouTube.
-                </p>
-            </div>
+                </CardDescription>
+            </CardHeader>
 
-            <div className="divide-y md:hidden">
+            <CardContent className="divide-y md:hidden">
                 {items.map((item) => {
                     if (item.status === "error") {
                         return (
@@ -69,9 +70,9 @@ export default function ComparisonTable({
                         />
                     );
                 })}
-            </div>
+            </CardContent>
 
-            <div className="hidden md:block">
+            <div className="hidden md:block px-5 py-1">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -119,7 +120,7 @@ export default function ComparisonTable({
                     </TableBody>
                 </Table>
             </div>
-        </div>
+        </Card>
     );
 }
 

@@ -77,8 +77,8 @@ export default function HomeClient() {
                     </Button>
                 </form>
 
-                <div className="flex justify-center">
-                    <Button asChild variant="outline" className="gap-2">
+                <div className="flex justify-center mt-10">
+                    <Button asChild variant="ghost" className="gap-2">
                         <Link href="/compare">Compare playlists</Link>
                     </Button>
                 </div>

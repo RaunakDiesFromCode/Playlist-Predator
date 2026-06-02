@@ -1,23 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import {
-    ArrowRightLeft,
-    AlertCircle,
-    Check,
-    Loader2,
-    Minus,
-    Plus,
-} from "lucide-react";
+import { AlertCircle, Loader2, Minus, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 import ComparisonTable from "./comparison-table";
@@ -138,111 +136,96 @@ export default function ComparisonClient() {
 
     return (
         <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 md:px-6">
-            <section className="space-y-4 rounded-3xl border bg-card p-6 shadow-sm md:p-8">
-                <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                    <div className="space-y-3">
-                        <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
-                            <ArrowRightLeft className="h-3.5 w-3.5" />
-                            Playlist comparison
-                        </div>
-                        <div className="space-y-2">
-                            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                                Compare playlists side by side
-                            </h1>
-                            <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
-                                Paste 2 to 4 playlist URLs or IDs to see total
-                                duration, playback time at different speeds, and
-                                simple study-time insights.
-                            </p>
-                        </div>
-                    </div>
-
-                    <Button asChild variant="outline" className="w-fit gap-2">
-                        <Link href="/">
-                            <Check className="h-4 w-4" />
-                            Analyze a playlist
-                        </Link>
-                    </Button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid gap-3 md:grid-cols-2">
-                        {rows.map((row, index) => (
-                            <div key={row.id} className="space-y-2">
-                                <Label
-                                    htmlFor={row.id}
-                                    className="text-sm font-medium"
-                                >
-                                    Playlist {index + 1}
-                                </Label>
-                                <div className="flex flex-col gap-2 sm:flex-row">
-                                    <Input
-                                        id={row.id}
-                                        value={row.value}
-                                        onChange={(event) =>
-                                            updateRow(
-                                                row.id,
-                                                event.target.value,
-                                            )
-                                        }
-                                        placeholder="Paste a playlist URL or ID"
-                                        className="h-11 flex-1"
-                                    />
-                                    {rows.length > 2 ? (
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="icon"
-                                            className="h-11 w-full shrink-0 sm:w-11"
-                                            onClick={() => removeRow(row.id)}
-                                            aria-label={`Remove playlist ${index + 1}`}
-                                        >
-                                            <Minus className="h-4 w-4" />
-                                        </Button>
-                                    ) : null}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-xl">Compare playlists side by side</CardTitle>
+                    <CardDescription>
+                        Paste 2 to 4 playlist URLs or IDs to see total duration,
+                        playback time at different speeds, and simple study-time
+                        insights.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid gap-3 md:grid-cols-2">
+                            {rows.map((row, index) => (
+                                <div key={row.id} className="space-y-2">
+                                    <Label
+                                        htmlFor={row.id}
+                                        className="text-sm font-medium"
+                                    >
+                                        Playlist {index + 1}
+                                    </Label>
+                                    <div className="flex flex-col gap-2 sm:flex-row">
+                                        <Input
+                                            id={row.id}
+                                            value={row.value}
+                                            onChange={(event) =>
+                                                updateRow(
+                                                    row.id,
+                                                    event.target.value,
+                                                )
+                                            }
+                                            placeholder="Paste a playlist URL or ID"
+                                            className="h-11 flex-1"
+                                        />
+                                        {rows.length > 2 ? (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-11 w-full shrink-0 sm:w-11"
+                                                onClick={() =>
+                                                    removeRow(row.id)
+                                                }
+                                                aria-label={`Remove playlist ${index + 1}`}
+                                            >
+                                                <Minus className="h-4 w-4" />
+                                            </Button>
+                                        ) : null}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
 
-                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={addRow}
-                            disabled={rows.length >= MAX_ROWS}
-                            className="w-full gap-2 sm:w-auto"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Add another playlist
-                        </Button>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={addRow}
+                                disabled={rows.length >= MAX_ROWS}
+                                className="w-full gap-2 sm:w-auto"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Add another playlist
+                            </Button>
 
-                        <Button
-                            type="submit"
-                            disabled={loading || filledRows.length < 2}
-                            className="w-full gap-2 sm:w-auto"
-                        >
-                            {loading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : null}
-                            Compare playlists
-                        </Button>
-                    </div>
+                            <Button
+                                type="submit"
+                                disabled={loading || filledRows.length < 2}
+                                className="w-full gap-2 sm:w-auto"
+                            >
+                                {loading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : null}
+                                Compare playlists
+                            </Button>
+                        </div>
+                    </form>
 
-                    <p className="text-xs text-muted-foreground">
-                        Supports playlist URLs and playlist IDs. Private or
-                        unavailable playlists will show an inline error instead
-                        of breaking the whole comparison.
-                    </p>
-                </form>
-
-                {error ? (
-                    <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                        <p>{error}</p>
-                    </div>
-                ) : null}
-            </section>
+                    {error ? (
+                        <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                            <p>{error}</p>
+                        </div>
+                    ) : null}
+                </CardContent>
+                <CardFooter className="text-sm text-muted-foreground">
+                    Supports playlist URLs and playlist IDs. Private or
+                    unavailable playlists will show an inline error instead of
+                    breaking the whole comparison.
+                </CardFooter>
+            </Card>
 
             {result ? (
                 <>
@@ -258,7 +241,7 @@ export default function ComparisonClient() {
                                 >
                                     <Card
                                         className={cn(
-                                            "h-full overflow-hidden border shadow-sm transition-colors",
+                                            "h-full overflow-hidden shadow-sm transition-colors",
                                             toneClasses[
                                                 toneForHighlight(highlight.kind)
                                             ],
@@ -292,9 +275,6 @@ export default function ComparisonClient() {
                                                     <h3 className="truncate text-lg font-semibold leading-tight">
                                                         {highlight.title}
                                                     </h3>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {highlight.description}
-                                                    </p>
                                                 </div>
                                             </div>
 
@@ -330,15 +310,13 @@ export default function ComparisonClient() {
                         </Card>
                     )}
 
-                    <Separator />
-
-                    <Card className="border-dashed bg-muted/30 shadow-sm">
-                        <CardHeader className="space-y-2 pb-3">
+                    <Card >
+                        <CardHeader>
                             <CardTitle className="text-lg">Insights</CardTitle>
-                            <p className="text-sm text-muted-foreground">
+                            <CardDescription >
                                 Simple calculations based on the playlists you
                                 entered.
-                            </p>
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             {result.insights.length > 0 ? (
