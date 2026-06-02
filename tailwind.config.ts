@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
+import { fontFamily } from "tailwindcss/defaultTheme";
 
 export default {
     content: [
@@ -10,6 +11,10 @@ export default {
     darkMode: ["class"],
     theme: {
         extend: {
+            fontFamily: {
+                sans: ["var(--font-jetbrains-mono)", ...fontFamily.sans],
+                mono: ["var(--font-jetbrains-mono)", ...fontFamily.mono],
+            },
             colors: {
                 background: "hsl(var(--background))",
                 foreground: "hsl(var(--foreground))",

@@ -1,7 +1,13 @@
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Body from "./Body";
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+
+const jetbrainsMono = JetBrains_Mono({
+    subsets: ["latin"],
+    variable: "--font-jetbrains-mono",
+});
 
 export const metadata: Metadata = {
     title: {
@@ -41,7 +47,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang="en" suppressHydrationWarning className={`${jetbrainsMono.variable} font-sans font-mono`}>
             <Body>{children}</Body>
             <Analytics />
         </html>

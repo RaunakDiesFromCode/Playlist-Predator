@@ -182,7 +182,7 @@ const PlaylistVideoList = ({
                         }}
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-primary/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
 
                     <div
                         className="absolute bottom-4 left-4 right-4 transition-none"
@@ -190,18 +190,6 @@ const PlaylistVideoList = ({
                             opacity: "calc(1 - var(--blur, 0) / 5)",
                         }}
                     >
-                        {isMounted && streakInfo.streakDay ? (
-                            <Badge
-                                className={cn(
-                                    "mb-2 w-fit",
-                                    streakInfo.hasActivityToday
-                                        ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600"
-                                        : "border-amber-500/30 bg-amber-500/15 text-amber-600",
-                                )}
-                            >
-                                Day {streakInfo.streakDay}
-                            </Badge>
-                        ) : null}
                         <h2 className="text-2xl font-semibold leading-tight line-clamp-2 md:text-3xl">
                             <Link
                                 href={playlist?.youtubeUrl ?? "#"}
@@ -211,8 +199,20 @@ const PlaylistVideoList = ({
                                 {playlist?.title}
                             </Link>
                         </h2>
-                        <p className="text-sm text-muted-foreground md:text-lg">
+                        <p className="text-sm text-muted-foreground md:text-lg flex gap-1 items-center">
                             {playlist?.channelTitle}
+                            {isMounted && streakInfo.streakDay ? (
+                                <Badge
+                                    className={cn(
+                                        " w-fit",
+                                        streakInfo.hasActivityToday
+                                            ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600"
+                                            : "border-amber-500/30 bg-amber-500/15 text-amber-600",
+                                    )}
+                                >
+                                    Day {streakInfo.streakDay}
+                                </Badge>
+                            ) : null}
                         </p>
                     </div>
                 </div>

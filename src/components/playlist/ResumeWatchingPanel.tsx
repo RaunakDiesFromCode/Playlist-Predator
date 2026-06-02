@@ -29,7 +29,7 @@ export default function ResumeWatchingPanel({
         <div
             className={cn("rounded-md border bg-muted/20 px-3 py-3", className)}
         >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0 space-y-1">
                     <div className="flex items-center gap-2">
                         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -37,12 +37,6 @@ export default function ResumeWatchingPanel({
                                 ? "Playlist complete"
                                 : "Resume Watching"}
                         </p>
-                        <Badge
-                            variant="secondary"
-                            className="h-5 px-2 text-[10px] md:flex hidden"
-                        >
-                            {target.remainingCount} left
-                        </Badge>
                     </div>
 
                     <p className="line-clamp-1 text-sm font-medium">
@@ -61,11 +55,11 @@ export default function ResumeWatchingPanel({
                 <div className="flex flex-col items-center justify-center">
                     <Badge
                         variant="secondary"
-                        className="h-5 px-2 text-[10px] w-full md:hidden flex rounded-b-none"
+                        className="h-5 px-2 text-[10px] w-full rounded-b-none rounded-t-sm"
                     >
                         {target.remainingCount} left
                     </Badge>
-                    <Button asChild size="sm" className="shrink-0 gap-1.5 md:rounded-md rounded-t-none">
+                    <Button asChild size="sm" className="shrink-0 gap-1.5 rounded-t-none rounded-b-sm">
                         <Link
                             href={target.href}
                             target="_blank"
