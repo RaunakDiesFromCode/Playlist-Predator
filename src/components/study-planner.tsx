@@ -10,6 +10,7 @@ import {
     calculateSpeedAdjustedMinutes,
     calculateVideosPerDay,
 } from "@/lib/planner/planner";
+import { cn } from "@/lib/utils";
 
 type StudyPlannerProps = {
     remainingMinutes: number;
@@ -88,7 +89,7 @@ export default function StudyPlanner({
     const hasValidStudyTime = dailyMinutes > 0;
 
     return (
-        <Card className={className}>
+        <Card className={cn("border-none md:border", className)}>
             <CardHeader className="pb-3">
                 <CardTitle className="text-base">{title}</CardTitle>
             </CardHeader>

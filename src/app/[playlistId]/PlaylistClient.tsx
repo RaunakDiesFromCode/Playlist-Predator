@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { upsertSidebarPlaylist } from "@/lib/sidebar/playlists";
 import { useStudyPlannerPreferences } from "@/hooks/use-study-planner-preferences";
+import { Separator } from "@/components/ui/separator";
 
 import {
     Drawer,
@@ -310,7 +311,7 @@ export default function PlaylistClient({
     if (!summary || !playlist) return null;
 
     const AnalysisPanel = (
-        <div className="space-y-4">
+        <div className="flex h-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain rounded-xl border border-border gap-2">
             <PlaylistOverview
                 playlist={playlist}
                 videos={videos}
@@ -324,6 +325,8 @@ export default function PlaylistClient({
                 preferredSpeed={preferences.preferredSpeed}
                 onPreferredSpeedChange={setPreferredSpeed}
             />
+
+            <Separator />
 
             <StudyPlanner
                 remainingMinutes={remainingDurationSeconds / 60}

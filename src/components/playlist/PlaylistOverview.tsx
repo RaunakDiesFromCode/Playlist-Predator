@@ -333,7 +333,7 @@ const PlaylistOverview = ({
     }
 
     return (
-        <Card className="h-full flex flex-col justify-center ">
+        <Card className="h-full flex flex-col justify-center border-none md:border">
             <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
                 <CardTitle className="text-lg">Reality Check</CardTitle>
                 <div className="flex items-center gap-2">
