@@ -6,8 +6,6 @@ import { CheckCircle2, Clock3, ListVideo, Percent } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import StatCard from "@/components/stats/stat-card";
-import StatsGrid from "@/components/stats/stats-grid";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { calculateUserStats } from "@/lib/stats/calculate-user-stats";
 
@@ -205,53 +203,127 @@ export default async function StatsPage() {
                 </p>
             </div>
 
-            <StatsGrid className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard
-                    label="Playlists Tracked"
-                    value={stats.playlistsTracked.toString()}
-                    description="Playlists you're learning from"
-                    icon={<ListVideo className="h-4 w-4" />}
-                />
-                <StatCard
-                    label="Videos Completed"
-                    value={stats.videosCompleted.toString()}
-                    description="Videos you've finished"
-                    icon={<CheckCircle2 className="h-4 w-4" />}
-                />
-                <StatCard
-                    label="Completion Rate"
-                    value={completionRate}
-                    description="Completed out of all tracked videos"
-                    icon={<Percent className="h-4 w-4" />}
-                />
-                <StatCard
-                    label="Last Activity"
-                    value={formatLastActivity(stats.lastActivity)}
-                    description="Most recent learning session"
-                    icon={<Clock3 className="h-4 w-4" />}
-                />
-            </StatsGrid>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <Card className="overflow-hidden">
+                    <CardContent className="space-y-3 p-4 sm:p-5">
+                        <div className="flex items-start justify-between gap-4">
+                            <p className="text-sm font-medium text-muted-foreground">
+                                Playlists Tracked
+                            </p>
+                            <div className="rounded-full border bg-muted/60 p-2 text-muted-foreground">
+                                <ListVideo className="h-4 w-4" />
+                            </div>
+                        </div>
+                        <p className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                            {stats.playlistsTracked}
+                        </p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                            Playlists you&apos;re learning from
+                        </p>
+                    </CardContent>
+                </Card>
 
-            <StatsGrid className="grid gap-4 md:grid-cols-3">
-                <StatCard
-                    label="Completed"
-                    value={stats.videosCompleted.toString()}
-                    description="Videos you've finished"
-                    className="bg-emerald-500/[0.03]"
-                />
-                <StatCard
-                    label="Skipped"
-                    value={stats.videosSkipped.toString()}
-                    description="Videos you passed for now"
-                    className="bg-rose-500/[0.03]"
-                />
-                <StatCard
-                    label="To Rewatch"
-                    value={stats.videosRewatch.toString()}
-                    description="Videos worth another pass"
-                    className="bg-amber-500/[0.03]"
-                />
-            </StatsGrid>
+                <Card className="overflow-hidden">
+                    <CardContent className="space-y-3 p-4 sm:p-5">
+                        <div className="flex items-start justify-between gap-4">
+                            <p className="text-sm font-medium text-muted-foreground">
+                                Videos Completed
+                            </p>
+                            <div className="rounded-full border bg-muted/60 p-2 text-muted-foreground">
+                                <CheckCircle2 className="h-4 w-4" />
+                            </div>
+                        </div>
+                        <p className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                            {stats.videosCompleted}
+                        </p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                            Videos you&apos;ve finished
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="overflow-hidden">
+                    <CardContent className="space-y-3 p-4 sm:p-5">
+                        <div className="flex items-start justify-between gap-4">
+                            <p className="text-sm font-medium text-muted-foreground">
+                                Completion Rate
+                            </p>
+                            <div className="rounded-full border bg-muted/60 p-2 text-muted-foreground">
+                                <Percent className="h-4 w-4" />
+                            </div>
+                        </div>
+                        <p className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                            {completionRate}
+                        </p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                            Completed out of all tracked videos
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="overflow-hidden">
+                    <CardContent className="space-y-3 p-4 sm:p-5">
+                        <div className="flex items-start justify-between gap-4">
+                            <p className="text-sm font-medium text-muted-foreground">
+                                Last Activity
+                            </p>
+                            <div className="rounded-full border bg-muted/60 p-2 text-muted-foreground">
+                                <Clock3 className="h-4 w-4" />
+                            </div>
+                        </div>
+                        <p className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                            {formatLastActivity(stats.lastActivity)}
+                        </p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                            Most recent learning session
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+                <Card className="overflow-hidden bg-emerald-500/[0.03]">
+                    <CardContent className="space-y-3 p-4 sm:p-5">
+                        <p className="text-sm font-medium text-muted-foreground">
+                            Completed
+                        </p>
+                        <p className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                            {stats.videosCompleted}
+                        </p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                            Videos you&apos;ve finished
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="overflow-hidden bg-rose-500/[0.03]">
+                    <CardContent className="space-y-3 p-4 sm:p-5">
+                        <p className="text-sm font-medium text-muted-foreground">
+                            Skipped
+                        </p>
+                        <p className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                            {stats.videosSkipped}
+                        </p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                            Videos you passed for now
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="overflow-hidden bg-amber-500/[0.03]">
+                    <CardContent className="space-y-3 p-4 sm:p-5">
+                        <p className="text-sm font-medium text-muted-foreground">
+                            To Rewatch
+                        </p>
+                        <p className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                            {stats.videosRewatch}
+                        </p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                            Videos worth another pass
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
 
             <Card className="overflow-hidden">
                 <CardHeader className="space-y-3 pb-4">
