@@ -89,8 +89,8 @@ function SidebarContent({
 
         return (
             <div className="flex flex-1 min-h-0 items-center justify-center px-4 py-6">
-                <div className="w-full max-w-sm rounded-xl bg-muted/20 p-5 text-center shadow-sm">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <div className="w-full max-w-sm rounded-none bg-muted/20 p-5 text-center shadow-sm">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-none bg-primary/10 text-primary">
                         <LibraryBig className="h-6 w-6" />
                     </div>
                     <h2 className="text-base font-semibold">Welcome</h2>
@@ -140,7 +140,7 @@ function SidebarContent({
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Search playlists..."
-                            className="h-10 rounded-md bg-muted/30 pl-9"
+                            className="h-10 rounded-none bg-muted/30 pl-9"
                         />
                     </div>
                 )}
@@ -160,7 +160,7 @@ function SidebarContent({
                     {!loading && playlists.length === 0 && user && (
                         <div
                             className={cn(
-                                "rounded-xl px-4 py-6 text-sm text-muted-foreground",
+                                "rounded-none px-4 py-6 text-sm text-muted-foreground",
                                 collapsed && "sr-only",
                             )}
                         >
@@ -189,7 +189,7 @@ function SidebarContent({
                     {!loading && filteredPlaylists.length === 0 && query && (
                         <div
                             className={cn(
-                                "rounded-xl px-4 py-6 text-sm text-muted-foreground",
+                                "rounded-none px-4 py-6 text-sm text-muted-foreground",
                                 collapsed && "sr-only",
                             )}
                         >

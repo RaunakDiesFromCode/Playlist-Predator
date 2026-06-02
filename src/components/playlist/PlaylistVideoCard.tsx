@@ -132,7 +132,7 @@ const PlaylistVideoCard = ({
                 className="flex w-full items-start gap-3 min-w-0 md:flex-1 md:items-center"
             >
                 {/* Thumbnail */}
-                <div className="relative w-[96px] aspect-video flex-shrink-0 overflow-hidden rounded-md bg-black/10 md:w-[120px]">
+                <div className="relative w-[96px] aspect-video flex-shrink-0 overflow-hidden rounded-none bg-black/10 md:w-[120px]">
                     <Image
                         src={video.thumbnail}
                         alt={video.title}
@@ -157,7 +157,9 @@ const PlaylistVideoCard = ({
                               : currentStatus === "SKIP"
                                 ? "Skipped"
                                 : "Study"}
-                        {isMounted && completionLabel ? ` · ${completionLabel}` : ""}
+                        {isMounted && completionLabel
+                            ? ` · ${completionLabel}`
+                            : ""}
                     </p>
                 </div>
             </Link>

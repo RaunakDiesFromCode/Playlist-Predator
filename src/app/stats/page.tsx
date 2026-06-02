@@ -106,7 +106,7 @@ export default async function StatsPage() {
 
     if (playlistsResult.error) {
         return (
-            <section className="mx-auto w-full max-w-7xl p-4 md:p-6">
+            <section className="mx-auto w-full max-w-7xl p-4 ">
                 <Card>
                     <CardHeader>
                         <CardTitle>Statistics unavailable</CardTitle>
@@ -121,7 +121,7 @@ export default async function StatsPage() {
 
     if (progressResult.error) {
         return (
-            <section className="mx-auto w-full max-w-7xl p-4 md:p-6">
+            <section className="mx-auto w-full max-w-7xl p-4 ">
                 <Card>
                     <CardHeader>
                         <CardTitle>Statistics unavailable</CardTitle>
@@ -140,7 +140,7 @@ export default async function StatsPage() {
 
     if (!hasProgress) {
         return (
-            <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-4 md:p-6">
+            <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-4 ">
                 <div className="space-y-3">
                     <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                         Your Learning Journey
@@ -154,7 +154,7 @@ export default async function StatsPage() {
                 <Card className="border-dashed bg-muted/30">
                     <CardContent className="flex flex-col gap-5 p-6 sm:p-8">
                         <div className="space-y-3">
-                            <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
+                            <div className="inline-flex items-center gap-2 rounded-none border bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
                                 <Clock3 className="h-3.5 w-3.5" />
                                 No activity yet
                             </div>
@@ -192,7 +192,7 @@ export default async function StatsPage() {
     const rewatchShare = (stats.videosRewatch / breakdownTotal) * 100;
 
     return (
-        <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-4 md:p-6">
+        <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-4 ">
             <div className="space-y-3">
                 <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                     Your Learning Journey
@@ -210,7 +210,7 @@ export default async function StatsPage() {
                             <p className="text-sm font-medium text-muted-foreground">
                                 Playlists Tracked
                             </p>
-                            <div className="rounded-full border bg-muted/60 p-2 text-muted-foreground">
+                            <div className="rounded-none border bg-muted/60 p-2 text-muted-foreground">
                                 <ListVideo className="h-4 w-4" />
                             </div>
                         </div>
@@ -229,7 +229,7 @@ export default async function StatsPage() {
                             <p className="text-sm font-medium text-muted-foreground">
                                 Videos Completed
                             </p>
-                            <div className="rounded-full border bg-muted/60 p-2 text-muted-foreground">
+                            <div className="rounded-none border bg-muted/60 p-2 text-muted-foreground">
                                 <CheckCircle2 className="h-4 w-4" />
                             </div>
                         </div>
@@ -248,7 +248,7 @@ export default async function StatsPage() {
                             <p className="text-sm font-medium text-muted-foreground">
                                 Completion Rate
                             </p>
-                            <div className="rounded-full border bg-muted/60 p-2 text-muted-foreground">
+                            <div className="rounded-none border bg-muted/60 p-2 text-muted-foreground">
                                 <Percent className="h-4 w-4" />
                             </div>
                         </div>
@@ -267,7 +267,7 @@ export default async function StatsPage() {
                             <p className="text-sm font-medium text-muted-foreground">
                                 Last Activity
                             </p>
-                            <div className="rounded-full border bg-muted/60 p-2 text-muted-foreground">
+                            <div className="rounded-none border bg-muted/60 p-2 text-muted-foreground">
                                 <Clock3 className="h-4 w-4" />
                             </div>
                         </div>
@@ -335,7 +335,7 @@ export default async function StatsPage() {
                     </p>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                    <div className="h-3 overflow-hidden rounded-full bg-muted">
+                    <div className="h-3 overflow-hidden rounded-none bg-muted">
                         <div className="flex h-full w-full">
                             <div
                                 className="h-full bg-emerald-500"
@@ -353,10 +353,10 @@ export default async function StatsPage() {
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-3">
-                        <div className="space-y-2 rounded-xl border p-4">
+                        <div className="space-y-2 rounded-none border p-4">
                             <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
-                                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                                    <span className="h-2.5 w-2.5 rounded-none bg-emerald-500" />
                                     <p className="font-medium">Completed</p>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
@@ -368,10 +368,10 @@ export default async function StatsPage() {
                             </p>
                         </div>
 
-                        <div className="space-y-2 rounded-xl border p-4">
+                        <div className="space-y-2 rounded-none border p-4">
                             <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
-                                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                                    <span className="h-2.5 w-2.5 rounded-none bg-rose-500" />
                                     <p className="font-medium">Skipped</p>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
@@ -383,10 +383,10 @@ export default async function StatsPage() {
                             </p>
                         </div>
 
-                        <div className="space-y-2 rounded-xl border p-4">
+                        <div className="space-y-2 rounded-none border p-4">
                             <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
-                                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                                    <span className="h-2.5 w-2.5 rounded-none bg-amber-500" />
                                     <p className="font-medium">To Rewatch</p>
                                 </div>
                                 <p className="text-sm text-muted-foreground">

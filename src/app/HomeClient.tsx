@@ -64,7 +64,7 @@ export default function HomeClient() {
 
                 <form
                     onSubmit={handleSubmit}
-                    className="flex w-full gap-2 rounded-lg border p-1"
+                    className="flex w-full gap-2 rounded-none border p-1"
                 >
                     <Label htmlFor="home-playlist-input" className="sr-only">
                         YouTube playlist or video link

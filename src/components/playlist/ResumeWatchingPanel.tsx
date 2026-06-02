@@ -27,7 +27,10 @@ export default function ResumeWatchingPanel({
 
     return (
         <div
-            className={cn("rounded-md border bg-muted/20 px-3 py-3", className)}
+            className={cn(
+                "rounded-none border bg-muted/20 px-3 py-3",
+                className,
+            )}
         >
             <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0 space-y-1">
@@ -55,11 +58,15 @@ export default function ResumeWatchingPanel({
                 <div className="flex flex-col items-center justify-center">
                     <Badge
                         variant="secondary"
-                        className="h-5 px-2 text-[10px] w-full rounded-b-none rounded-t-sm"
+                        className="h-5 px-2 text-[10px] w-full rounded-none"
                     >
                         {target.remainingCount} left
                     </Badge>
-                    <Button asChild size="sm" className="shrink-0 gap-1.5 rounded-t-none rounded-b-sm">
+                    <Button
+                        asChild
+                        size="sm"
+                        className="shrink-0 gap-1.5 rounded-none"
+                    >
                         <Link
                             href={target.href}
                             target="_blank"

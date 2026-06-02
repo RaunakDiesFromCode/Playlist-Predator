@@ -168,7 +168,7 @@ Do not redesign screens unless explicitly requested.
 Prefer:
 
 * border
-* rounded-lg
+* rounded-none
 * space-y-*
 * gap-*
 * flex

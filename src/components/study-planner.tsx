@@ -136,7 +136,7 @@ export default function StudyPlanner({
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                    <div className="rounded-md border p-3 text-center">
+                    <div className="rounded-none border p-3 text-center">
                         <div className="text-lg font-semibold">
                             {hasRemainingWork
                                 ? hasValidStudyTime
@@ -149,7 +149,7 @@ export default function StudyPlanner({
                         </div>
                     </div>
 
-                    <div className="rounded-md border p-3 text-center">
+                    <div className="rounded-none border p-3 text-center">
                         <div className="text-lg font-semibold">
                             {isMounted
                                 ? hasRemainingWork
@@ -158,7 +158,9 @@ export default function StudyPlanner({
                                               planner.completionDate,
                                           )
                                         : "—"
-                                    : formatCompletionDate(planner.completionDate)
+                                    : formatCompletionDate(
+                                          planner.completionDate,
+                                      )
                                 : "—"}
                         </div>
                         <div className="text-xs text-muted-foreground">
@@ -166,7 +168,7 @@ export default function StudyPlanner({
                         </div>
                     </div>
 
-                    <div className="rounded-md border p-3 text-center">
+                    <div className="rounded-none border p-3 text-center">
                         <div className="text-lg font-semibold">
                             {hasRemainingWork
                                 ? hasValidStudyTime

@@ -388,7 +388,7 @@ const PlaylistOverview = ({
                 {/* ================= PROGRESS BAR ================= */}
 
                 <div className="space-y-2">
-                    <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
+                    <div className="relative h-3 w-full overflow-hidden rounded-none bg-muted">
                         <div
                             className="absolute left-0 top-0 h-full bg-green-500/80"
                             style={{ width: `${donePercent}%` }}
@@ -517,7 +517,7 @@ const PlaylistOverview = ({
                         <p className="font-medium">Quick insights</p>
 
                         <div className="space-y-3 md:hidden">
-                            <div className="rounded-md border px-3 py-2.5">
+                            <div className="rounded-none border px-3 py-2.5">
                                 <p className="text-xs text-muted-foreground">
                                     Today
                                 </p>
@@ -531,7 +531,11 @@ const PlaylistOverview = ({
                                               : "text-red-600",
                                     )}
                                 >
-                                    {!isMounted ? "—" : canFinishToday ? "Fits" : "Overflows"}
+                                    {!isMounted
+                                        ? "—"
+                                        : canFinishToday
+                                          ? "Fits"
+                                          : "Overflows"}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                     {!isMounted
@@ -542,7 +546,7 @@ const PlaylistOverview = ({
 
                             <div className="grid grid-cols-[1fr,1.1fr] gap-3 items-stretch">
                                 <div className="flex min-w-0 flex-col gap-3">
-                                    <div className="rounded-md border px-3 py-2.5">
+                                    <div className="rounded-none border px-3 py-2.5">
                                         <p className="text-xs text-muted-foreground">
                                             Speed
                                         </p>
@@ -554,7 +558,7 @@ const PlaylistOverview = ({
                                         </p>
                                     </div>
 
-                                    <div className="rounded-md border px-3 py-2.5">
+                                    <div className="rounded-none border px-3 py-2.5">
                                         <p className="text-xs text-muted-foreground">
                                             Friction
                                         </p>
@@ -571,14 +575,14 @@ const PlaylistOverview = ({
                                     </div>
                                 </div>
 
-                                <div className="rounded-md border px-3 py-2.5 overflow-x-auto pb-1 justify-center items-center flex">
+                                <div className="rounded-none border px-3 py-2.5 overflow-x-auto pb-1 justify-center items-center flex">
                                     <div className="grid w-full h-full grid-cols-7 gap-1.5">
                                         {heatmapDays.map((date, index) => {
                                             if (!isMounted) {
                                                 return (
                                                     <div
                                                         key={`empty-${index}`}
-                                                        className="h-2.5 w-2.5 rounded-sm bg-muted/50"
+                                                        className="h-2.5 w-2.5 rounded-none bg-muted/50"
                                                     />
                                                 );
                                             }
@@ -592,7 +596,7 @@ const PlaylistOverview = ({
                                                 <Tooltip key={toDayKey(date)}>
                                                     <TooltipTrigger asChild>
                                                         <div
-                                                            className={`h-2.5 w-2.5 rounded-sm ${getIntensityClass(count, maxHeatmapCount)}`}
+                                                            className={`h-2.5 w-2.5 rounded-none ${getIntensityClass(count, maxHeatmapCount)}`}
                                                         />
                                                     </TooltipTrigger>
                                                     <TooltipContent>
@@ -608,7 +612,7 @@ const PlaylistOverview = ({
                                 </div>
                             </div>
 
-                            <div className="rounded-md border px-3 py-2.5">
+                            <div className="rounded-none border px-3 py-2.5">
                                 <p className="text-muted-foreground">
                                     {quickInsightCopy.summary}
                                 </p>
@@ -621,7 +625,7 @@ const PlaylistOverview = ({
 
                         <div className="hidden md:flex gap-3">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div className="rounded-md border px-3 py-2.5">
+                                <div className="rounded-none border px-3 py-2.5">
                                     <p className="text-xs text-muted-foreground">
                                         Today
                                     </p>
@@ -635,7 +639,11 @@ const PlaylistOverview = ({
                                                   : "text-red-600",
                                         )}
                                     >
-                                        {!isMounted ? "—" : canFinishToday ? "Fits" : "Overflows"}
+                                        {!isMounted
+                                            ? "—"
+                                            : canFinishToday
+                                              ? "Fits"
+                                              : "Overflows"}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {!isMounted
@@ -644,7 +652,7 @@ const PlaylistOverview = ({
                                     </p>
                                 </div>
 
-                                <div className="rounded-md border px-3 py-2.5">
+                                <div className="rounded-none border px-3 py-2.5">
                                     <p className="text-xs text-muted-foreground">
                                         Friction
                                     </p>
@@ -660,7 +668,7 @@ const PlaylistOverview = ({
                                     </p>
                                 </div>
 
-                                <div className="sm:col-span-2 rounded-md border px-3 py-2.5">
+                                <div className="sm:col-span-2 rounded-none border px-3 py-2.5">
                                     <p className="text-muted-foreground">
                                         {quickInsightCopy.summary}
                                     </p>
@@ -676,7 +684,7 @@ const PlaylistOverview = ({
                                         return (
                                             <div
                                                 key={`empty-desktop-${index}`}
-                                                className="h-2.5 w-2.5 rounded-sm bg-muted/50"
+                                                className="h-2.5 w-2.5 rounded-none bg-muted/50"
                                             />
                                         );
                                     }
@@ -689,7 +697,7 @@ const PlaylistOverview = ({
                                         <Tooltip key={toDayKey(date)}>
                                             <TooltipTrigger asChild>
                                                 <div
-                                                    className={`h-2.5 w-2.5 rounded-sm ${getIntensityClass(count, maxHeatmapCount)}`}
+                                                    className={`h-2.5 w-2.5 rounded-none ${getIntensityClass(count, maxHeatmapCount)}`}
                                                 />
                                             </TooltipTrigger>
                                             <TooltipContent>

@@ -403,7 +403,7 @@ export default async function AdminDashboardPage({
                                         <span className="inline-flex items-center gap-2 font-medium">
                                             <span
                                                 className={cn(
-                                                    "h-2.5 w-2.5 rounded-full",
+                                                    "h-2.5 w-2.5 rounded-none",
                                                     getStatusBarClass(
                                                         status.status,
                                                     ),
@@ -415,10 +415,10 @@ export default async function AdminDashboardPage({
                                             {status.count} ({width}%)
                                         </span>
                                     </div>
-                                    <div className="h-2 rounded-full bg-muted">
+                                    <div className="h-2 rounded-none bg-muted">
                                         <div
                                             className={cn(
-                                                "h-2 rounded-full",
+                                                "h-2 rounded-none",
                                                 getStatusBarClass(
                                                     status.status,
                                                 ),

@@ -17,7 +17,13 @@ import type {
     ComparisonItem,
     ComparisonSuccessItem,
 } from "@/lib/comparison/compare-playlists";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "../ui/card";
 
 type ComparisonTableProps = {
     items: ComparisonItem[];
@@ -34,7 +40,7 @@ export default function ComparisonTable({
 
     return (
         <Card>
-            <CardHeader >
+            <CardHeader>
                 <CardTitle className="text-lg">Comparison Table</CardTitle>
                 <CardDescription>
                     Duration estimates are based on the playlist content fetched
@@ -135,7 +141,7 @@ function ComparisonRow({
         <TableRow>
             <TableCell className="align-top">
                 <div className="flex items-start gap-3">
-                    <div className="relative h-12 w-20 shrink-0 overflow-hidden rounded-md border bg-muted">
+                    <div className="relative h-12 w-20 shrink-0 overflow-hidden rounded-none border bg-muted">
                         {item.thumbnail ? (
                             <Image
                                 src={item.thumbnail}
@@ -197,7 +203,7 @@ function MobileComparisonRow({
     return (
         <div className="space-y-4 px-4 py-4">
             <div className="flex items-start gap-3">
-                <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-md border bg-muted">
+                <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-none border bg-muted">
                     {item.thumbnail ? (
                         <Image
                             src={item.thumbnail}
@@ -251,7 +257,7 @@ function MobileComparisonRow({
 
 function Metric({ label, value }: { label: string; value: string }) {
     return (
-        <div className="rounded-lg border bg-muted/20 px-3 py-2">
+        <div className="rounded-none border bg-muted/20 px-3 py-2">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
                 {label}
             </p>

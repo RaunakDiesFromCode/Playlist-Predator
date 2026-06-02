@@ -138,7 +138,9 @@ export default function ComparisonClient() {
         <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 md:px-6">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-xl">Compare playlists side by side</CardTitle>
+                    <CardTitle className="text-xl">
+                        Compare playlists side by side
+                    </CardTitle>
                     <CardDescription>
                         Paste 2 to 4 playlist URLs or IDs to see total duration,
                         playback time at different speeds, and simple study-time
@@ -214,7 +216,7 @@ export default function ComparisonClient() {
                     </form>
 
                     {error ? (
-                        <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                        <div className="flex items-start gap-3 rounded-none border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
                             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                             <p>{error}</p>
                         </div>
@@ -249,7 +251,7 @@ export default function ComparisonClient() {
                                     >
                                         <CardContent className="flex h-full flex-col gap-4 p-5">
                                             <div className="flex items-start gap-4">
-                                                <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-lg border bg-muted">
+                                                <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-none border bg-muted">
                                                     {highlight.thumbnail ? (
                                                         <Image
                                                             src={
@@ -310,10 +312,10 @@ export default function ComparisonClient() {
                         </Card>
                     )}
 
-                    <Card >
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Insights</CardTitle>
-                            <CardDescription >
+                            <CardDescription>
                                 Simple calculations based on the playlists you
                                 entered.
                             </CardDescription>
@@ -324,7 +326,7 @@ export default function ComparisonClient() {
                                     {result.insights.map((insight) => (
                                         <li
                                             key={insight}
-                                            className="rounded-lg border bg-background px-4 py-3 shadow-sm"
+                                            className="rounded-none border bg-background px-4 py-3 shadow-sm"
                                         >
                                             {insight}
                                         </li>
@@ -351,13 +353,13 @@ export default function ComparisonClient() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
-                            <div className="rounded-lg border bg-muted/30 px-4 py-3">
+                            <div className="rounded-none border bg-muted/30 px-4 py-3">
                                 <p className="font-medium text-foreground">
                                     {successItems.length} valid playlist(s)
                                 </p>
                                 <p>Ready for direct comparison.</p>
                             </div>
-                            <div className="rounded-lg border bg-muted/30 px-4 py-3">
+                            <div className="rounded-none border bg-muted/30 px-4 py-3">
                                 <p className="font-medium text-foreground">
                                     {
                                         result.items.filter(
@@ -371,7 +373,7 @@ export default function ComparisonClient() {
                                     isolated.
                                 </p>
                             </div>
-                            <div className="rounded-lg border bg-muted/30 px-4 py-3">
+                            <div className="rounded-none border bg-muted/30 px-4 py-3">
                                 <p className="font-medium text-foreground">
                                     {filledRows.length} submitted input(s)
                                 </p>

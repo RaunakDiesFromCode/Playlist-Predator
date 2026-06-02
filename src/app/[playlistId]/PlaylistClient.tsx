@@ -50,10 +50,10 @@ function PlaylistPageSkeleton() {
     return (
         <div className="flex gap-4 p-4">
             <div className="w-full h-[calc(100dvh-6rem)] overflow-hidden space-y-4">
-                <Skeleton className="h-64 w-full rounded-xl" />
+                <Skeleton className="h-64 w-full rounded-none" />
                 {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="flex gap-4 items-center">
-                        <Skeleton className="h-20 w-32 rounded-lg" />
+                        <Skeleton className="h-20 w-32 rounded-none" />
                         <div className="flex-1 space-y-2">
                             <Skeleton className="h-4 w-3/4" />
                             <Skeleton className="h-4 w-1/2" />
@@ -64,9 +64,9 @@ function PlaylistPageSkeleton() {
 
             <div className="w-full h-[calc(100dvh-6rem)] md:block hidden overflow-y-auto space-y-4">
                 <Skeleton className="h-8 w-1/3" />
-                <Skeleton className="h-24 w-full rounded-lg" />
-                <Skeleton className="h-24 w-full rounded-lg" />
-                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-24 w-full rounded-none" />
+                <Skeleton className="h-24 w-full rounded-none" />
+                <Skeleton className="h-24 w-full rounded-none" />
             </div>
         </div>
     );
@@ -311,7 +311,7 @@ export default function PlaylistClient({
     if (!summary || !playlist) return null;
 
     const AnalysisPanel = (
-        <div className="flex h-full flex-col overflow-y-auto rounded-xl border border-border gap-2">
+        <div className="flex h-full flex-col overflow-y-auto rounded-none border border-border gap-2">
             <PlaylistOverview
                 playlist={playlist}
                 videos={videos}
@@ -401,7 +401,7 @@ export default function PlaylistClient({
             </div>
 
             <Drawer>
-                <DrawerTrigger className="w-full rounded-lg bg-primary text-primary-foreground py-3 font-medium">
+                <DrawerTrigger className="w-full rounded-none bg-primary text-primary-foreground py-3 font-medium">
                     View Playlist Analysis
                 </DrawerTrigger>
 

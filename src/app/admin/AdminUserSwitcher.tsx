@@ -90,7 +90,7 @@ export default function AdminUserSwitcher({
                             disabled={isSwitching}
                             aria-busy={isSwitching}
                             className={cn(
-                                "flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+                                "flex w-full items-center justify-between rounded-none border px-3 py-2 text-left text-sm transition-colors",
                                 isSelected
                                     ? "border-primary/40 bg-primary/10"
                                     : "hover:bg-muted/50",
