@@ -22,7 +22,7 @@ export default function SidebarItem({
             href={href}
             onClick={onClickAction}
             className={cn(
-                "group flex items-center justify-start rounded-md py-2 text-sm transition-all my-1",
+                "group my-1 flex w-full min-w-0 items-center justify-start overflow-hidden rounded-md py-2 text-sm transition-all",
                 collapsed ? "px-2" : "gap-3 px-3",
                 active
                     ? "border border-primary/10 bg-primary/10 font-medium text-foreground shadow-sm"
@@ -42,7 +42,9 @@ export default function SidebarItem({
 
             <span
                 className={cn(
-                    "min-w-0 flex-1 whitespace-normal leading-snug",
+                    "block min-w-0 truncate",
+                    !collapsed &&
+                        "w-[50%] max-w-[50%] md:w-[11.5rem] md:max-w-[11.5rem]",
                     collapsed && "sr-only",
                 )}
             >
