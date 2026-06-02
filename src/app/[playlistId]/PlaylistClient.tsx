@@ -311,7 +311,7 @@ export default function PlaylistClient({
     if (!summary || !playlist) return null;
 
     const AnalysisPanel = (
-        <div className="flex h-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain rounded-xl border border-border gap-2">
+        <div className="flex h-full flex-col overflow-y-auto rounded-xl border border-border gap-2">
             <PlaylistOverview
                 playlist={playlist}
                 videos={videos}

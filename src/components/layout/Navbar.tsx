@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { BarChart3, LogOut, Scale, Sidebar, User } from "lucide-react";
+import { BarChart3, LogOut, Scale, Sidebar, User, ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -82,6 +82,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                         <span className="truncate font-medium">
                                             {user.name ?? user.email}
                                         </span>
+                                        <ChevronDown />
                                     </Button>
                                 </DropdownMenuTrigger>
 
