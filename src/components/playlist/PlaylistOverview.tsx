@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { useIsMounted } from "@/hooks/use-mounted";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -232,6 +233,7 @@ const PlaylistOverview = ({
     preferredSpeed,
     onPreferredSpeedChange,
 }: Props) => {
+    const isMounted = useIsMounted();
     const remainingSeconds = parseToSeconds(remainingDuration);
     const recommendedSpeed = recommendSpeed(remainingSeconds);
     const selectedSpeed = preferredSpeed || recommendedSpeed;
@@ -522,16 +524,19 @@ const PlaylistOverview = ({
                                 <p
                                     className={cn(
                                         "font-medium",
-                                        canFinishToday
-                                            ? "text-green-600"
-                                            : "text-red-600",
+                                        !isMounted
+                                            ? "text-muted-foreground"
+                                            : canFinishToday
+                                              ? "text-green-600"
+                                              : "text-red-600",
                                     )}
                                 >
-                                    {canFinishToday ? "Fits" : "Overflows"}
+                                    {!isMounted ? "—" : canFinishToday ? "Fits" : "Overflows"}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                    {effectiveStudyHours.toFixed(1)}h needed ·{" "}
-                                    {hoursLeftToday.toFixed(1)}h left
+                                    {!isMounted
+                                        ? "—"
+                                        : `${effectiveStudyHours.toFixed(1)}h needed · ${hoursLeftToday.toFixed(1)}h left`}
                                 </p>
                             </div>
 
@@ -568,7 +573,16 @@ const PlaylistOverview = ({
 
                                 <div className="rounded-md border px-3 py-2.5 overflow-x-auto pb-1 justify-center items-center flex">
                                     <div className="grid w-full h-full grid-cols-7 gap-1.5">
-                                        {heatmapDays.map((date) => {
+                                        {heatmapDays.map((date, index) => {
+                                            if (!isMounted) {
+                                                return (
+                                                    <div
+                                                        key={`empty-${index}`}
+                                                        className="h-2.5 w-2.5 rounded-sm bg-muted/50"
+                                                    />
+                                                );
+                                            }
+
                                             const count =
                                                 dailyCompletionCounts[
                                                     toDayKey(date)
@@ -614,16 +628,19 @@ const PlaylistOverview = ({
                                     <p
                                         className={cn(
                                             "font-medium",
-                                            canFinishToday
-                                                ? "text-green-600"
-                                                : "text-red-600",
+                                            !isMounted
+                                                ? "text-muted-foreground"
+                                                : canFinishToday
+                                                  ? "text-green-600"
+                                                  : "text-red-600",
                                         )}
                                     >
-                                        {canFinishToday ? "Fits" : "Overflows"}
+                                        {!isMounted ? "—" : canFinishToday ? "Fits" : "Overflows"}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                        {effectiveStudyHours.toFixed(1)}h needed
-                                        · {hoursLeftToday.toFixed(1)}h left
+                                        {!isMounted
+                                            ? "—"
+                                            : `${effectiveStudyHours.toFixed(1)}h needed · ${hoursLeftToday.toFixed(1)}h left`}
                                     </p>
                                 </div>
 
@@ -654,7 +671,16 @@ const PlaylistOverview = ({
                                 </div>
                             </div>
                             <div className="grid grid-cols-7 gap-2.5 w-[50%]">
-                                {heatmapDays.map((date) => {
+                                {heatmapDays.map((date, index) => {
+                                    if (!isMounted) {
+                                        return (
+                                            <div
+                                                key={`empty-desktop-${index}`}
+                                                className="h-2.5 w-2.5 rounded-sm bg-muted/50"
+                                            />
+                                        );
+                                    }
+
                                     const count =
                                         dailyCompletionCounts[toDayKey(date)] ??
                                         0;

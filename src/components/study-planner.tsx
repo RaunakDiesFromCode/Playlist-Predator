@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useMemo } from "react";
+import { useIsMounted } from "@/hooks/use-mounted";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -57,6 +58,7 @@ export default function StudyPlanner({
 }: StudyPlannerProps) {
     const hoursInputId = useId();
     const minutesInputId = useId();
+    const isMounted = useIsMounted();
 
     const dailyMinutes = studyHours * 60 + studyMinutes;
     const adjustedRemainingMinutes = calculateSpeedAdjustedMinutes(
@@ -149,13 +151,15 @@ export default function StudyPlanner({
 
                     <div className="rounded-md border p-3 text-center">
                         <div className="text-lg font-semibold">
-                            {hasRemainingWork
-                                ? hasValidStudyTime
-                                    ? formatCompletionDate(
-                                          planner.completionDate,
-                                      )
-                                    : "—"
-                                : formatCompletionDate(planner.completionDate)}
+                            {isMounted
+                                ? hasRemainingWork
+                                    ? hasValidStudyTime
+                                        ? formatCompletionDate(
+                                              planner.completionDate,
+                                          )
+                                        : "—"
+                                    : formatCompletionDate(planner.completionDate)
+                                : "—"}
                         </div>
                         <div className="text-xs text-muted-foreground">
                             Finish

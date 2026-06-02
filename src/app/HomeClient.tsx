@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
@@ -35,9 +35,13 @@ function pickGreeting() {
 
 export default function HomeClient() {
     const [input, setInput] = useState("");
-    const [greetingBase] = useState(pickGreeting);
+    const [greetingBase, setGreetingBase] = useState(GREETINGS[0]);
     const router = useRouter();
     const { user, loading } = useAuth();
+
+    useEffect(() => {
+        setGreetingBase(pickGreeting());
+    }, []);
 
     const greeting =
         !loading && user?.name ? `${greetingBase}, ${user.name}` : greetingBase;

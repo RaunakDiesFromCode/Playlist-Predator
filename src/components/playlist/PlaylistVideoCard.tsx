@@ -2,6 +2,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { useIsMounted } from "@/hooks/use-mounted";
 import { VideoMetadata } from "@/types/playlist";
 import { VideoProgress, VideoStatus } from "@/types/progress";
 
@@ -103,6 +104,7 @@ const PlaylistVideoCard = ({
     onStatusChange,
     playlistId,
 }: Props) => {
+    const isMounted = useIsMounted();
     const currentStatus = progressEntry?.status ?? "NONE";
     const uiValue = backendToUI(currentStatus);
     const completionLabel = formatCompletionDate(progressEntry?.updatedAt);
@@ -155,7 +157,7 @@ const PlaylistVideoCard = ({
                               : currentStatus === "SKIP"
                                 ? "Skipped"
                                 : "Study"}
-                        {completionLabel ? ` · ${completionLabel}` : ""}
+                        {isMounted && completionLabel ? ` · ${completionLabel}` : ""}
                     </p>
                 </div>
             </Link>

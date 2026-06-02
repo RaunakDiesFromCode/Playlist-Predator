@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpDown, Filter, Search } from "lucide-react";
 
+import { useIsMounted } from "@/hooks/use-mounted";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -57,6 +58,7 @@ const PlaylistVideoList = ({
         "ALL",
     );
     const [sortBy, setSortBy] = useState<SortOption>("default");
+    const isMounted = useIsMounted();
 
     const playlistThumbnail = playlist?.thumbnail ?? videos[0]?.thumbnail;
 
@@ -188,7 +190,7 @@ const PlaylistVideoList = ({
                             opacity: "calc(1 - var(--blur, 0) / 5)",
                         }}
                     >
-                        {streakInfo.streakDay ? (
+                        {isMounted && streakInfo.streakDay ? (
                             <Badge
                                 className={cn(
                                     "mb-2 w-fit",
