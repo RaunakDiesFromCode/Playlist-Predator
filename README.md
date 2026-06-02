@@ -2,7 +2,7 @@
 
 > Turn YouTube playlists into something you can actually conquer.
 
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/RaunakDiesFromCode/Playlist-Predator)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/RaunakDiesFromCode/Playlist-Predator)
 
 Playlist Predator converts messy YouTube playlists and chaptered videos into a clean study and watch system. It shows how long a playlist or chapter breakdown really is, how long it will take at different playback speeds, and helps you track what you have done, skipped, or want to rewatch.
 
