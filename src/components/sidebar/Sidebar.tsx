@@ -14,6 +14,12 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { type AuthUser } from "@/hooks/use-auth";
 import { DbPlaylist } from "@/types/playlist-db";
@@ -106,16 +112,25 @@ function SidebarContent({
             <div className="p-2.5">
                 {collapsed ? (
                     <div className="flex w-full items-center justify-start">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-10 w-10"
-                            aria-label="Expand sidebar to search playlists"
-                            onClick={onSearchButtonClick}
-                        >
-                            <Search className="h-4 w-4" />
-                        </Button>
+                        <TooltipProvider delayDuration={100}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-10 w-10"
+                                        aria-label="Expand sidebar to search playlists"
+                                        onClick={onSearchButtonClick}
+                                    >
+                                        <Search className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="right">
+                                    Search playlists
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
                 ) : (
                     <div className="relative">

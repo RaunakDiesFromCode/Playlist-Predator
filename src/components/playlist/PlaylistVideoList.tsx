@@ -143,7 +143,7 @@ const PlaylistVideoList = ({
     return (
         <div
             ref={scrollRef}
-            className="flex h-full flex-col overflow-y-auto overscroll-contain rounded-xl border border-border"
+            className="flex h-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain rounded-xl border border-border"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             style={{ ["--blur" as any]: 0 }}
             onScroll={() => {

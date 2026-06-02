@@ -1,5 +1,11 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function SidebarItem({
     title,
@@ -17,7 +23,7 @@ export default function SidebarItem({
 }) {
     const initial = title.trim().charAt(0).toUpperCase() || "?";
 
-    return (
+    const item = (
         <Link
             href={href}
             onClick={onClickAction}
@@ -51,5 +57,18 @@ export default function SidebarItem({
                 {title}
             </span>
         </Link>
+    );
+
+    if (!collapsed) {
+        return item;
+    }
+
+    return (
+        <TooltipProvider delayDuration={100}>
+            <Tooltip>
+                <TooltipTrigger asChild>{item}</TooltipTrigger>
+                <TooltipContent side="right">{title}</TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     );
 }
