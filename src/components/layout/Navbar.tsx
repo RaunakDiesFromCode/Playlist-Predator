@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { BarChart3, LogOut, Search, Sidebar, User } from "lucide-react";
+import { BarChart3, LogOut, Scale, Search, Sidebar, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -119,14 +119,6 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                 )}
 
                 <div className="ml-auto flex items-center gap-2 md:gap-3">
-                    <Button
-                        asChild
-                        variant="outline"
-                        className="hidden sm:inline-flex"
-                    >
-                        <Link href="/compare">Compare</Link>
-                    </Button>
-
                     {!loading &&
                         (user ? (
                             <DropdownMenu>
@@ -168,7 +160,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
 
                                     {showAdminLink && (
                                         <DropdownMenuItem
-                                            className="flex items-center gap-2"
+                                            className="flex items-center gap-2 cursor-pointer"
                                             onClick={() =>
                                                 router.push("/admin")
                                             }
@@ -179,7 +171,15 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                     )}
 
                                     <DropdownMenuItem
-                                        className="flex items-center gap-2"
+                                        className="flex items-center gap-2 cursor-pointer"
+                                        onClick={() => router.push("/compare")}
+                                    >
+                                        <Scale className="h-4 w-4" />
+                                        Compare
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuItem
+                                        className="flex items-center gap-2 cursor-pointer"
                                         onClick={() => router.push("/stats")}
                                     >
                                         <BarChart3 className="h-4 w-4" />
@@ -187,7 +187,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                     </DropdownMenuItem>
 
                                     <DropdownMenuItem
-                                        className="flex items-center gap-2 text-red-600 focus:text-red-600"
+                                        className="flex items-center gap-2 text-red-600 focus:text-red-600 cursor-pointer"
                                         onClick={handleLogout}
                                     >
                                         <LogOut className="h-4 w-4" />
