@@ -3,6 +3,7 @@ import "./globals.css";
 import Body from "./Body";
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import NextTopLoader from "nextjs-toploader";
 
 const jetbrainsMono = JetBrains_Mono({
     subsets: ["latin"],
@@ -47,8 +48,24 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" suppressHydrationWarning className={`${jetbrainsMono.variable} font-sans font-mono`}>
-            <Body>{children}</Body>
+        <html
+            lang="en"
+            suppressHydrationWarning
+            className={`${jetbrainsMono.variable} font-mono`}
+        >
+            <Body>
+                <NextTopLoader
+                    color="hsl(var(--primary))"
+                    initialPosition={0.08}
+                    crawlSpeed={200}
+                    height={3}
+                    crawl
+                    showSpinner={false}
+                    easing="ease"
+                    speed={200}
+                />
+                {children}
+            </Body>
             <Analytics />
         </html>
     );
