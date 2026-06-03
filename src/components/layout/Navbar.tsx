@@ -4,7 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { BarChart3, LogOut, Scale, Sidebar, User, ChevronDown } from "lucide-react";
+import {
+    BarChart3,
+    LogOut,
+    Scale,
+    Sidebar,
+    User,
+    ChevronDown,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,8 +35,6 @@ type NavbarProps = {
 const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
     const router = useRouter();
     const { canAccess: showAdminLink } = useAdminAccess();
-
-
 
     async function handleLogout() {
         const { supabase } = await import("@/lib/supabase/client");
@@ -76,7 +81,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                         className="h-11 max-w-[220px] justify-start gap-1 px-3"
                                         aria-label="Open profile menu"
                                     >
-                                        <span className="text-muted-foreground md:block hidden">
+                                        <span className="text-muted-foreground">
                                             Hi,
                                         </span>
                                         <span className="truncate font-medium">
@@ -103,6 +108,22 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
 
                                     <DropdownMenuSeparator />
 
+                                    <DropdownMenuItem
+                                        className="flex items-center gap-2 cursor-pointer"
+                                        onClick={() => router.push("/compare")}
+                                    >
+                                        <Scale className="h-4 w-4" />
+                                        Compare
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuItem
+                                        className="flex items-center gap-2 cursor-pointer"
+                                        onClick={() => router.push("/stats")}
+                                    >
+                                        <BarChart3 className="h-4 w-4" />
+                                        Statistics
+                                    </DropdownMenuItem>
+
                                     <DropdownMenuItem>
                                         <ThemeToggle />
                                     </DropdownMenuItem>
@@ -119,21 +140,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                         </DropdownMenuItem>
                                     )}
 
-                                    <DropdownMenuItem
-                                        className="flex items-center gap-2 cursor-pointer"
-                                        onClick={() => router.push("/compare")}
-                                    >
-                                        <Scale className="h-4 w-4" />
-                                        Compare
-                                    </DropdownMenuItem>
-
-                                    <DropdownMenuItem
-                                        className="flex items-center gap-2 cursor-pointer"
-                                        onClick={() => router.push("/stats")}
-                                    >
-                                        <BarChart3 className="h-4 w-4" />
-                                        Statistics
-                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
 
                                     <DropdownMenuItem
                                         className="flex items-center gap-2 text-red-600 focus:text-red-600 cursor-pointer"
