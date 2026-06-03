@@ -108,20 +108,18 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
 
                                     <DropdownMenuSeparator />
 
-                                    <DropdownMenuItem
-                                        className="flex items-center gap-2 cursor-pointer"
-                                        onClick={() => router.push("/compare")}
-                                    >
-                                        <Scale className="h-4 w-4" />
-                                        Compare
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/compare">
+                                            <Scale className="h-4 w-4" />
+                                            Compare
+                                        </Link>
                                     </DropdownMenuItem>
 
-                                    <DropdownMenuItem
-                                        className="flex items-center gap-2 cursor-pointer"
-                                        onClick={() => router.push("/stats")}
-                                    >
-                                        <BarChart3 className="h-4 w-4" />
-                                        Statistics
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/stats">
+                                            <BarChart3 className="h-4 w-4" />
+                                            Statistics
+                                        </Link>
                                     </DropdownMenuItem>
 
                                     <DropdownMenuItem>
@@ -129,14 +127,11 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                     </DropdownMenuItem>
 
                                     {showAdminLink && (
-                                        <DropdownMenuItem
-                                            className="flex items-center gap-2 cursor-pointer"
-                                            onClick={() =>
-                                                router.push("/admin")
-                                            }
-                                        >
-                                            <User className="h-4 w-4" />
-                                            Dashboard
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/admin">
+                                                <User className="h-4 w-4" />
+                                                Admin
+                                            </Link>
                                         </DropdownMenuItem>
                                     )}
 
