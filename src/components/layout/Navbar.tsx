@@ -24,6 +24,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import ThemeToggle from "../ThemeToggle";
 import { type AuthUser } from "@/hooks/use-auth";
 import { useAdminAccess } from "@/hooks/use-admin-access";
@@ -91,21 +97,30 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                     {!loading &&
                         (user ? (
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        className="h-11 max-w-[220px] justify-start gap-1 px-3"
-                                        aria-label="Open profile menu"
-                                    >
-                                        <span className="text-muted-foreground">
-                                            Hi,
-                                        </span>
-                                        <span className="truncate font-medium">
-                                            {user.name ?? user.email}
-                                        </span>
-                                        <ChevronDown />
-                                    </Button>
-                                </DropdownMenuTrigger>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    className="h-11 max-w-[220px] justify-start gap-1 px-3"
+                                                    aria-label="Open profile menu"
+                                                >
+                                                    <span className="text-muted-foreground">
+                                                        Hi,
+                                                    </span>
+                                                    <span className="truncate font-medium">
+                                                        {user.name ?? user.email}
+                                                    </span>
+                                                    <ChevronDown />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Access various tools and features </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
 
                                 <DropdownMenuContent
                                     align="end"

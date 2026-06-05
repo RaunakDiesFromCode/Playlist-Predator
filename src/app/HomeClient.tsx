@@ -8,6 +8,12 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { parseYouTubeInput } from "@/lib/youtube/input";
 
@@ -81,13 +87,31 @@ export default function HomeClient() {
                     </Button>
                 </form>
 
-                <div className="flex justify-center mt-10">
-                    <Button asChild variant="ghost" className="gap-2">
-                        <Link href="/compare">Compare playlists</Link>
-                    </Button>
-                    <Button asChild variant="ghost" className="gap-2">
-                        <Link href="/stats">My Statistics</Link>
-                    </Button>
+                <div className="flex justify-center gap-2 mt-10">
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button asChild variant="ghost" className="gap-2">
+                                    <Link href="/compare">Compare playlists</Link>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Compare up to 4 playlists side by side</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button asChild variant="ghost" className="gap-2">
+                                    <Link href="/stats">My Statistics</Link>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Track your progress across playlists</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                 </div>
             </div>
         </main>
