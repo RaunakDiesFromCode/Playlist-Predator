@@ -1,9 +1,9 @@
 import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Body from "./Body";
+import TopLoader from "@/components/TopLoader";
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import NextTopLoader from "nextjs-toploader";
 
 const jetbrainsMono = JetBrains_Mono({
     subsets: ["latin"],
@@ -54,16 +54,7 @@ export default function RootLayout({
             className={`${jetbrainsMono.variable} font-mono`}
         >
             <Body>
-                <NextTopLoader
-                    color="hsl(var(--primary))"
-                    initialPosition={0.08}
-                    crawlSpeed={200}
-                    height={3}
-                    crawl
-                    showSpinner={false}
-                    easing="ease"
-                    speed={200}
-                />
+                <TopLoader />
                 {children}
             </Body>
             <Analytics />

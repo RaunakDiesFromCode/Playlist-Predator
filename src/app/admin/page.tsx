@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,12 @@ import {
 } from "@/components/ui/table";
 import { isAdminEmail, isAdminRole } from "@/lib/admin/access";
 import { getAdminDashboardData } from "@/lib/admin/dashboard";
+
+export const metadata: Metadata = {
+    title: "Admin | Playlist Predator",
+    description:
+        "Platform administration dashboard for managing playlists and user progress.",
+};
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { fetchPlaylistVideoIds } from "@/lib/youtube/client";

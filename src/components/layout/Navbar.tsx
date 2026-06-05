@@ -3,9 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useCallback, memo } from "react";
 
 import {
     BarChart3,
+    Home,
     LogOut,
     Scale,
     Sidebar,
@@ -36,15 +38,27 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
     const router = useRouter();
     const { canAccess: showAdminLink } = useAdminAccess();
 
-    async function handleLogout() {
+    // Stable reference prevents child re-renders on parent updates
+    const handleLogout = useCallback(async () => {
         const { supabase } = await import("@/lib/supabase/client");
         await supabase.auth.signOut();
         router.push("/login");
-    }
+    }, [router]);
 
     return (
-        <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+        <nav
+            className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90"
+            aria-label="Main"
+        >
+            {/* padding for iOS safe area (notch) */}
             <div className="mx-auto flex max-w-7xl items-center gap-3 px-3 pt-[calc(0.5rem+env(safe-area-inset-top))]">
+                {/* Skip navigation link for keyboard users */}
+                <a
+                    href="#main-content"
+                    className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:rounded focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:shadow"
+                >
+                    Skip to main content
+                </a>
                 <div className="flex items-center gap-2 shrink-0">
                     <Button
                         variant="ghost"
@@ -60,9 +74,11 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                         href="/"
                         className="hidden md:flex items-center gap-2 font-semibold text-lg"
                     >
+                        {/* Image is decorative — link text already labels it */}
                         <Image
                             src="/logo.gif"
-                            alt="Playlist Predator"
+                            alt=""
+                            aria-hidden="true"
                             width={36}
                             height={36}
                             className="rounded"
@@ -109,15 +125,22 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                     <DropdownMenuSeparator />
 
                                     <DropdownMenuItem asChild>
+                                        <Link href="/">
+                                            <Home className="h-4 w-4" aria-hidden="true" />
+                                            Home
+                                        </Link>
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuItem asChild>
                                         <Link href="/compare">
-                                            <Scale className="h-4 w-4" />
+                                            <Scale className="h-4 w-4" aria-hidden="true" />
                                             Compare
                                         </Link>
                                     </DropdownMenuItem>
 
                                     <DropdownMenuItem asChild>
                                         <Link href="/stats">
-                                            <BarChart3 className="h-4 w-4" />
+                                            <BarChart3 className="h-4 w-4" aria-hidden="true" />
                                             Statistics
                                         </Link>
                                     </DropdownMenuItem>
@@ -129,7 +152,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                     {showAdminLink && (
                                         <DropdownMenuItem asChild>
                                             <Link href="/admin">
-                                                <User className="h-4 w-4" />
+                                                <User className="h-4 w-4" aria-hidden="true" />
                                                 Admin
                                             </Link>
                                         </DropdownMenuItem>
@@ -141,7 +164,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                         className="flex items-center gap-2 text-red-600 focus:text-red-600 cursor-pointer"
                                         onClick={handleLogout}
                                     >
-                                        <LogOut className="h-4 w-4" />
+                                        <LogOut className="h-4 w-4" aria-hidden="true" />
                                         Logout
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -157,4 +180,4 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
     );
 };
 
-export default Navbar;
+export default memo(Navbar);

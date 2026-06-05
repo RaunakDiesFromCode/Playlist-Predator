@@ -10,7 +10,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { calculateUserStats } from "@/lib/stats/calculate-user-stats";
 
 export const metadata: Metadata = {
-    title: "Your Learning Journey | Playlist Predator",
+    title: "Statistics | Playlist Predator",
     description:
         "Track your progress across playlists and see how much content you've conquered.",
 };
