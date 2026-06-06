@@ -79,3 +79,16 @@ export function setSidebarPlaylistRequest(
 export function clearSidebarPlaylistRequest(userId: string) {
     playlistRequestCache.delete(userId);
 }
+
+export function removeSidebarPlaylist(
+    userId: string,
+    youtubePlaylistId: string,
+) {
+    const current = playlistCache.get(userId) ?? [];
+    const filtered = current.filter(
+        (item) => playlistKey(item) !== youtubePlaylistId,
+    );
+
+    playlistCache.set(userId, filtered);
+    dispatchPlaylistsUpdated(userId);
+}

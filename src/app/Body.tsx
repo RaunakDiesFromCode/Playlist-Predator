@@ -6,6 +6,7 @@ import Sidebar from "@/components/sidebar/Sidebar";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { Toaster } from "sonner";
 
 export default function Body({ children }: { children: React.ReactNode }) {
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -67,6 +68,7 @@ export default function Body({ children }: { children: React.ReactNode }) {
                     </div>
                 </div>
             </ThemeProvider>
+            <Toaster position="bottom-right" />
         </body>
     );
 }

@@ -28,6 +28,7 @@ import {
     getCachedSidebarPlaylists,
     getSidebarPlaylistRequest,
     mergeSidebarPlaylists,
+    removeSidebarPlaylist,
     setCachedSidebarPlaylists,
     setSidebarPlaylistRequest,
     SIDEBAR_PLAYLISTS_UPDATED_EVENT,
@@ -182,6 +183,8 @@ function SidebarContent({
                                     thumbnail={pl.thumbnail}
                                     collapsed={collapsed}
                                     onClickAction={onNavigateAction}
+                                    youtubePlaylistId={pl.youtube_playlist_id}
+                                    userId={user?.id}
                                 />
                             );
                         })}
@@ -318,9 +321,37 @@ export default function Sidebar({
             setLoading(false);
         }
 
+        function handlePlaylistDeleted(event: Event) {
+            const customEvent = event as CustomEvent<{
+                userId?: string;
+                youtubePlaylistId?: string;
+                wasActive?: boolean;
+                href?: string;
+            }>;
+
+            if (
+                customEvent.detail?.userId !== currentUserId ||
+                !customEvent.detail?.youtubePlaylistId
+            ) {
+                return;
+            }
+
+            const { youtubePlaylistId, wasActive, href } = customEvent.detail;
+
+            removeSidebarPlaylist(currentUserId, youtubePlaylistId);
+
+            if (wasActive && href && pathname === href) {
+                router.push("/");
+            }
+        }
+
         window.addEventListener(
             SIDEBAR_PLAYLISTS_UPDATED_EVENT,
             handlePlaylistsUpdated,
+        );
+        window.addEventListener(
+            "sidebar:playlist-deleted",
+            handlePlaylistDeleted,
         );
 
         return () => {
@@ -328,8 +359,12 @@ export default function Sidebar({
                 SIDEBAR_PLAYLISTS_UPDATED_EVENT,
                 handlePlaylistsUpdated,
             );
+            window.removeEventListener(
+                "sidebar:playlist-deleted",
+                handlePlaylistDeleted,
+            );
         };
-    }, [user?.id]);
+    }, [user?.id, pathname, router]);
 
     return (
         <>
