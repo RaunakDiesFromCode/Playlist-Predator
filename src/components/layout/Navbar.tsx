@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, memo } from "react";
+import { useCallback, memo, useState } from "react";
 
 import {
     BarChart3,
@@ -43,6 +43,7 @@ type NavbarProps = {
 const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
     const router = useRouter();
     const { canAccess: showAdminLink } = useAdminAccess();
+    const [menuOpen, setMenuOpen] = useState(false);
 
     // Stable reference prevents child re-renders on parent updates
     const handleLogout = useCallback(async () => {
@@ -96,9 +97,9 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                 <div className="ml-auto flex items-center gap-2 md:gap-3">
                     {!loading &&
                         (user ? (
-                            <DropdownMenu>
-                                <TooltipProvider>
-                                    <Tooltip>
+                            <DropdownMenu onOpenChange={(open) => setMenuOpen(open)}>
+                                <TooltipProvider delayDuration={0}>
+                                    <Tooltip open={menuOpen ? false : undefined}>
                                         <TooltipTrigger asChild>
                                             <DropdownMenuTrigger asChild>
                                                 <Button
@@ -112,12 +113,12 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                                     <span className="truncate font-medium">
                                                         {user.name ?? user.email}
                                                     </span>
-                                                    <ChevronDown />
+                                                    <ChevronDown className={`transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`} />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>Access various tools and features </p>
+                                            <p>Profile menu</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>

@@ -88,22 +88,30 @@ export default function HomeClient() {
                 </form>
 
                 <div className="flex justify-center gap-2 mt-10">
-                    <TooltipProvider>
+                    <TooltipProvider delayDuration={0}>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button asChild variant="ghost" className="gap-2">
-                                    <Link href="/compare">Compare playlists</Link>
+                                <Button
+                                    asChild
+                                    variant="ghost"
+                                    className="gap-2"
+                                >
+                                    <Link href="/compare">
+                                        Compare playlists
+                                    </Link>
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p>Compare up to 4 playlists side by side</p>
                             </TooltipContent>
                         </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button asChild variant="ghost" className="gap-2">
+                                <Button
+                                    asChild
+                                    variant="ghost"
+                                    className="gap-2"
+                                >
                                     <Link href="/insights">View Insights</Link>
                                 </Button>
                             </TooltipTrigger>
