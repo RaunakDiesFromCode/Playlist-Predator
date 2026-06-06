@@ -104,7 +104,7 @@ export default function HomeClient() {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button asChild variant="ghost" className="gap-2">
-                                    <Link href="/stats">My Statistics</Link>
+                                    <Link href="/insights">View Insights</Link>
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>

@@ -154,9 +154,9 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                     </DropdownMenuItem>
 
                                     <DropdownMenuItem asChild>
-                                        <Link href="/stats">
+                                        <Link href="/insights">
                                             <BarChart3 className="h-4 w-4" aria-hidden="true" />
-                                            Statistics
+                                            Insights
                                         </Link>
                                     </DropdownMenuItem>
 
