@@ -36,6 +36,9 @@ It works without login using local storage, and upgrades to Supabase sync when y
 * 📚 Playlist sidebar
   Quick access to saved playlists, with search and loading states. Newly opened items appear immediately and stay visible as you change progress states.
 
+* 🗑 Playlist deletion
+  Delete saved playlists from the sidebar 3-dot menu. Removes the playlist record, all associated progress data, and cached metadata. Redirects to home if the deleted playlist is currently open.
+
 * 🔒 Account recovery
   Login, register, forgot-password, and reset-password flows are built in.
 
@@ -57,6 +60,7 @@ It works without login using local storage, and upgrades to Supabase sync when y
 * Tailwind CSS + shadcn/ui
 * Supabase for auth and Postgres-backed sync
 * YouTube Data API for playlist and video metadata
+* Sonner for toast notifications
 * Vercel for deployment and analytics
 
 ---
@@ -77,6 +81,7 @@ It works without login using local storage, and upgrades to Supabase sync when y
 * `POST /api/playlist/analyze` - Accepts `{ playlistUrl, completedVideos? }` and returns playlist metadata plus the analyzed video list. Playlist URLs return playlist rows; single video URLs can return chapter rows when description timestamps are present.
 * `GET /api/playlists` - Returns saved playlists for the signed-in user.
 * `POST /api/playlists` - Saves a playlist for the current user.
+* `DELETE /api/playlists?youtubePlaylistId=...` - Deletes a playlist and all its progress data. Redirects to home if the deleted playlist is currently active.
 * `GET /api/progress?playlistId=...` - Returns saved progress for the current user.
 * `PATCH /api/progress` - Upserts a single video status.
 * `GET /auth/callback` - Exchanges Supabase recovery or sign-in codes for a session.

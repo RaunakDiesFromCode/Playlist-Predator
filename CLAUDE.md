@@ -38,6 +38,7 @@ Required in `.env.local`:
 3. **Progress is local-first**: guests use localStorage (`src/lib/storage/progress.ts`); signed-in users sync via `/api/progress` which writes to Supabase `playlist_progress` table
 4. **Progress merging** (`src/lib/progress/index.ts`): on load, remote (DB) and local (localStorage) progress are merged by `updatedAt` timestamp — newest wins
 5. **Saved playlists** are written through `/api/playlists` when a signed-in user opens a playlist; the sidebar cache updates immediately via in-memory cache + custom events
+6. **Playlist deletion** (`DELETE /api/playlists?youtubePlaylistId=...`): deletes the playlist record and all associated `playlist_progress` rows; the sidebar cache removes the entry via `removeSidebarPlaylist()` and dispatches a `sidebar:playlist-deleted` custom event for cross-component sync; redirects to `/` if the deleted playlist was active
 
 ### Key Libraries
 
@@ -45,7 +46,7 @@ Required in `.env.local`:
 - `src/lib/progress/` — Client-side progress loading/merging (`index.ts`), server-side progress (`server.ts`)
 - `src/lib/storage/progress.ts` — localStorage progress persistence
 - `src/lib/supabase/` — Supabase browser client (`client.ts`) and server client factory (`server.ts`) using `@supabase/ssr`
-- `src/lib/sidebar/playlists.ts` — In-memory sidebar playlist cache with custom event dispatch for cross-component sync
+- `src/lib/sidebar/playlists.ts` — In-memory sidebar playlist cache with custom event dispatch for cross-component sync; supports add, upsert, and remove operations
 - `src/lib/comparison/` — Playlist comparison logic
 - `src/lib/export/` — CSV/JSON export utilities
 - `src/lib/planner/planner.ts` — Study planner calculations (days required, speed-adjusted time, completion date)
@@ -60,7 +61,7 @@ Required in `.env.local`:
 
 ### Component Organization
 
-- `src/components/ui/` — shadcn/ui components (button, card, dialog, drawer, dropdown-menu, input, label, progress, scroll-area, select, separator, sheet, skeleton, table, tooltip, badge, field)
+- `src/components/ui/` — shadcn/ui components (alert-dialog, button, card, dialog, drawer, dropdown-menu, input, label, progress, scroll-area, select, separator, sheet, skeleton, table, tooltip, badge, field)
 - `src/components/playlist/` — Playlist page components (PlaylistForm, PlaylistOverview, PlaylistVideoList, PlaylistVideoCard, PlaylistAnalysisSkeleton, ResumeWatchingPanel)
 - `src/components/sidebar/` — Sidebar, SidebarItem, SidebarSkeleton
 - `src/components/layout/` — Navbar, Footer
