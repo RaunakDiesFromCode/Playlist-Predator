@@ -19,6 +19,7 @@ Playlist Predator turns a YouTube playlist or chaptered video into a clean, trac
 - Browse your saved playlists from the sidebar, with new items appearing immediately and staying visible as you update progress.
 - Open the playlist or video on YouTube from the title area, and open playlist rows with the playlist context preserved.
 - Search saved playlists quickly.
+- Delete saved playlists from the sidebar 3-dot menu, with confirmation dialog and automatic redirect if the deleted playlist is currently open.
 - Recover your account with forgot-password and reset-password flows.
 - Use the app offline with cached assets and an offline fallback page.
 - Switch between light and dark mode.
@@ -37,3 +38,4 @@ Playlist Predator turns a YouTube playlist or chaptered video into a clean, trac
 - Makes it easier to finish study playlists and watch queues.
 - Reduces lost progress by keeping state locally and in the cloud.
 - Works well for guests and signed-in users alike.
+- Keeps the library clean by letting users remove playlists they no longer need, with all associated data fully cleaned up.

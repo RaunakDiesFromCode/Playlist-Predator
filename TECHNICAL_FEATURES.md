@@ -8,6 +8,7 @@ This document describes the application from a developer's point of view: archit
 - Uses server components for initial playlist analysis and metadata generation.
 - Uses client components for interactive tracking, optimistic updates, and auth-aware UI.
 - Styled with Tailwind CSS and shadcn/ui primitives.
+- Toast notifications via Sonner.
 
 ## Playlist analysis pipeline
 
@@ -30,8 +31,9 @@ This document describes the application from a developer's point of view: archit
 - Saves playlists for signed-in users when they open a playlist.
 - Stores playlist history in the database for sidebar display.
 - Upserts the currently opened playlist or video-derived study set into the sidebar cache immediately, then merges it with the server playlist list so it stays visible even if progress status changes.
-- Uses API routes for playlist save, progress read/write, and analysis.
+- Uses API routes for playlist save, delete, progress read/write, and analysis.
 - Merges server state and cached local state to reduce data loss.
+- Playlist deletion removes both the playlist record and all associated `playlist_progress` rows, scoped to `user_id` for security. The sidebar in-memory cache is updated immediately via `removeSidebarPlaylist()` and a `sidebar:playlist-deleted` custom event, enabling cross-component sync without a full refresh. If the deleted playlist is the current route, the user is redirected to `/`.
 
 ## Authentication and account flow
 
@@ -57,8 +59,10 @@ This document describes the application from a developer's point of view: archit
 - Playlist logic: `src/lib/youtube`
 - YouTube input parsing and chapter extraction: `src/lib/youtube/input.ts` and `src/lib/youtube/chapters.ts`
 - Progress logic: `src/lib/progress` and `src/lib/storage/progress`
-- Sidebar playlist cache: `src/lib/sidebar/playlists.ts`
+- Sidebar playlist cache (CRUD + custom events): `src/lib/sidebar/playlists.ts`
+- Playlist DB operations (create, read, delete): `src/lib/db/playlists.ts`
 - Supabase helpers: `src/lib/supabase`
 - Admin helpers: `src/lib/admin`
 - API routes: `src/app/api`
 - UI surfaces: `src/components`
+- shadcn/ui primitives: `src/components/ui` (alert-dialog, button, card, dialog, dropdown-menu, input, label, progress, scroll-area, select, separator, sheet, skeleton, table, tooltip, badge, field)
