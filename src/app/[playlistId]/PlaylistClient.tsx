@@ -356,7 +356,7 @@ export default function PlaylistClient({
             </TabsContent>
             <TabsContent value="PredAI" className="h-full">
                 {user ? (
-                    <PredAI />
+                    <PredAI playlistId={playlistId} />
                 ) : (
                     <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
                         <LogIn className="h-10 w-10 text-muted-foreground" />
