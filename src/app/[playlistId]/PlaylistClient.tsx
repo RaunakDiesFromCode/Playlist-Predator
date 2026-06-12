@@ -317,7 +317,7 @@ export default function PlaylistClient({
     const RightPannel = (
         <div className="rounded-none border border-border h-full flex flex-col">
             {/* Tab bar */}
-            <div className="w-full sticky top-0 z-10 bg-background inline-flex h-9 items-center rounded-none border-b border-border">
+            <div className="w-full sticky top-0 z-10 bg-background inline-flex items-center rounded-none border-b border-border">
                 <button
                     onClick={() => setActiveTab("overview")}
                     className={`inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1 text-sm font-medium transition-colors ${
