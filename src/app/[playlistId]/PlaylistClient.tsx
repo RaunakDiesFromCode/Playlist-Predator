@@ -25,7 +25,6 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogIn, Sparkles } from "lucide-react";
 import PredAI from "@/components/predai/predai";
 import Link from "next/link";
@@ -309,24 +308,42 @@ export default function PlaylistClient({
     /* States */
     /* ---------------------------------- */
 
+    const [activeTab, setActiveTab] = useState<"overview" | "PredAI">("overview");
+
     if (loading) return <PlaylistPageSkeleton />;
     if (error) return <p className="p-8 text-red-500">{error}</p>;
     if (!summary || !playlist) return null;
 
     const RightPannel = (
-        <Tabs
-            defaultValue="overview"
-            className="rounded-none border border-border h-full overflow-y-auto flex flex-col"
-        >
-            <TabsList className="w-full sticky top-0 z-10 bg-background">
-                <TabsTrigger value="overview" className="flex gap-1">
+        <div className="rounded-none border border-border h-full flex flex-col">
+            {/* Tab bar */}
+            <div className="w-full sticky top-0 z-10 bg-background inline-flex h-9 items-center rounded-none border-b border-border">
+                <button
+                    onClick={() => setActiveTab("overview")}
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1 text-sm font-medium transition-colors ${
+                        activeTab === "overview"
+                            ? "bg-primary text-primary-foreground shadow"
+                            : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
                     Overview
-                </TabsTrigger>
-                <TabsTrigger value="PredAI" className="flex gap-1">
-                    PredAI <Sparkles size={16} />
-                </TabsTrigger>
-            </TabsList>
-            <TabsContent value="overview" className="flex-1">
+                </button>
+                <button
+                    onClick={() => setActiveTab("PredAI")}
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1 text-sm font-medium transition-colors ${
+                        activeTab === "PredAI"
+                            ? "bg-primary text-primary-foreground shadow"
+                            : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                    <span className="flex items-center gap-1">
+                        PredAI <Sparkles size={16} />
+                    </span>
+                </button>
+            </div>
+
+            {/* Both panels stay mounted; hide inactive with display:none */}
+            <div style={{ display: activeTab === "overview" ? "flex" : "none" }} className="flex-1 flex-col overflow-y-auto">
                 <div className="flex flex-col gap-2">
                     <PlaylistOverview
                         playlist={playlist}
@@ -353,10 +370,15 @@ export default function PlaylistClient({
                         onStudyTimeChange={setStudyTime}
                     />
                 </div>
-            </TabsContent>
-            <TabsContent value="PredAI" className="h-full">
+            </div>
+
+            <div style={{ display: activeTab === "PredAI" ? "flex" : "none" }} className="h-full flex-1 flex-col overflow-hidden">
                 {user ? (
-                    <PredAI playlistId={playlistId} />
+                    <PredAI
+                        playlistId={playlistId}
+                        initialData={initialData}
+                        initialProgress={initialProgress}
+                    />
                 ) : (
                     <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
                         <LogIn className="h-10 w-10 text-muted-foreground" />
@@ -380,8 +402,8 @@ export default function PlaylistClient({
                         </Link>
                     </div>
                 )}
-            </TabsContent>
-        </Tabs>
+            </div>
+        </div>
     );
 
     /* ---------------------------------- */

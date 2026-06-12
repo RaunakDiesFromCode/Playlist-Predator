@@ -2,6 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Loader2, Send } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,9 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 
 import type { ChatMessage } from "@/types/predai";
+import type { PlaylistAnalysisResponse } from "@/types/playlist";
+import type { PlaylistProgress } from "@/types/progress";
 
 type PredAIProps = {
     playlistId: string;
+    initialData?: PlaylistAnalysisResponse | null;
+    initialProgress?: PlaylistProgress;
 };
 
 function TypingIndicator() {
@@ -53,7 +59,7 @@ function HistoryLoadingSkeleton() {
     );
 }
 
-const PredAI = ({ playlistId }: PredAIProps) => {
+const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -116,6 +122,7 @@ const PredAI = ({ playlistId }: PredAIProps) => {
             },
         ]);
 
+        // Persist user message if conversation exists
         if (conversationId) {
             await fetch("/api/predai/message", {
                 method: "POST",
@@ -141,6 +148,9 @@ const PredAI = ({ playlistId }: PredAIProps) => {
                 },
                 body: JSON.stringify({
                     messages: [...messages, userMessage],
+                    playlistId,
+                    initialData,
+                    initialProgress,
                 }),
             });
 
@@ -198,6 +208,7 @@ const PredAI = ({ playlistId }: PredAIProps) => {
                 }
             }
 
+            // Persist assistant response
             if (conversationId && accumulated.trim()) {
                 await fetch("/api/predai/message", {
                     method: "POST",
@@ -243,23 +254,15 @@ const PredAI = ({ playlistId }: PredAIProps) => {
                             <h1 className="text-3xl font-bold">PredAI</h1>
 
                             <p className="mt-2 text-muted-foreground">
-                                Personalized study assistant powered by AI.
+                                Your playlist-aware study assistant. Ask about
+                                videos, topics, or what to study next.
                             </p>
                         </div>
                     </div>
                 ) : (
                     <div className="space-y-4 p-4">
                         {messages.map((msg) => (
-                            <div
-                                key={msg.id}
-                                className={
-                                    msg.role === "user"
-                                        ? "ml-auto w-fit rounded-none bg-primary p-3 text-primary-foreground"
-                                        : "w-fit rounded-none border p-3 whitespace-pre-wrap"
-                                }
-                            >
-                                {msg.content}
-                            </div>
+                            <ChatMessageBubble key={msg.id} message={msg} />
                         ))}
 
                         {isLoading &&
@@ -277,7 +280,7 @@ const PredAI = ({ playlistId }: PredAIProps) => {
                     <Textarea
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Ask PredAI..."
+                        placeholder="Ask PredAI about this playlist..."
                         rows={1}
                         className="min-h-fit resize-none"
                         disabled={isLoading}
@@ -307,5 +310,39 @@ const PredAI = ({ playlistId }: PredAIProps) => {
         </div>
     );
 };
+
+// ── Message Bubble ──────────────────────────────────────────────────────────
+
+function ChatMessageBubble({ message }: { message: ChatMessage }) {
+    if (message.role === "user") {
+        return (
+            <div className="ml-auto w-fit">
+                <div className="rounded-none dark:bg-muted bg-primary p-3">
+                    <div className="markdown-body prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {message.content}
+                        </ReactMarkdown>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (message.role === "assistant") {
+        return (
+            <div className="max-w-[85%]">
+                <div className="rounded-none border p-3">
+                    <div className="markdown-body prose prose-sm max-w-none dark:prose-invert">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {message.content}
+                        </ReactMarkdown>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return null;
+}
 
 export default PredAI;

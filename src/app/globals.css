@@ -98,3 +98,120 @@ html.theme-transitioning *::after {
     @apply bg-background text-foreground;
   }
 }
+
+/* ── Markdown body (PredAI chat bubbles) ─────────────────────────────────── */
+
+.markdown-body {
+  @apply text-sm leading-relaxed;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+.markdown-body h1 {
+  @apply text-lg font-bold mt-3 mb-1 pb-1 border-b border-border;
+}
+
+.markdown-body h2 {
+  @apply text-base font-bold mt-2 mb-1 pb-0.5 border-b border-border;
+}
+
+.markdown-body h3 {
+  @apply text-sm font-bold mt-2 mb-1;
+}
+
+.markdown-body p {
+  @apply my-1;
+}
+
+.markdown-body ul {
+  @apply list-disc list-inside my-1 space-y-0.5;
+}
+
+.markdown-body ol {
+  @apply list-decimal list-inside my-1 space-y-0.5;
+}
+
+.markdown-body li {
+  @apply my-0.5;
+}
+
+.markdown-body li > ul,
+.markdown-body li > ol {
+  @apply mt-0.5 mb-0;
+}
+
+.markdown-body strong {
+  @apply font-bold;
+}
+
+.markdown-body em {
+  @apply italic;
+}
+
+.markdown-body code {
+  @apply bg-muted text-muted-foreground px-1 py-0.5 rounded-none text-xs font-mono border border-border;
+}
+
+.markdown-body pre {
+  @apply bg-muted border border-border rounded-none p-3 my-2 overflow-x-auto text-xs leading-relaxed;
+}
+
+.markdown-body pre code {
+  @apply bg-transparent border-0 p-0 text-xs;
+}
+
+.markdown-body blockquote {
+  @apply border-l-2 border-border pl-3 my-1 text-muted-foreground italic;
+}
+
+.markdown-body a {
+  @apply text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary;
+}
+
+.markdown-body table {
+  @apply w-full my-2 border-collapse text-xs;
+}
+
+.markdown-body th {
+  @apply bg-muted border border-border px-2 py-1 text-left font-semibold;
+}
+
+.markdown-body td {
+  @apply border border-border px-2 py-1;
+}
+
+.markdown-body hr {
+  @apply border-border my-2;
+}
+
+.markdown-body input[type="checkbox"] {
+  @apply mr-1.5 accent-primary;
+}
+
+/* User bubble: lighter markdown styling on dark primary background */
+.prose-invert code {
+  @apply bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30;
+}
+
+.prose-invert pre {
+  @apply bg-primary-foreground/10 border-primary-foreground/20;
+}
+
+.prose-invert pre code {
+  @apply bg-transparent border-0;
+}
+
+.prose-invert a {
+  @apply text-primary-foreground decoration-primary-foreground/50;
+}
+
+.prose-invert blockquote {
+  @apply border-primary-foreground/40 text-primary-foreground/80;
+}
+
+.prose-invert th {
+  @apply bg-primary-foreground/15 border-primary-foreground/30;
+}
+
+.prose-invert td {
+  @apply border-primary-foreground/30;
+}
