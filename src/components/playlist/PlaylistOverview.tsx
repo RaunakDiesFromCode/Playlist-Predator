@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useIsMounted } from "@/hooks/use-mounted";
+import { useState } from "react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -18,7 +19,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Download } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlaylistMeta, VideoMetadata } from "@/types/playlist";
 import { PlaylistProgress } from "@/types/progress";
@@ -30,9 +31,9 @@ import { getPlaylistResumeTarget } from "@/lib/playlist/resume";
 import {
     buildPlaylistCsvExport,
     buildPlaylistJsonExport,
-    downloadExportFile,
 } from "@/lib/export";
 import ResumeWatchingPanel from "./ResumeWatchingPanel";
+import { toast } from "sonner";
 
 /* ===================== PROPS ===================== */
 
@@ -306,6 +307,8 @@ const PlaylistOverview = ({
         {},
     );
 
+    const [copied, setCopied] = useState<"json" | "csv" | null>(null);
+
     for (const entry of completionEntries) {
         const completedAt = new Date(entry.updatedAt as string);
         if (Number.isNaN(completedAt.getTime())) continue;
@@ -322,16 +325,37 @@ const PlaylistOverview = ({
 
     const maxHeatmapCount = Math.max(...heatmapCounts, 0);
 
-    function handleExport(format: "json" | "csv") {
+    async function handleCopy(format: "json" | "csv") {
         if (!playlist?.title) return;
 
         const exporter =
             format === "json"
                 ? buildPlaylistJsonExport
                 : buildPlaylistCsvExport;
-        const file = exporter({ playlist, videos, progress });
 
-        downloadExportFile(file);
+        const file = exporter({
+            playlist,
+            videos,
+            progress,
+        });
+
+        try {
+            await navigator.clipboard.writeText(file.content);
+
+            setCopied(format);
+
+            toast.success(`${format.toUpperCase()} copied to clipboard`, {
+                description: file.filename,
+            });
+
+            setTimeout(() => {
+                setCopied((current) => (current === format ? null : current));
+            }, 2000);
+        } catch (error) {
+            console.error(error);
+
+            toast.error("Failed to copy export");
+        }
     }
 
     return (
@@ -356,8 +380,12 @@ const PlaylistOverview = ({
                                         size="sm"
                                         className="h-8 gap-2 px-3"
                                     >
-                                        <Download className="h-4 w-4" />
-                                        Export
+                                        {copied ? (
+                                            <Check className="h-4 w-4 text-green-500" />
+                                        ) : (
+                                            <Copy className="h-4 w-4" />
+                                        )}
+                                        Copy
                                     </Button>
                                 </DropdownMenuTrigger>
 
@@ -366,11 +394,11 @@ const PlaylistOverview = ({
                                     className="w-44"
                                 >
                                     <DropdownMenuLabel>
-                                        Export progress
+                                        Copy progress
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
-                                        onSelect={() => handleExport("json")}
+                                        onSelect={() => handleCopy("json")}
                                     >
                                         JSON
                                         <DropdownMenuShortcut>
@@ -378,7 +406,7 @@ const PlaylistOverview = ({
                                         </DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                        onSelect={() => handleExport("csv")}
+                                        onSelect={() => handleCopy("csv")}
                                     >
                                         CSV
                                         <DropdownMenuShortcut>
