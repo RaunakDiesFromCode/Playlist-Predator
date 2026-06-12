@@ -18,7 +18,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { upsertSidebarPlaylist } from "@/lib/sidebar/playlists";
 import { useStudyPlannerPreferences } from "@/hooks/use-study-planner-preferences";
 import { Separator } from "@/components/ui/separator";
-
 import {
     Drawer,
     DrawerContent,
@@ -27,7 +26,9 @@ import {
     DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles } from "lucide-react";
+import { LogIn, Sparkles } from "lucide-react";
+import PredAI from "@/components/predai/predai";
+import Link from "next/link";
 
 const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
 
@@ -315,18 +316,17 @@ export default function PlaylistClient({
     const RightPannel = (
         <Tabs
             defaultValue="overview"
-            className="rounded-none border border-border h-full overflow-y-auto"
+            className="rounded-none border border-border h-full overflow-y-auto flex flex-col"
         >
             <TabsList className="w-full sticky top-0 z-10 bg-background">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger
-                    value="PredAI"
-                    className="data-[state=active]:bg-yellow-500 flex gap-1"
-                >
+                <TabsTrigger value="overview" className="flex gap-1">
+                    Overview
+                </TabsTrigger>
+                <TabsTrigger value="PredAI" className="flex gap-1">
                     PredAI <Sparkles size={16} />
                 </TabsTrigger>
             </TabsList>
-            <TabsContent value="overview" className="">
+            <TabsContent value="overview" className="flex-1">
                 <div className="flex flex-col gap-2">
                     <PlaylistOverview
                         playlist={playlist}
@@ -355,15 +355,31 @@ export default function PlaylistClient({
                 </div>
             </TabsContent>
             <TabsContent value="PredAI" className="h-full">
-                <div className="flex h-full flex-col items-center justify-center text-center">
-                    <div className="text-3xl font-bold uppercase">
-                        Coming Soon!
+                {user ? (
+                    <PredAI />
+                ) : (
+                    <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                        <LogIn className="h-10 w-10 text-muted-foreground" />
+
+                        <h2 className="text-lg font-semibold">
+                            Sign in to use PredAI
+                        </h2>
+
+                        <p className="max-w-xs text-sm text-muted-foreground">
+                            PredAI is available exclusively to signed-in users.
+                            Please sign in to access your personalized study
+                            assistant.
+                        </p>
+
+                        <Link
+                            href="/login"
+                            className="mt-2 inline-flex items-center gap-2 rounded-none bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+                        >
+                            <LogIn className="h-4 w-4" />
+                            Sign In
+                        </Link>
                     </div>
-                    <div className="mt-2 max-w-md text-lg text-muted-foreground border border-border p-3">
-                        Personalized study powered by PredAI, tailored to
-                        your progress and preferences!
-                    </div>
-                </div>
+                )}
             </TabsContent>
         </Tabs>
     );
