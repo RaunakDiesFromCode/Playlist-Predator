@@ -68,7 +68,7 @@ export default function Body({ children }: { children: React.ReactNode }) {
                     </div>
                 </div>
             </ThemeProvider>
-            <Toaster position="bottom-right" />
+            <Toaster position="bottom-right" data-sonner-toaster />
         </body>
     );
 }

@@ -64,7 +64,6 @@ export default function SidebarItem({
                 const body = await res.json().catch(() => ({}));
                 throw new Error(body.error ?? "Failed to delete playlist");
             }
-            toast.success("Playlist deleted");
             setDeleteDialogOpen(false);
             // Dispatch custom event so Sidebar can update its cache
             if (userId && typeof window !== "undefined") {
@@ -79,6 +78,8 @@ export default function SidebarItem({
                     }),
                 );
             }
+            // Toast after dialog closes to avoid Radix scroll-lock conflict
+            setTimeout(() => toast.success("Playlist deleted"), 100);
         } catch (err) {
             toast.error(
                 err instanceof Error ? err.message : "Failed to delete playlist",
