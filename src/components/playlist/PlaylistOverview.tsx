@@ -335,53 +335,61 @@ const PlaylistOverview = ({
     }
 
     return (
-        <Card className="h-full flex flex-col justify-center border-none md:border my-5">
-            <CardHeader className="flex flex-row items-center justify-between gap-3 ">
-                <CardTitle className="text-lg">Reality Check</CardTitle>
-                <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="whitespace-nowrap">
-                        {doneVideos}/{totalVideos} done
-                    </Badge>
+        <Card className="h-full flex flex-col justify-center border-none md:border mb-5">
+            <CardHeader className="pt-2">
+                <CardTitle className="text-lg flex flex-row items-center justify-between gap-3 ">
+                    Reality Check
+                    <div className="flex items-center gap-2">
+                        <Badge
+                            variant="secondary"
+                            className="whitespace-nowrap"
+                        >
+                            {doneVideos}/{totalVideos} done
+                        </Badge>
 
-                    {playlist?.title ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 gap-2 px-3"
-                                >
-                                    <Download className="h-4 w-4" />
-                                    Export
-                                </Button>
-                            </DropdownMenuTrigger>
+                        {playlist?.title ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 gap-2 px-3"
+                                    >
+                                        <Download className="h-4 w-4" />
+                                        Export
+                                    </Button>
+                                </DropdownMenuTrigger>
 
-                            <DropdownMenuContent align="end" className="w-44">
-                                <DropdownMenuLabel>
-                                    Export progress
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onSelect={() => handleExport("json")}
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-44"
                                 >
-                                    JSON
-                                    <DropdownMenuShortcut>
-                                        .json
-                                    </DropdownMenuShortcut>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onSelect={() => handleExport("csv")}
-                                >
-                                    CSV
-                                    <DropdownMenuShortcut>
-                                        .csv
-                                    </DropdownMenuShortcut>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    ) : null}
-                </div>
+                                    <DropdownMenuLabel>
+                                        Export progress
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onSelect={() => handleExport("json")}
+                                    >
+                                        JSON
+                                        <DropdownMenuShortcut>
+                                            .json
+                                        </DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onSelect={() => handleExport("csv")}
+                                    >
+                                        CSV
+                                        <DropdownMenuShortcut>
+                                            .csv
+                                        </DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : null}
+                    </div>
+                </CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-4 md:space-y-6">

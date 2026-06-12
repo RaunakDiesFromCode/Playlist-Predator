@@ -26,6 +26,8 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sparkles } from "lucide-react";
 
 const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
 
@@ -310,33 +312,60 @@ export default function PlaylistClient({
     if (error) return <p className="p-8 text-red-500">{error}</p>;
     if (!summary || !playlist) return null;
 
-    const AnalysisPanel = (
-        <div className="flex h-full flex-col overflow-y-auto rounded-none border border-border gap-2">
-            <PlaylistOverview
-                playlist={playlist}
-                videos={videos}
-                totalVideos={summary.totalVideos}
-                doneVideos={doneCount}
-                rewatchVideos={rewatchCount}
-                skippedVideos={skippedCount}
-                totalDuration={summary.totalDuration}
-                remainingDuration={remainingDuration}
-                progress={progress}
-                preferredSpeed={preferences.preferredSpeed}
-                onPreferredSpeedChange={setPreferredSpeed}
-            />
+    const RightPannel = (
+        <Tabs
+            defaultValue="overview"
+            className="rounded-none border border-border h-full overflow-y-auto"
+        >
+            <TabsList className="w-full sticky top-0 z-10 bg-background">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger
+                    value="PredAI"
+                    className="data-[state=active]:bg-yellow-500 flex gap-1"
+                >
+                    PredAI <Sparkles size={16} />
+                </TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview" className="">
+                <div className="flex flex-col gap-2">
+                    <PlaylistOverview
+                        playlist={playlist}
+                        videos={videos}
+                        totalVideos={summary.totalVideos}
+                        doneVideos={doneCount}
+                        rewatchVideos={rewatchCount}
+                        skippedVideos={skippedCount}
+                        totalDuration={summary.totalDuration}
+                        remainingDuration={remainingDuration}
+                        progress={progress}
+                        preferredSpeed={preferences.preferredSpeed}
+                        onPreferredSpeedChange={setPreferredSpeed}
+                    />
 
-            <Separator />
+                    <Separator />
 
-            <StudyPlanner
-                remainingMinutes={remainingDurationSeconds / 60}
-                remainingVideos={remainingVideos}
-                studyHours={preferences.hours}
-                studyMinutes={preferences.minutes}
-                preferredSpeed={preferences.preferredSpeed}
-                onStudyTimeChange={setStudyTime}
-            />
-        </div>
+                    <StudyPlanner
+                        remainingMinutes={remainingDurationSeconds / 60}
+                        remainingVideos={remainingVideos}
+                        studyHours={preferences.hours}
+                        studyMinutes={preferences.minutes}
+                        preferredSpeed={preferences.preferredSpeed}
+                        onStudyTimeChange={setStudyTime}
+                    />
+                </div>
+            </TabsContent>
+            <TabsContent value="PredAI" className="h-full">
+                <div className="flex h-full flex-col items-center justify-center text-center">
+                    <div className="text-3xl font-bold uppercase">
+                        Coming Soon!
+                    </div>
+                    <div className="mt-2 max-w-md text-lg text-muted-foreground border border-border p-3">
+                        Personalized study powered by PredAI, tailored to
+                        your progress and preferences!
+                    </div>
+                </div>
+            </TabsContent>
+        </Tabs>
     );
 
     /* ---------------------------------- */
@@ -368,7 +397,7 @@ export default function PlaylistClient({
                 </div>
 
                 <div className="w-1/2 h-[calc(100dvh-4.3em)] overflow-y-auto">
-                    {AnalysisPanel}
+                    {RightPannel}
                 </div>
             </div>
         );
@@ -387,7 +416,7 @@ export default function PlaylistClient({
                     recycle={false}
                     numberOfPieces={220}
                     gravity={0.18}
-                    className="pointer-events-none fixed inset-0 z-50"
+                    className="pointer-events-none fixed inset-0 z-[100]"
                 />
             ) : null}
 
@@ -411,7 +440,7 @@ export default function PlaylistClient({
                     </DrawerHeader>
 
                     <div className="md:px-4 px-2 pb-6 overflow-y-auto">
-                        {AnalysisPanel}
+                        {RightPannel}
                     </div>
                 </DrawerContent>
             </Drawer>
