@@ -17,6 +17,9 @@ Required in `.env.local`:
 - `NEXT_PUBLIC_SITE_URL` — Password reset flow (http://localhost:3000 for dev)
 - `ADMIN_EMAILS` or `NEXT_PUBLIC_ADMIN_EMAILS` — Admin access (comma-separated)
 - `SUPABASE_SERVICE_ROLE_KEY` — Admin dashboard privileged queries only
+- `OPENROUTER_API_KEY` — PredAI chat functionality (OpenRouter)
+- `PREDAI_MODEL` — OpenRouter model for PredAI (default: `openai/gpt-oss-120b:free`)
+- `TAVILY_API_KEY` — PredAI web search functionality
 
 ## Architecture Overview
 
@@ -26,8 +29,8 @@ Required in `.env.local`:
 
 - `/` — Home page with playlist/video URL input form (`HomeClient.tsx`)
 - `/[playlistId]` — Playlist analysis and progress tracking page. The dynamic route param can be a playlist ID or video ID; the server tries playlist first, then falls back to video.
-- `/compare` — Compare up to 4 playlists side-by-side
-- `/stats` — User statistics dashboard
+- `/compare` — Compare up to 4 playlists side-by-side (authenticated)
+- `/insights` — User learning insights dashboard with overview, progress breakdown, playlist rankings, recent activity, and learning summary (authenticated)
 - `/admin` — Admin dashboard (restricted by email or `admin` role)
 - `/login`, `/register`, `/forgot-password`, `/reset-password` — Auth flows
 
@@ -52,21 +55,27 @@ Required in `.env.local`:
 - `src/lib/planner/planner.ts` — Study planner calculations (days required, speed-adjusted time, completion date)
 - `src/lib/playlist/resume.ts` — Resume-watching target logic (first-unfinished, first-skipped, first-rewatch, last-played, first-item)
 - `src/lib/admin/` — Admin access checks (`access.ts`) and dashboard data (`dashboard.ts` using service role key)
+- `src/lib/predai/` — PredAI chat system: context builder (`context-builder.ts`), web search (`search.ts`), conversation DB (`db.ts`), system prompts (`prompts.ts`)
+- `src/lib/insights/` — Learning insights calculation (`calculate-insights.ts`) and types (`insights-types.ts`)
 
 ### Auth
 
 - `src/hooks/use-auth.ts` — React hook wrapping Supabase auth state; provides `{ user, loading }` with `AuthUser` type
 - `src/app/auth/callback/route.ts` — Supabase OAuth/email callback handler, exchanges code for session
 - Admin access: checked via `isAdminEmail()` (env-configured emails) or `isAdminRole()` (user metadata role = "admin")
+- All API routes require authentication via `supabase.auth.getUser()`
 
 ### Component Organization
 
-- `src/components/ui/` — shadcn/ui components (alert-dialog, button, card, dialog, drawer, dropdown-menu, input, label, progress, scroll-area, select, separator, sheet, skeleton, table, tooltip, badge, field)
+- `src/components/ui/` — shadcn/ui components (alert-dialog, badge, button, card, drawer, dropdown-menu, field, input, label, progress, scroll-area, select, separator, sheet, skeleton, table, textarea, tooltip)
 - `src/components/playlist/` — Playlist page components (PlaylistForm, PlaylistOverview, PlaylistVideoList, PlaylistVideoCard, PlaylistAnalysisSkeleton, ResumeWatchingPanel)
 - `src/components/sidebar/` — Sidebar, SidebarItem, SidebarSkeleton
 - `src/components/layout/` — Navbar, Footer
 - `src/components/auth/` — AuthCard
 - `src/components/comparison/` — Comparison table and client component
+- `src/components/insights/` — Insights dashboard components (OverviewSection, ProgressBreakdown, PlaylistProgress, RecentActivity, LearningSummary, EmptyState)
+- `src/components/predai/` — PredAI chat component with streaming, markdown rendering, and conversation history
+- `src/components/study-planner.tsx` — Study planner widget
 - `src/components/theme-provider.tsx` + `ThemeToggle.tsx` — Dark/light mode via `next-themes`
 
 ### Styling
@@ -85,6 +94,23 @@ Required in `.env.local`:
 
 - `playlists` — `id, user_id, youtube_playlist_id, title, thumbnail, created_at, updated_at`
 - `playlist_progress` — `id, user_id, playlist_id, video_id, status, updated_at` (unique on `user_id,playlist_id,video_id`)
+- `predai_conversations` — `id, user_id, playlist_id, created_at, updated_at`
+- `predai_messages` — `id, conversation_id, role, content, created_at`
+
+### API Routes
+
+All API routes require authentication.
+
+| Route | Methods | Description |
+|---|---|---|
+| `/api/playlist/analyze` | POST | Analyze a YouTube playlist or video URL |
+| `/api/playlists` | GET, POST, DELETE | Saved playlists CRUD |
+| `/api/progress` | GET, PATCH | Read/write video progress |
+| `/api/comparison` | POST | Compare up to 4 playlists |
+| `/api/predai` | POST | PredAI chat (streaming) |
+| `/api/predai/history` | GET | Load conversation history |
+| `/api/predai/message` | POST | Save a chat message |
+| `/api/admin/me` | GET | Check admin access |
 
 ## Development Philosophy
 

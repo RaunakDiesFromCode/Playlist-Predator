@@ -9,6 +9,7 @@ This document describes the application from a developer's point of view: archit
 - Uses client components for interactive tracking, optimistic updates, and auth-aware UI.
 - Styled with Tailwind CSS and shadcn/ui primitives.
 - Toast notifications via Sonner.
+- All API routes require authentication via Supabase `getUser()`.
 
 ## Playlist analysis pipeline
 
@@ -21,6 +22,7 @@ This document describes the application from a developer's point of view: archit
 ## Progress model
 
 - Uses a unified status model: `DONE`, `SKIP`, `REWATCH`, and `NONE`.
+- Validates status values at the API layer (`VALID_STATUSES` set).
 - Stores progress locally for guests.
 - Syncs progress to Supabase Postgres for authenticated users.
 - Persists `updatedAt` alongside each progress record.
@@ -45,7 +47,33 @@ This document describes the application from a developer's point of view: archit
 
 - Exposes an `/admin` dashboard.
 - Admin access can be granted by configured admin email addresses or an `admin` role.
-- Admin data queries require privileged Supabase access.
+- Admin data queries require privileged Supabase access (service role key).
+
+## PredAI — Playlist-aware study assistant
+
+- AI chat powered by OpenRouter with configurable model (`PREDAI_MODEL`).
+- Builds server-side context from playlist metadata, progress, study plan, and video listing.
+- Supports web search via Tavily for content-related questions (decided by `decideSearch()`).
+- Streams responses via Server-Sent Events (SSE).
+- Persists conversations and messages in Supabase tables (`predai_conversations`, `predai_messages`).
+- Loads conversation history per playlist on mount.
+- Markdown rendering with GFM support via `react-markdown` + `remark-gfm`.
+
+## Learning insights
+
+- `/insights` dashboard for authenticated users.
+- Shows overview stats (playlists tracked, videos completed, completion rate, last activity).
+- Progress breakdown by status per playlist.
+- Playlist rankings by completion rate.
+- Recent activity feed.
+- Learning summary with recommended next steps.
+
+## Search, filter, and sort
+
+- Client-side search within playlist videos by serial number, title, or channel.
+- Filter videos by status (All, Done, Rewatch, Skip, Study).
+- Sort by default order, alphabetically (A-Z, Z-A), or by duration (shortest/longest).
+- 56-day activity completion heatmap in the overview section.
 
 ## Offline and shell support
 
@@ -53,6 +81,11 @@ This document describes the application from a developer's point of view: archit
 - Precaches the app shell and core assets.
 - Falls back to `/offline.html` when navigation requests fail.
 - Ships as a PWA-style app with a web manifest and app icons.
+
+## Export
+
+- Copy playlist progress as JSON or CSV to the clipboard from the playlist overview.
+- Includes metadata, counts, and per-video status/duration.
 
 ## Key implementation areas
 
@@ -63,6 +96,8 @@ This document describes the application from a developer's point of view: archit
 - Playlist DB operations (create, read, delete): `src/lib/db/playlists.ts`
 - Supabase helpers: `src/lib/supabase`
 - Admin helpers: `src/lib/admin`
+- PredAI (context, search, DB, prompts): `src/lib/predai`
+- Insights calculations: `src/lib/insights`
 - API routes: `src/app/api`
 - UI surfaces: `src/components`
-- shadcn/ui primitives: `src/components/ui` (alert-dialog, button, card, dialog, dropdown-menu, input, label, progress, scroll-area, select, separator, sheet, skeleton, table, tooltip, badge, field)
+- shadcn/ui primitives: `src/components/ui` (alert-dialog, badge, button, card, drawer, dropdown-menu, field, input, label, progress, scroll-area, select, separator, sheet, skeleton, table, textarea, tooltip)

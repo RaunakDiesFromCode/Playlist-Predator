@@ -122,7 +122,6 @@ Install:
 ```bash
 npx shadcn@latest add dialog
 npx shadcn@latest add table
-npx shadcn@latest add tabs
 npx shadcn@latest add accordion
 npx shadcn@latest add dropdown-menu
 npx shadcn@latest add command
