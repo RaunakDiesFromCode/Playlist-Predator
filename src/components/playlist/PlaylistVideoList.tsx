@@ -75,7 +75,12 @@ const PlaylistVideoList = ({
 
             if (!lowerQuery) return true;
 
+            const serialMatch = String(video.position)
+                .toLowerCase()
+                .includes(lowerQuery);
+
             return (
+                serialMatch ||
                 video.title.toLowerCase().includes(lowerQuery) ||
                 video.channelTitle.toLowerCase().includes(lowerQuery)
             );
@@ -182,7 +187,7 @@ const PlaylistVideoList = ({
                         }}
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
 
                     <div
                         className="absolute bottom-4 left-4 right-4 transition-none"
@@ -226,6 +231,7 @@ const PlaylistVideoList = ({
                         progressEntry={progress[video.videoId]}
                         onStatusChange={onStatusChange}
                         playlistId={playlistId}
+                        serialNumber={video.position}
                     />
                 ))}
 
@@ -243,7 +249,7 @@ const PlaylistVideoList = ({
                         <Input
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Search videos or channels"
+                            placeholder="Search by number, title, or channel"
                             className="h-9 pl-9"
                         />
                     </div>

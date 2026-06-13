@@ -21,6 +21,7 @@ interface Props {
     progressEntry?: VideoProgress;
     onStatusChange: (id: string, status: VideoStatus) => void;
     playlistId?: string;
+    serialNumber: number;
 }
 
 /* ---------------- UI STATUS LAYER ---------------- */
@@ -103,6 +104,7 @@ const PlaylistVideoCard = ({
     progressEntry,
     onStatusChange,
     playlistId,
+    serialNumber,
 }: Props) => {
     const isMounted = useIsMounted();
     const currentStatus = progressEntry?.status ?? "NONE";
@@ -139,6 +141,9 @@ const PlaylistVideoCard = ({
                         fill
                         className="object-cover"
                     />
+                    <span className="absolute bottom-1 left-1 rounded-none bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white">
+                        {serialNumber}
+                    </span>
                 </div>
 
                 {/* Text */}
