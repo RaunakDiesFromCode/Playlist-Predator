@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { analyzePlaylist } from "@/lib/youtube/playlist";
 import { AnalyzePlaylistRequest } from "@/types/playlist";
 
 export async function POST(req: NextRequest) {
+    const supabase = await createSupabaseServerClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         const body = (await req.json()) as AnalyzePlaylistRequest;
 

@@ -1,4 +1,4 @@
-import * as React from "react";
+import { memo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -99,7 +99,7 @@ function formatCompletionDate(value?: string) {
 
 /* ---------------- COMPONENT ---------------- */
 
-const PlaylistVideoCard = ({
+const PlaylistVideoCardInner = ({
     video,
     progressEntry,
     onStatusChange,
@@ -115,6 +115,14 @@ const PlaylistVideoCard = ({
         (playlistId
             ? `https://www.youtube.com/watch?v=${video.videoId}&list=${playlistId}`
             : `https://youtube.com/watch?v=${video.videoId}`);
+
+    const handleValueChange = useCallback(
+        (value: string) => {
+            const backendStatus = UI_TO_BACKEND[value as UIStatus];
+            onStatusChange(video.videoId, backendStatus);
+        },
+        [onStatusChange, video.videoId],
+    );
 
     return (
         <Card
@@ -172,11 +180,7 @@ const PlaylistVideoCard = ({
             {/* Status Select */}
             <Select
                 value={uiValue}
-                onValueChange={(value) => {
-                    const backendStatus = UI_TO_BACKEND[value as UIStatus];
-
-                    onStatusChange(video.videoId, backendStatus);
-                }}
+                onValueChange={handleValueChange}
             >
                 <SelectTrigger
                     className={`h-8 w-full border text-xs font-bold md:w-[120px] ${STATUS_STYLES[uiValue].trigger}`}
@@ -202,4 +206,4 @@ const PlaylistVideoCard = ({
     );
 };
 
-export default PlaylistVideoCard;
+export default memo(PlaylistVideoCardInner);

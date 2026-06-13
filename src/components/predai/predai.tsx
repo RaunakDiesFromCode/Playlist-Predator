@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Loader2, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -313,7 +313,7 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
 
 // ── Message Bubble ──────────────────────────────────────────────────────────
 
-function ChatMessageBubble({ message }: { message: ChatMessage }) {
+const ChatMessageBubble = memo(function ChatMessageBubble({ message }: { message: ChatMessage }) {
     if (message.role === "user") {
         return (
             <div className="ml-auto w-fit">
@@ -343,6 +343,6 @@ function ChatMessageBubble({ message }: { message: ChatMessage }) {
     }
 
     return null;
-}
+});
 
 export default PredAI;

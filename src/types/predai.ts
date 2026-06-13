@@ -1,19 +1,8 @@
-export type ChatRole = "system" | "user" | "assistant";
-
 export interface ChatMessage {
     id: string;
-    role: ChatRole;
+    role: "system" | "user" | "assistant";
     content: string;
     createdAt: number;
-}
-
-export interface PredAIRequest {
-    messages: ChatMessage[];
-    playlistId: string;
-}
-
-export interface PredAIResponse {
-    message: ChatMessage;
 }
 
 // ── Context Builder Types ──────────────────────────────────────────────────
@@ -75,22 +64,4 @@ export interface SearchDecision {
     shouldSearch: boolean;
     query: string;
     reason: string;
-}
-
-// ── RAG Types (future) ─────────────────────────────────────────────────────
-
-export interface TranscriptChunk {
-    id: string;
-    videoId: string;
-    videoTitle: string;
-    position: number;
-    startTime: number;
-    endTime: number;
-    content: string;
-    embedding: number[];
-}
-
-export interface RAGResult {
-    chunks: TranscriptChunk[];
-    similarity: number;
 }
