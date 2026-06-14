@@ -141,45 +141,67 @@ html.theme-transitioning *::after {
   }
 }
 
-/* ── Markdown body (PredAI chat bubbles) ─────────────────────────────────── */
+/* ── PredAI Chat: Defensive overflow & containment ──────────────────────── */
 
 .markdown-body {
   @apply text-sm leading-relaxed;
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
+.markdown-body > :first-child {
+  margin-top: 0;
+}
+
+.markdown-body > :last-child {
+  margin-bottom: 0;
+}
+
+/* ── Headings ───────────────────────────────────────────────────────────── */
+
 .markdown-body h1 {
-  @apply text-lg font-bold mt-3 mb-1 pb-1 border-b border-border;
+  @apply text-lg font-bold mt-3 mb-1.5 pb-1 border-b border-border;
 }
 
 .markdown-body h2 {
-  @apply text-base font-bold mt-2 mb-1 pb-0.5 border-b border-border;
+  @apply text-base font-bold mt-2.5 mb-1.5 pb-0.5 border-b border-border;
 }
 
 .markdown-body h3 {
   @apply text-sm font-bold mt-2 mb-1;
 }
 
-.markdown-body p {
-  @apply my-1;
+.markdown-body h4 {
+  @apply text-sm font-semibold mt-2 mb-1;
 }
 
+/* ── Paragraphs & spacing ───────────────────────────────────────────────── */
+
+.markdown-body p {
+  @apply my-1.5 leading-relaxed;
+}
+
+/* ── Lists ──────────────────────────────────────────────────────────────── */
+
 .markdown-body ul {
-  @apply list-disc list-inside my-1 space-y-0.5;
+  @apply list-disc list-inside my-2 space-y-1;
 }
 
 .markdown-body ol {
-  @apply list-decimal list-inside my-1 space-y-0.5;
+  @apply list-decimal list-inside my-2 space-y-1;
 }
 
 .markdown-body li {
-  @apply my-0.5;
+  @apply my-0.5 leading-relaxed;
 }
 
 .markdown-body li > ul,
 .markdown-body li > ol {
-  @apply mt-0.5 mb-0;
+  @apply mt-1 mb-0 ml-3;
 }
+
+/* ── Text formatting ────────────────────────────────────────────────────── */
 
 .markdown-body strong {
   @apply font-bold;
@@ -189,71 +211,123 @@ html.theme-transitioning *::after {
   @apply italic;
 }
 
-.markdown-body code {
-  @apply bg-muted text-muted-foreground px-1 py-0.5 rounded-none text-xs font-mono border border-border;
+.markdown-body del {
+  @apply line-through text-muted-foreground;
 }
 
+/* ── Inline code ────────────────────────────────────────────────────────── */
+
+.markdown-body :not(pre) > code {
+  @apply bg-muted text-muted-foreground px-1.5 py-0.5 rounded-sm text-xs font-mono border border-border;
+}
+
+/* ── Code blocks (handled by CodeBlock component, reset defaults) ───────── */
+
 .markdown-body pre {
-  @apply bg-muted border border-border rounded-none p-3 my-2 overflow-x-auto text-xs leading-relaxed;
+  @apply m-0 p-0 bg-transparent border-0 overflow-visible;
 }
 
 .markdown-body pre code {
   @apply bg-transparent border-0 p-0 text-xs;
 }
 
+/* ── Blockquotes ────────────────────────────────────────────────────────── */
+
 .markdown-body blockquote {
-  @apply border-l-2 border-border pl-3 my-1 text-muted-foreground italic;
+  @apply border-l-2 border-border pl-3 my-2 text-muted-foreground italic;
 }
+
+.markdown-body blockquote p {
+  @apply my-0.5;
+}
+
+/* ── Links ──────────────────────────────────────────────────────────────── */
 
 .markdown-body a {
-  @apply text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary;
+  @apply text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary break-all;
 }
+
+/* ── Tables (wrapped in ResponsiveTable component) ──────────────────────── */
 
 .markdown-body table {
-  @apply w-full my-2 border-collapse text-xs;
+  @apply w-full border-collapse text-xs;
 }
 
-.markdown-body th {
-  @apply bg-muted border border-border px-2 py-1 text-left font-semibold;
+.markdown-body thead th {
+  @apply bg-muted border border-border px-3 py-1.5 text-left font-semibold sticky top-0;
 }
 
-.markdown-body td {
-  @apply border border-border px-2 py-1;
+.markdown-body tbody td {
+  @apply border border-border px-3 py-1.5;
 }
+
+.markdown-body tbody tr:nth-child(even) {
+  @apply bg-muted/30;
+}
+
+/* ── Horizontal rules ───────────────────────────────────────────────────── */
 
 .markdown-body hr {
-  @apply border-border my-2;
+  @apply border-border my-3;
 }
+
+/* ── Images ─────────────────────────────────────────────────────────────── */
+
+.markdown-body img {
+  @apply max-w-full h-auto rounded-sm;
+}
+
+/* ── Task lists ─────────────────────────────────────────────────────────── */
 
 .markdown-body input[type="checkbox"] {
   @apply mr-1.5 accent-primary;
 }
 
-/* User bubble: lighter markdown styling on dark primary background */
-.prose-invert code {
+/* ── User bubble: lighter markdown styling on dark primary background ────── */
+
+.prose-invert :not(pre) > code {
   @apply bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30;
 }
 
-.prose-invert pre {
-  @apply bg-primary-foreground/10 border-primary-foreground/20;
-}
-
-.prose-invert pre code {
-  @apply bg-transparent border-0;
-}
-
 .prose-invert a {
-  @apply text-primary-foreground decoration-primary-foreground/50;
+  @apply text-primary-foreground decoration-primary-foreground/50 hover:decoration-primary-foreground;
 }
 
 .prose-invert blockquote {
   @apply border-primary-foreground/40 text-primary-foreground/80;
 }
 
-.prose-invert th {
+.prose-invert thead th {
   @apply bg-primary-foreground/15 border-primary-foreground/30;
 }
 
-.prose-invert td {
+.prose-invert tbody td {
   @apply border-primary-foreground/30;
+}
+
+.prose-invert tbody tr:nth-child(even) {
+  @apply bg-primary-foreground/5;
+}
+
+/* ── Code block component styles ────────────────────────────────────────── */
+
+.markdown-body .group-code {
+  @apply relative;
+}
+
+/* ── Scroll-to-bottom button ────────────────────────────────────────────── */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.2s ease-out;
 }

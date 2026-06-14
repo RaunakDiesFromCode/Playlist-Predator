@@ -1,15 +1,15 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
-import { Loader2, Send } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-
-import { Button } from "@/components/ui/button";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MessageSquare } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 
+import { AssistantMessage } from "./AssistantMessage";
+import { UserMessage } from "./UserMessage";
+import { TypingIndicator } from "./TypingIndicator";
+import { ChatInput } from "./ChatInput";
+import { ScrollToBottom } from "./ScrollToBottom";
 import type { ChatMessage } from "@/types/predai";
 import type { PlaylistAnalysisResponse } from "@/types/playlist";
 import type { PlaylistProgress } from "@/types/progress";
@@ -20,17 +20,7 @@ type PredAIProps = {
     initialProgress?: PlaylistProgress;
 };
 
-function TypingIndicator() {
-    return (
-        <div className="w-fit rounded-none border p-3">
-            <div className="flex items-center gap-1.5">
-                <span className="inline-block h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
-                <span className="inline-block h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
-                <span className="inline-block h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
-            </div>
-        </div>
-    );
-}
+// ── History Loading Skeleton ────────────────────────────────────────────────
 
 function HistoryLoadingSkeleton() {
     return (
@@ -39,17 +29,26 @@ function HistoryLoadingSkeleton() {
                 <div className="flex justify-end">
                     <Skeleton className="h-10 w-2/3 rounded-none" />
                 </div>
-                <Skeleton className="h-16 w-3/4 rounded-none" />
+                <div className="flex gap-2">
+                    <Skeleton className="h-7 w-7 shrink-0 rounded-none" />
+                    <Skeleton className="h-16 w-3/4 rounded-none" />
+                </div>
                 <div className="flex justify-end">
                     <Skeleton className="h-8 w-1/2 rounded-none" />
                 </div>
-                <Skeleton className="h-20 w-2/3 rounded-none" />
+                <div className="flex gap-2">
+                    <Skeleton className="h-7 w-7 shrink-0 rounded-none" />
+                    <Skeleton className="h-20 w-2/3 rounded-none" />
+                </div>
                 <div className="flex justify-end">
                     <Skeleton className="h-12 w-1/3 rounded-none" />
                 </div>
-                <Skeleton className="h-14 w-3/5 rounded-none" />
+                <div className="flex gap-2">
+                    <Skeleton className="h-7 w-7 shrink-0 rounded-none" />
+                    <Skeleton className="h-14 w-3/5 rounded-none" />
+                </div>
             </div>
-            <div className="border-t bg-background p-3">
+            <div className="border-t border-border bg-background p-3">
                 <div className="mx-auto flex max-w-4xl gap-2">
                     <Skeleton className="h-10 flex-1 rounded-none" />
                     <Skeleton className="h-10 w-10 rounded-none" />
@@ -59,13 +58,53 @@ function HistoryLoadingSkeleton() {
     );
 }
 
+// ── Empty State ─────────────────────────────────────────────────────────────
+
+function EmptyState() {
+    return (
+        <div className="flex h-full items-center justify-center p-6">
+            <div className="text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-none border border-border bg-muted">
+                    <MessageSquare className="h-7 w-7 text-muted-foreground" />
+                </div>
+                <h1 className="text-2xl font-bold">PredAI</h1>
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+                    Your playlist-aware study assistant. Ask about videos,
+                    topics, or what to study next.
+                </p>
+                <div className="mt-6 flex flex-col items-center gap-2">
+                    <SuggestionChip text="What should I study next?" />
+                    <SuggestionChip text="Summarize the topics covered" />
+                    <SuggestionChip text="Am I on track with my study plan?" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function SuggestionChip({ text }: { text: string }) {
+    return (
+        <div className="rounded-none border border-border bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground">
+            {text}
+        </div>
+    );
+}
+
+// ── Main PredAI Component ───────────────────────────────────────────────────
+
 const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [historyLoading, setHistoryLoading] = useState(true);
+    const [showScrollButton, setShowScrollButton] = useState(false);
 
+    const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const isNearBottomRef = useRef(true);
+
+    // ── Load conversation history ─────────────────────────────────────────
     useEffect(() => {
         const loadHistory = async () => {
             try {
@@ -78,7 +117,6 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
                 }
 
                 const data = await response.json();
-
                 setConversationId(data.conversationId);
                 setMessages(data.messages ?? []);
             } catch (error) {
@@ -91,15 +129,35 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
         loadHistory();
     }, [playlistId]);
 
-    const bottomRef = useRef<HTMLDivElement>(null);
+    // ── Smart scroll: only auto-scroll when near bottom ────────────────────
+    const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+        messagesEndRef.current?.scrollIntoView({ behavior });
+    }, []);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({
-            behavior: "smooth",
-        });
-    }, [messages, isLoading]);
+        if (isNearBottomRef.current) {
+            scrollToBottom();
+        }
+    }, [messages, isLoading, scrollToBottom]);
 
-    const handleSend = async () => {
+    // ── Track scroll position to show/hide scroll-to-bottom button ─────────
+    const handleScroll = useCallback(() => {
+        const el = scrollAreaRef.current;
+        if (!el) return;
+
+        // Find the viewport element inside ScrollArea
+        const viewport = el.querySelector("[data-radix-scroll-area-viewport]");
+        if (!viewport) return;
+
+        const { scrollTop, scrollHeight, clientHeight } = viewport;
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+        isNearBottomRef.current = distanceFromBottom < 100;
+        setShowScrollButton(distanceFromBottom > 300);
+    }, []);
+
+    // ── Send message ───────────────────────────────────────────────────────
+    const handleSend = useCallback(async () => {
         if (!message.trim() || isLoading) return;
 
         const userMessage: ChatMessage = {
@@ -124,28 +182,25 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
 
         // Persist user message if conversation exists
         if (conversationId) {
-            await fetch("/api/predai/message", {
+            fetch("/api/predai/message", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     conversationId,
                     role: "user",
                     content: userMessage.content,
                 }),
-            });
+            }).catch(console.error);
         }
 
         setMessage("");
         setIsLoading(true);
+        isNearBottomRef.current = true;
 
         try {
             const response = await fetch("/api/predai", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     messages: [...messages, userMessage],
                     playlistId,
@@ -164,30 +219,24 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
-
             let accumulated = "";
 
             while (true) {
                 const { done, value } = await reader.read();
-
                 if (done) break;
 
                 const chunk = decoder.decode(value);
-
                 const lines = chunk
                     .split("\n")
                     .filter((line) => line.startsWith("data: "));
 
                 for (const line of lines) {
                     const data = line.replace("data: ", "");
-
                     if (data === "[DONE]") continue;
 
                     try {
                         const parsed = JSON.parse(data);
-
                         const token = parsed.choices?.[0]?.delta?.content ?? "";
-
                         if (!token) continue;
 
                         accumulated += token;
@@ -195,10 +244,7 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
                         setMessages((prev) =>
                             prev.map((msg) =>
                                 msg.id === assistantId
-                                    ? {
-                                          ...msg,
-                                          content: accumulated,
-                                      }
+                                    ? { ...msg, content: accumulated }
                                     : msg,
                             ),
                         );
@@ -210,21 +256,18 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
 
             // Persist assistant response
             if (conversationId && accumulated.trim()) {
-                await fetch("/api/predai/message", {
+                fetch("/api/predai/message", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         conversationId,
                         role: "assistant",
                         content: accumulated,
                     }),
-                });
+                }).catch(console.error);
             }
         } catch (error) {
             console.error(error);
-
             setMessages((prev) =>
                 prev.map((msg) =>
                     msg.id === assistantId
@@ -239,110 +282,75 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [message, isLoading, conversationId, messages, playlistId, initialData, initialProgress]);
 
+    // ── Loading state ──────────────────────────────────────────────────────
     if (historyLoading) {
         return <HistoryLoadingSkeleton />;
     }
 
+    // ── Render ─────────────────────────────────────────────────────────────
     return (
-        <div className="flex h-full flex-col">
-            <ScrollArea className="flex-1">
+        <div className="flex h-full flex-col overflow-hidden">
+            {/* Messages area */}
+            <ScrollArea
+                className="flex-1"
+                ref={scrollAreaRef}
+                onScrollCapture={handleScroll}
+            >
                 {messages.length === 0 && !isLoading ? (
-                    <div className="flex h-full items-center justify-center p-6">
-                        <div className="text-center">
-                            <h1 className="text-3xl font-bold">PredAI</h1>
-
-                            <p className="mt-2 text-muted-foreground">
-                                Your playlist-aware study assistant. Ask about
-                                videos, topics, or what to study next.
-                            </p>
-                        </div>
-                    </div>
+                    <EmptyState />
                 ) : (
-                    <div className="space-y-4 p-4">
-                        {messages.map((msg) => (
-                            <ChatMessageBubble key={msg.id} message={msg} />
-                        ))}
+                    <div className="relative mx-auto max-w-4xl space-y-4 p-4">
+                        {messages.map((msg, index) => {
+                            const isLast = index === messages.length - 1;
+                            const isStreaming =
+                                isLast &&
+                                msg.role === "assistant" &&
+                                isLoading &&
+                                msg.content !== "";
 
+                            if (msg.role === "user") {
+                                return (
+                                    <UserMessage key={msg.id} message={msg} />
+                                );
+                            }
+
+                            return (
+                                <AssistantMessage
+                                    key={msg.id}
+                                    message={msg}
+                                    isStreaming={isStreaming}
+                                />
+                            );
+                        })}
+
+                        {/* Typing indicator when waiting for first token */}
                         {isLoading &&
                             messages[messages.length - 1]?.content === "" && (
                                 <TypingIndicator />
                             )}
 
-                        <div ref={bottomRef} />
+                        <div ref={messagesEndRef} />
                     </div>
                 )}
+
+                <ScrollToBottom
+                    onClick={() => scrollToBottom()}
+                    visible={showScrollButton}
+                />
             </ScrollArea>
 
-            <div className="border-t bg-background p-3">
-                <div className="mx-auto flex max-w-4xl gap-2">
-                    <Textarea
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Ask PredAI about this playlist..."
-                        rows={1}
-                        className="min-h-fit resize-none"
-                        disabled={isLoading}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSend();
-                            }
-                        }}
-                    />
-
-                    <Button
-                        size="icon"
-                        onClick={handleSend}
-                        disabled={
-                            !message.trim() || isLoading || !conversationId
-                        }
-                    >
-                        {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Send className="h-4 w-4" />
-                        )}
-                    </Button>
-                </div>
-            </div>
+            {/* Input area */}
+            <ChatInput
+                value={message}
+                onChange={setMessage}
+                onSend={handleSend}
+                isLoading={isLoading}
+                disabled={!conversationId}
+            />
         </div>
     );
 };
-
-// ── Message Bubble ──────────────────────────────────────────────────────────
-
-const ChatMessageBubble = memo(function ChatMessageBubble({ message }: { message: ChatMessage }) {
-    if (message.role === "user") {
-        return (
-            <div className="ml-auto w-fit">
-                <div className="rounded-none dark:bg-muted bg-primary p-3">
-                    <div className="markdown-body prose prose-invert prose-sm max-w-none">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {message.content}
-                        </ReactMarkdown>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (message.role === "assistant") {
-        return (
-            <div className="max-w-[85%]">
-                <div className="rounded-none border p-3">
-                    <div className="markdown-body prose prose-sm max-w-none dark:prose-invert">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {message.content}
-                        </ReactMarkdown>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    return null;
-});
 
 export default PredAI;

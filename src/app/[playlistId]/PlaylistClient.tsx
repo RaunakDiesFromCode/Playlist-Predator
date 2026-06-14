@@ -25,7 +25,13 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer";
-import { LogIn, Sparkles } from "lucide-react";
+import {
+    LogIn,
+    NotebookPen,
+    Sparkles,
+    StickyNote,
+    ScanSearch,
+} from "lucide-react";
 import PredAI from "@/components/predai/predai";
 import Link from "next/link";
 
@@ -224,7 +230,6 @@ export default function PlaylistClient({
             doneCount: done,
             rewatchCount: rewatch,
             skippedCount: skipped,
-            totalDurationSeconds: totalSeconds,
             remainingDurationSeconds: nextRemainingSeconds,
             remainingDuration: formatDuration(nextRemainingSeconds),
         };
@@ -308,7 +313,9 @@ export default function PlaylistClient({
     /* States */
     /* ---------------------------------- */
 
-    const [activeTab, setActiveTab] = useState<"overview" | "PredAI">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "PredAI" | "Notes">(
+        "overview",
+    );
 
     if (loading) return <PlaylistPageSkeleton />;
     if (error) return <p className="p-8 text-red-500">{error}</p>;
@@ -326,7 +333,9 @@ export default function PlaylistClient({
                             : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
-                    Overview
+                    <span className="flex items-center gap-1">
+                        Overview <ScanSearch size={16} />
+                    </span>
                 </button>
                 <button
                     onClick={() => setActiveTab("PredAI")}
@@ -340,10 +349,25 @@ export default function PlaylistClient({
                         PredAI <Sparkles size={16} />
                     </span>
                 </button>
+                <button
+                    onClick={() => setActiveTab("Notes")}
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1 text-sm font-medium transition-colors ${
+                        activeTab === "Notes"
+                            ? "bg-primary text-primary-foreground shadow"
+                            : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                    <span className="flex items-center gap-1">
+                        Notes <NotebookPen size={16} />
+                    </span>
+                </button>
             </div>
 
             {/* Both panels stay mounted; hide inactive with display:none */}
-            <div style={{ display: activeTab === "overview" ? "flex" : "none" }} className="flex-1 flex-col overflow-y-auto">
+            <div
+                style={{ display: activeTab === "overview" ? "flex" : "none" }}
+                className="flex-1 flex-col overflow-y-auto"
+            >
                 <div className="flex flex-col gap-2">
                     <PlaylistOverview
                         playlist={playlist}
@@ -372,7 +396,10 @@ export default function PlaylistClient({
                 </div>
             </div>
 
-            <div style={{ display: activeTab === "PredAI" ? "flex" : "none" }} className="h-full flex-1 flex-col overflow-hidden">
+            <div
+                style={{ display: activeTab === "PredAI" ? "flex" : "none" }}
+                className="h-full flex-1 flex-col overflow-hidden"
+            >
                 {user ? (
                     <PredAI
                         playlistId={playlistId}
@@ -402,6 +429,29 @@ export default function PlaylistClient({
                         </Link>
                     </div>
                 )}
+            </div>
+
+            <div
+                style={{ display: activeTab === "Notes" ? "flex" : "none" }}
+                className="h-full flex-1 flex-col overflow-hidden"
+            >
+                <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-none border border-border bg-muted">
+                        <StickyNote className="h-8 w-8 text-muted-foreground" />
+                    </div>
+
+                    <h2 className="text-xl font-bold">Notes</h2>
+
+                    <p className="max-w-xs text-sm text-muted-foreground">
+                        Jot down thoughts, summaries, and key takeaways for each
+                        video. Your notes will sync across devices.
+                    </p>
+
+                    <div className="mt-2 inline-flex items-center gap-2 rounded-none border border-border bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+                        Coming Soon
+                    </div>
+                </div>
             </div>
         </div>
     );

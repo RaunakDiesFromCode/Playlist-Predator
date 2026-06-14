@@ -6,6 +6,59 @@ if (!API_KEY) {
     throw new Error("Missing YOUTUBE_API_KEY");
 }
 
+// ── YouTube API response types ──────────────────────────────────────────────
+
+interface PlaylistItemSnippet {
+    contentDetails: { videoId: string };
+}
+
+interface PlaylistItemsResponse {
+    items: PlaylistItemSnippet[];
+    nextPageToken?: string;
+}
+
+interface VideoContentDetails {
+    duration: string;
+}
+
+interface VideoSnippet {
+    title: string;
+    channelTitle: string;
+    thumbnails: {
+        default: { url: string };
+        medium: { url: string };
+        high: { url: string };
+    };
+    description?: string;
+    publishedAt?: string;
+}
+
+interface VideoItem {
+    id: string;
+    contentDetails: VideoContentDetails;
+    snippet: VideoSnippet;
+}
+
+interface VideosResponse {
+    items: VideoItem[];
+}
+
+interface PlaylistSnippet {
+    title: string;
+    channelTitle: string;
+    thumbnails: {
+        medium?: { url: string };
+        default: { url: string };
+        high: { url: string };
+    };
+}
+
+interface PlaylistDetailsResponse {
+    items: { snippet: PlaylistSnippet }[];
+}
+
+// ── API functions ───────────────────────────────────────────────────────────
+
 export async function fetchPlaylistVideoIds(
     playlistId: string,
 ): Promise<string[]> {
@@ -19,13 +72,11 @@ export async function fetchPlaylistVideoIds(
             }`,
         );
 
-        const data = await res.json();
-        console.log("playlistItems response:", data);
+        const data = (await res.json()) as PlaylistItemsResponse;
 
-        videoIds.push(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ...data.items.map((item: any) => item.contentDetails.videoId),
-        );
+        for (const item of data.items) {
+            videoIds.push(item.contentDetails.videoId);
+        }
 
         pageToken = data.nextPageToken;
     } while (pageToken);
@@ -47,7 +98,7 @@ export async function fetchVideoDurations(
             )}&key=${API_KEY}`,
         );
 
-        const data = await res.json();
+        const data = (await res.json()) as VideosResponse;
 
         for (const item of data.items) {
             durations.push(parseISODuration(item.contentDetails.duration));
@@ -57,9 +108,8 @@ export async function fetchVideoDurations(
     return durations;
 }
 
-export async function fetchVideoDetails(videoIds: string[]) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const videos: any[] = [];
+export async function fetchVideoDetails(videoIds: string[]): Promise<VideoItem[]> {
+    const videos: VideoItem[] = [];
 
     for (let i = 0; i < videoIds.length; i += 50) {
         const chunk = videoIds.slice(i, i + 50);
@@ -70,7 +120,9 @@ export async function fetchVideoDetails(videoIds: string[]) {
             )}&key=${API_KEY}`,
         );
 
-        const data = await res.json();
+        const data = (await res.json()) as VideosResponse & {
+            error?: { message: string };
+        };
 
         if (!data.items) {
             throw new Error(
@@ -99,13 +151,13 @@ export async function fetchPlaylistDetails(playlistId: string) {
         `${API_BASE}/playlists?part=snippet&id=${playlistId}&key=${API_KEY}`,
     );
 
-    const data = await res.json();
+    const data = (await res.json()) as PlaylistDetailsResponse;
 
     if (!data.items || data.items.length === 0) {
         throw new Error("Playlist not found");
     }
 
-    const snippet = data.items[0].snippet;
+    const { snippet } = data.items[0];
 
     return {
         title: snippet.title,

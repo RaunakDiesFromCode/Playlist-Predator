@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpDown, Filter, Search } from "lucide-react";
@@ -145,14 +145,20 @@ const PlaylistVideoList = ({
         return { streakDay, hasActivityToday };
     }, [progress]);
 
+    // Set initial CSS custom property for blur effect
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (el) {
+            el.style.setProperty("--blur", "0");
+        }
+    }, []);
+
     if (videos.length === 0 || !playlistThumbnail) return null;
 
     return (
         <div
             ref={scrollRef}
             className="flex h-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain rounded-none border border-border"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            style={{ ["--blur" as any]: 0 }}
             onScroll={() => {
                 if (ticking.current) return;
                 ticking.current = true;

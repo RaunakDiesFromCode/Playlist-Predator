@@ -10,15 +10,10 @@ export async function GET() {
         const playlists = await getUserPlaylists();
         return NextResponse.json(playlists);
     } catch (err) {
-        return NextResponse.json(
-            {
-                error:
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to fetch playlists",
-            },
-            { status: 401 }
-        );
+        const message =
+            err instanceof Error ? err.message : "Failed to fetch playlists";
+        const status = message === "Not authenticated" ? 401 : 500;
+        return NextResponse.json({ error: message }, { status });
     }
 }
 
@@ -43,15 +38,10 @@ export async function POST(req: Request) {
 
         return NextResponse.json(playlist, { status: 201 });
     } catch (err) {
-        return NextResponse.json(
-            {
-                error:
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to create playlist",
-            },
-            { status: 401 }
-        );
+        const message =
+            err instanceof Error ? err.message : "Failed to create playlist";
+        const status = message === "Not authenticated" ? 401 : 500;
+        return NextResponse.json({ error: message }, { status });
     }
 }
 
