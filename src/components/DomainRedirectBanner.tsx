@@ -13,7 +13,7 @@ import {
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 
-const OLD_DOMAIN = "playlistpredator.vercel.app";
+const OLD_DOMAIN = "playlist-predator.vercel.app";
 const NEW_DOMAIN = "predator.raunakm.xyz";
 
 export default function DomainRedirectBanner() {
