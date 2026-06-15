@@ -5,15 +5,21 @@ export default function manifest(): MetadataRoute.Manifest {
         id: "/",
         name: "Playlist Predator",
         short_name: "PlaylistPredator",
-        description: "An app to manage and enhance your YouTube playlists.",
+        description:
+            "Track, manage, and master your YouTube playlists and videos.",
         start_url: "/",
         display: "standalone",
         display_override: ["window-controls-overlay", "standalone"],
-        orientation: "portrait",
         background_color: "#ffffff",
         theme_color: "#09090b",
         categories: ["productivity", "video", "social"],
         icons: [
+            {
+                src: "/icon-192x192.png",
+                sizes: "192x192",
+                type: "image/png",
+                purpose: "any",
+            },
             {
                 src: "/icon-192x192.png",
                 sizes: "192x192",
@@ -24,7 +30,30 @@ export default function manifest(): MetadataRoute.Manifest {
                 src: "/icon-512x512.png",
                 sizes: "512x512",
                 type: "image/png",
+                purpose: "any",
+            },
+            {
+                src: "/icon-512x512.png",
+                sizes: "512x512",
+                type: "image/png",
                 purpose: "maskable",
+            },
+        ],
+        shortcuts: [
+            {
+                name: "Home",
+                short_name: "Home",
+                url: "/",
+            },
+            {
+                name: "Compare Playlists",
+                short_name: "Compare",
+                url: "/compare",
+            },
+            {
+                name: "Insights",
+                short_name: "Insights",
+                url: "/insights",
             },
         ],
     };
