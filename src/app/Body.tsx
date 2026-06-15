@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Toaster } from "sonner";
+import DomainRedirectBanner from "@/components/DomainRedirectBanner";
 
 export default function Body({ children }: { children: React.ReactNode }) {
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -41,6 +42,7 @@ export default function Body({ children }: { children: React.ReactNode }) {
                     : "bg-background overflow-x-hidden overflow-y-auto"
             }
         >
+            <DomainRedirectBanner />
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                 <div className="flex min-h-[100dvh] flex-col md:flex-row">
                     <Sidebar
