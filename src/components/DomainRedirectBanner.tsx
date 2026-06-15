@@ -36,7 +36,7 @@ export default function DomainRedirectBanner() {
             <AlertDialogContent className="max-w-md">
                 <AlertDialogHeader>
                     <AlertDialogTitle>
-                        We&apos;ve moved!
+                        We have moved!
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                         Playlist Predator is now at{" "}
