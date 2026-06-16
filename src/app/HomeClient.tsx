@@ -62,7 +62,7 @@ export default function HomeClient() {
     }
 
     return (
-        <main className="flex h-full min-h-0 items-center justify-center px-4 py-4 sm:py-6">
+        <main className="flex flex-1 flex-col items-center justify-center px-4 py-4 sm:py-6">
             <div className="flex w-full max-w-xl flex-col gap-4">
                 <h1 className="text-center text-2xl font-bold sm:text-3xl">
                     {greeting}
@@ -70,7 +70,7 @@ export default function HomeClient() {
 
                 <form
                     onSubmit={handleSubmit}
-                    className="flex w-full gap-2 rounded-none border p-1"
+                    className="flex w-full items-center justify-center gap-2 rounded-none border p-1"
                 >
                     <Label htmlFor="home-playlist-input" className="sr-only">
                         YouTube playlist or video link

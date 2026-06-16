@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     applicationName: "Playlist Predator",
     manifest: "/manifest.webmanifest",
     icons: {
-        icon: ["/favicon.svg", "/favicon.ico"],
+        icon: ["/favicon.ico"],
         apple: "/apple-touch-icon.png",
     },
     appleWebApp: {

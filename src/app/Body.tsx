@@ -64,7 +64,7 @@ export default function Body({ children }: { children: React.ReactNode }) {
                             }
                         />
 
-                        <main className="min-h-0 flex-1 transition-all duration-200">
+                        <main className="flex flex-1 flex-col transition-all duration-200">
                             {children}
                         </main>
                     </div>

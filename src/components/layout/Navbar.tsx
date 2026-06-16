@@ -83,12 +83,12 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                     >
                         {/* Image is decorative — link text already labels it */}
                         <Image
-                            src="/logo.gif"
+                            src="/apple-touch-icon.png"
                             alt=""
                             aria-hidden="true"
                             width={36}
                             height={36}
-                            className="rounded"
+                            className="rounded mix-blend-screen"
                         />
                         Playlist Predator
                     </Link>

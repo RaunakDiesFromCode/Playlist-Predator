@@ -7,7 +7,6 @@ const PRECACHE_URLS = [
     "/",
     OFFLINE_URL,
     "/favicon.ico",
-    "/favicon.svg",
     "/apple-touch-icon.png",
     "/icon-192x192.png",
     "/icon-512x512.png",
