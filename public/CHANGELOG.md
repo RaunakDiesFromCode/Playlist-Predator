@@ -1,10 +1,19 @@
 # Changelog
 
-**Current version:** `2.22.2.3`
+**Current version:** `2.22.3.0`
 
 ---
 
-### 2.22.2.3 **← latest**
+### 2.22.3.0 ![feature] **← latest**
+
+Add version badge, changelog generator, and version tracking
+
+*Raunak M · 2026-06-16 · `73f411252b8a`*
+
+
+---
+
+### 2.22.2.3
 
 Center home page content vertically like ChatGPT UI
 
