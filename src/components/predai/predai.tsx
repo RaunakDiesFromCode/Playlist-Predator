@@ -210,7 +210,9 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
             });
 
             if (!response.ok) {
-                throw new Error("Failed to generate response");
+                const errBody = await response.json().catch(() => null);
+                const msg = errBody?.error || response.statusText;
+                throw new Error(msg || "Failed to generate response");
             }
 
             if (!response.body) {
@@ -220,18 +222,19 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let accumulated = "";
+            let sseBuffer = "";
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value);
-                const lines = chunk
-                    .split("\n")
-                    .filter((line) => line.startsWith("data: "));
+                sseBuffer += decoder.decode(value, { stream: true });
+                const lines = sseBuffer.split("\n");
+                sseBuffer = lines.pop() ?? "";
 
                 for (const line of lines) {
-                    const data = line.replace("data: ", "");
+                    if (!line.startsWith("data: ")) continue;
+                    const data = line.slice(6);
                     if (data === "[DONE]") continue;
 
                     try {

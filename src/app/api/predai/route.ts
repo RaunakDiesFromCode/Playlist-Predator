@@ -1,19 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { SYSTEM_PROMPT } from "@/lib/predai/prompts";
-import { buildPredAIContext, serializeContext } from "@/lib/predai/context-builder";
-import { decideSearch, searchWeb, serializeSearchResults } from "@/lib/predai/search";
+import {
+    buildPredAIContext,
+    serializeContext,
+} from "@/lib/predai/context-builder";
+import {
+    decideSearch,
+    searchWeb,
+    serializeSearchResults,
+} from "@/lib/predai/search";
 import { getOrCreateConversation } from "@/lib/predai/db";
 import type { ChatMessage } from "@/types/predai";
 import type { PlaylistAnalysisResponse } from "@/types/playlist";
 import type { PlaylistProgress } from "@/types/progress";
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const OPENROUTER_MODEL = process.env.PREDAI_MODEL ?? "openai/gpt-oss-120b:free";
+const NVIDIA_API_KEY = process.env.NVIDIA_NIM_API_KEY;
+const NIM_MODEL = process.env.NIM_MODEL ?? "nvidia/nvidia-nemotron-nano-9b-v2";
 
 export async function POST(req: NextRequest) {
-    // ── Auth ──────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────
+    // Authentication
+    // s─────────────────────────────────────────────────────────────────────
+
     const supabase = await createSupabaseServerClient();
+
     const {
         data: { user },
     } = await supabase.auth.getUser();
@@ -22,63 +33,89 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // ── Parse request ─────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────
+    // Parse Request
+    // ─────────────────────────────────────────────────────────────────────
+
     const body = await req.json();
+
     const messages: ChatMessage[] = body.messages ?? [];
     const playlistId: string = body.playlistId;
+
     const initialData: PlaylistAnalysisResponse | null | undefined =
         body.initialData;
+
     const initialProgress: PlaylistProgress | undefined = body.initialProgress;
 
     if (!playlistId) {
         return NextResponse.json(
-            { error: "playlistId is required" },
-            { status: 400 },
+            {
+                error: "playlistId is required",
+            },
+            {
+                status: 400,
+            },
         );
     }
 
-    // ── Get or create conversation ────────────────────────────────────────
-    const conversationId = await getOrCreateConversation(
-        playlistId,
-        user.id,
-    );
+    // ─────────────────────────────────────────────────────────────────────
+    // Conversation
+    // ─────────────────────────────────────────────────────────────────────
 
-    // ── Build context (server-side) ───────────────────────────────────────
+    const conversationId = await getOrCreateConversation(playlistId, user.id);
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Playlist Context
+    // ─────────────────────────────────────────────────────────────────────
+
     let contextStr: string;
+
     try {
         const ctx = await buildPredAIContext(playlistId, {
             initialData,
             initialProgress,
         });
+
         contextStr = serializeContext(ctx);
-    } catch (contextError) {
-        console.error("[PredAI] Context build failed:", contextError);
+    } catch (err) {
+        console.error("[PredAI] Context build failed:", err);
+
         contextStr =
-            "Playlist context unavailable. Answer based on the conversation.";
+            "Playlist context unavailable. Answer using only the conversation.";
     }
 
-    // ── Decide if web search is needed ────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────
+    // Optional Search
+    // ─────────────────────────────────────────────────────────────────────
+
     const lastUserMessage = [...messages]
         .reverse()
         .find((m) => m.role === "user");
+
     const searchDecision = lastUserMessage
         ? decideSearch(lastUserMessage.content)
         : {
               shouldSearch: false,
               query: "",
-              reason: "No user message found",
+              reason: "No user message",
           };
 
     let searchResultsStr = "";
+
     if (searchDecision.shouldSearch) {
         console.log(
-            `[PredAI] Search triggered: "${searchDecision.query}" — ${searchDecision.reason}`,
+            `[PredAI] Search: "${searchDecision.query}" (${searchDecision.reason})`,
         );
+
         const results = await searchWeb(searchDecision.query);
+
         searchResultsStr = serializeSearchResults(results);
     }
 
-    // ── Build system prompt ───────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────
+    // System Prompt
+    // ─────────────────────────────────────────────────────────────────────
+
     const systemPrompt = [
         SYSTEM_PROMPT,
         "",
@@ -90,59 +127,97 @@ export async function POST(req: NextRequest) {
         .filter(Boolean)
         .join("\n");
 
-    // ── Call OpenRouter with streaming ─────────────────────────────────────
-    const openRouterMessages: ChatMessage[] = [
-        { id: "system", role: "system", content: systemPrompt, createdAt: 0 },
-        ...messages,
+    // NVIDIA accepts ONLY role + content.
+    const nimMessages = [
+        {
+            role: "system",
+            content: systemPrompt,
+        },
+        ...messages.map(({ role, content }) => ({
+            role,
+            content,
+        })),
     ];
 
-    if (!OPENROUTER_API_KEY) {
+    if (!NVIDIA_API_KEY) {
         return NextResponse.json(
-            { error: "OpenRouter API key not configured" },
-            { status: 500 },
-        );
-    }
-
-    const response = await fetch(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-                "Content-Type": "application/json",
-                "HTTP-Referer":
-                    process.env.NEXT_PUBLIC_SITE_URL ??
-                    "http://localhost:3000",
-                "X-Title": "PredAI - Playlist Study Assistant",
+            {
+                error: "NVIDIA_NIM_API_KEY is not configured.",
             },
-            body: JSON.stringify({
-                model: OPENROUTER_MODEL,
-                stream: true,
-                messages: openRouterMessages,
-            }),
-        },
-    );
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error(
-            "[PredAI] OpenRouter error:",
-            response.status,
-            errorText,
-        );
-        return NextResponse.json(
-            { error: "AI service error" },
-            { status: 502 },
+            {
+                status: 500,
+            },
         );
     }
 
-    // ── Stream response back to client ────────────────────────────────────
-    return new Response(response.body, {
-        headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-            "X-Conversation-Id": conversationId,
-        },
-    });
+    // ─────────────────────────────────────────────────────────────────────
+    // Call NVIDIA NIM
+    // ─────────────────────────────────────────────────────────────────────
+
+    try {
+        const response = await fetch(
+            "https://integrate.api.nvidia.com/v1/chat/completions",
+            {
+                method: "POST",
+                signal: req.signal,
+                headers: {
+                    Authorization: `Bearer ${NVIDIA_API_KEY}`,
+                    "Content-Type": "application/json",
+                    Accept: "text/event-stream",
+                },
+                body: JSON.stringify({
+                    model: NIM_MODEL,
+                    messages: nimMessages,
+                    stream: true,
+
+                    temperature: 1,
+                    top_p: 0.95,
+                    max_tokens: 8192,
+
+                    reasoning_effort: "none",
+                }),
+            },
+        );
+
+        if (!response.ok) {
+            const errorText = await response.text();
+
+            console.error(
+                "[PredAI] NVIDIA NIM Error:",
+                response.status,
+                errorText,
+            );
+
+            return NextResponse.json(
+                {
+                    error: errorText,
+                },
+                {
+                    status: response.status,
+                },
+            );
+        }
+
+        // Pass the SSE stream straight through.
+        return new Response(response.body, {
+            status: response.status,
+            headers: {
+                "Content-Type": "text/event-stream; charset=utf-8",
+                "Cache-Control": "no-cache, no-transform",
+                Connection: "keep-alive",
+                "X-Conversation-Id": conversationId,
+            },
+        });
+    } catch (err) {
+        console.error("[PredAI] Fetch failed:", err);
+
+        return NextResponse.json(
+            {
+                error: "Failed to contact NVIDIA NIM.",
+            },
+            {
+                status: 500,
+            },
+        );
+    }
 }
