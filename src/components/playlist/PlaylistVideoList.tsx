@@ -26,8 +26,8 @@ interface Props {
     videos: VideoMetadata[];
     progress: PlaylistProgress;
     onStatusChange: (id: string, status: VideoStatus) => void;
+    onVideoClick?: (video: VideoMetadata) => void;
     playlist: PlaylistMeta | null;
-    playlistId?: string;
 }
 
 type SortOption =
@@ -48,8 +48,8 @@ const PlaylistVideoList = ({
     videos,
     progress,
     onStatusChange,
+    onVideoClick,
     playlist,
-    playlistId,
 }: Props) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const ticking = useRef(false);
@@ -236,7 +236,7 @@ const PlaylistVideoList = ({
                         video={video}
                         progressEntry={progress[video.videoId]}
                         onStatusChange={onStatusChange}
-                        playlistId={playlistId}
+                        onVideoClick={onVideoClick}
                         serialNumber={video.position}
                     />
                 ))}

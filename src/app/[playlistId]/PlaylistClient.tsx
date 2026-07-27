@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     PlaylistAnalysis,
     PlaylistMeta,
@@ -9,6 +9,7 @@ import {
 } from "@/types/playlist";
 import PlaylistOverview from "@/components/playlist/PlaylistOverview";
 import PlaylistVideoList from "@/components/playlist/PlaylistVideoList";
+import Player from "@/components/playlist/Player";
 import StudyPlanner from "@/components/study-planner";
 import { loadProgress, updateVideoStatus } from "@/lib/progress";
 import { PlaylistProgress, VideoStatus } from "@/types/progress";
@@ -317,6 +318,22 @@ export default function PlaylistClient({
         "overview",
     );
 
+    const [activeVideo, setActiveVideo] = useState<VideoMetadata | null>(null);
+
+    const handleVideoClick = useCallback((video: VideoMetadata) => {
+        if (isMobile) {
+            const url = video.watchUrl ?? `https://www.youtube.com/watch?v=${video.videoId}`;
+            window.open(url, "_blank", "noopener,noreferrer");
+            return;
+        }
+
+        setActiveVideo(video);
+    }, [isMobile]);
+
+    const handleClosePlayer = useCallback(() => {
+        setActiveVideo(null);
+    }, []);
+
     if (loading) return <PlaylistPageSkeleton />;
     if (error) return <p className="p-8 text-red-500">{error}</p>;
     if (!summary || !playlist) return null;
@@ -462,30 +479,34 @@ export default function PlaylistClient({
 
     if (!isMobile) {
         return (
-            <div className="relative flex gap-2 p-2">
-                {showConfetti ? (
-                    <Confetti
-                        width={viewport.width}
-                        height={viewport.height}
-                        recycle={false}
-                        numberOfPieces={220}
-                        gravity={0.18}
-                        className="pointer-events-none fixed inset-0 z-50"
-                    />
-                ) : null}
+            <div>
+                <Player video={activeVideo} onClose={handleClosePlayer} />
 
-                <div className="w-1/2 h-[calc(100dvh-4.3em)] overflow-hidden">
-                    <PlaylistVideoList
-                        videos={videos}
-                        progress={progress}
-                        onStatusChange={changeStatus}
-                        playlist={playlist}
-                        playlistId={playlistId}
-                    />
-                </div>
+                <div className="relative flex gap-2 p-2">
+                    {showConfetti ? (
+                        <Confetti
+                            width={viewport.width}
+                            height={viewport.height}
+                            recycle={false}
+                            numberOfPieces={220}
+                            gravity={0.18}
+                            className="pointer-events-none fixed inset-0 z-50"
+                        />
+                    ) : null}
 
-                <div className="w-1/2 h-[calc(100dvh-4.3em)] overflow-y-auto">
-                    {RightPannel}
+                    <div className="w-1/2 h-[calc(100dvh-4.3em)] overflow-hidden">
+                        <PlaylistVideoList
+                            videos={videos}
+                            progress={progress}
+                            onStatusChange={changeStatus}
+                            onVideoClick={handleVideoClick}
+                            playlist={playlist}
+                        />
+                    </div>
+
+                    <div className="w-1/2 h-[calc(100dvh-4.3em)] overflow-y-auto">
+                        {RightPannel}
+                    </div>
                 </div>
             </div>
         );
@@ -513,6 +534,7 @@ export default function PlaylistClient({
                     videos={videos}
                     progress={progress}
                     onStatusChange={changeStatus}
+                    onVideoClick={handleVideoClick}
                     playlist={playlist}
                 />
             </div>

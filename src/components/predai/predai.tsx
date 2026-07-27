@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MessageSquare } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -65,27 +65,21 @@ function EmptyState() {
         <div className="flex h-full items-center justify-center p-6">
             <div className="text-center">
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-none border border-border bg-muted">
-                    <MessageSquare className="h-7 w-7 text-muted-foreground" />
+                    <Sparkles className="h-7 w-7 text-muted-foreground" />
                 </div>
                 <h1 className="text-2xl font-bold">PredAI</h1>
                 <p className="mt-2 max-w-sm text-sm text-muted-foreground">
                     Your playlist-aware study assistant. Ask about videos,
                     topics, or what to study next.
                 </p>
-                <div className="mt-6 flex flex-col items-center gap-2">
-                    <SuggestionChip text="What should I study next?" />
-                    <SuggestionChip text="Summarize the topics covered" />
-                    <SuggestionChip text="Am I on track with my study plan?" />
-                </div>
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground/40">
+                    PredAI is a free AI assistant and might face rate limits or
+                    downtime. If you encounter issues, please try again later.
+                    For best results, ask questions related to the
+                    playlist&apos;s content. PredAI may not answer questions
+                    unrelated to the playlist.
+                </p>
             </div>
-        </div>
-    );
-}
-
-function SuggestionChip({ text }: { text: string }) {
-    return (
-        <div className="rounded-none border border-border bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground">
-            {text}
         </div>
     );
 }
@@ -130,9 +124,12 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
     }, [playlistId]);
 
     // ── Smart scroll: only auto-scroll when near bottom ────────────────────
-    const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
-        messagesEndRef.current?.scrollIntoView({ behavior });
-    }, []);
+    const scrollToBottom = useCallback(
+        (behavior: ScrollBehavior = "smooth") => {
+            messagesEndRef.current?.scrollIntoView({ behavior });
+        },
+        [],
+    );
 
     useEffect(() => {
         if (isNearBottomRef.current) {
@@ -285,7 +282,15 @@ const PredAI = ({ playlistId, initialData, initialProgress }: PredAIProps) => {
         } finally {
             setIsLoading(false);
         }
-    }, [message, isLoading, conversationId, messages, playlistId, initialData, initialProgress]);
+    }, [
+        message,
+        isLoading,
+        conversationId,
+        messages,
+        playlistId,
+        initialData,
+        initialProgress,
+    ]);
 
     // ── Loading state ──────────────────────────────────────────────────────
     if (historyLoading) {

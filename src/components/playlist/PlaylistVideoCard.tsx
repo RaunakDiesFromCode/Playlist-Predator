@@ -1,6 +1,5 @@
 import { memo, useCallback } from "react";
 import Image from "next/image";
-import Link from "next/link";
 
 import { useIsMounted } from "@/hooks/use-mounted";
 import { VideoMetadata } from "@/types/playlist";
@@ -15,12 +14,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Button } from "../ui/button";
+import { ExternalLink } from "lucide-react";
 
 interface Props {
     video: VideoMetadata;
     progressEntry?: VideoProgress;
     onStatusChange: (id: string, status: VideoStatus) => void;
-    playlistId?: string;
+    onVideoClick?: (video: VideoMetadata) => void;
     serialNumber: number;
 }
 
@@ -103,18 +104,13 @@ const PlaylistVideoCardInner = ({
     video,
     progressEntry,
     onStatusChange,
-    playlistId,
+    onVideoClick,
     serialNumber,
 }: Props) => {
     const isMounted = useIsMounted();
     const currentStatus = progressEntry?.status ?? "NONE";
     const uiValue = backendToUI(currentStatus);
     const completionLabel = formatCompletionDate(progressEntry?.updatedAt);
-    const href =
-        video.watchUrl ??
-        (playlistId
-            ? `https://www.youtube.com/watch?v=${video.videoId}&list=${playlistId}`
-            : `https://youtube.com/watch?v=${video.videoId}`);
 
     const handleValueChange = useCallback(
         (value: string) => {
@@ -123,6 +119,10 @@ const PlaylistVideoCardInner = ({
         },
         [onStatusChange, video.videoId],
     );
+
+    const handleClick = useCallback(() => {
+        onVideoClick?.(video);
+    }, [onVideoClick, video]);
 
     return (
         <Card
@@ -135,11 +135,10 @@ const PlaylistVideoCardInner = ({
             }`}
         >
             {/* Clickable content */}
-            <Link
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-full items-start gap-3 min-w-0 md:flex-1 md:items-center"
+            <button
+                type="button"
+                onClick={handleClick}
+                className="flex w-full items-start gap-3 min-w-0 md:flex-1 md:items-center text-left cursor-pointer"
             >
                 {/* Thumbnail */}
                 <div className="relative w-[96px] aspect-video flex-shrink-0 overflow-hidden rounded-none bg-black/10 md:w-[120px]">
@@ -171,37 +170,51 @@ const PlaylistVideoCardInner = ({
                                 ? "Skipped"
                                 : "Study"}
                         {isMounted && completionLabel
-                            ? ` · ${completionLabel}`
+                            ? ` ${completionLabel}`
                             : ""}
                     </p>
                 </div>
-            </Link>
+            </button>
 
-            {/* Status Select */}
-            <Select
-                value={uiValue}
-                onValueChange={handleValueChange}
-            >
-                <SelectTrigger
-                    className={`h-8 w-full border text-xs font-bold md:w-[120px] ${STATUS_STYLES[uiValue].trigger}`}
-                >
-                    <SelectValue />
-                </SelectTrigger>
+            <div className="flex flex-col items-center gap-2">
+                <Button className="w-full md:flex hidden" variant="outline" asChild>
+                    <a
+                        href={
+                            video.watchUrl ??
+                            `https://www.youtube.com/watch?v=${video.videoId}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-1.5 w-full"
+                    >
+                        Open
+                        <ExternalLink className=" h-4 w-4" />
+                    </a>
+                </Button>
 
-                <SelectContent>
-                    <SelectGroup>
-                        {UI_STATUS_OPTIONS.map((status) => (
-                            <SelectItem
-                                key={status}
-                                value={status}
-                                className={`cursor-pointer font-semibold ${STATUS_STYLES[status].item}`}
-                            >
-                                {status}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
+                {/* Status Select */}
+                <Select value={uiValue} onValueChange={handleValueChange}>
+                    <SelectTrigger
+                        className={`h-8 w-full border text-xs font-bold md:w-30 ${STATUS_STYLES[uiValue].trigger}`}
+                    >
+                        <SelectValue />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                        <SelectGroup>
+                            {UI_STATUS_OPTIONS.map((status) => (
+                                <SelectItem
+                                    key={status}
+                                    value={status}
+                                    className={`cursor-pointer font-semibold ${STATUS_STYLES[status].item}`}
+                                >
+                                    {status}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
         </Card>
     );
 };
