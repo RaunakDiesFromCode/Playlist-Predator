@@ -179,7 +179,7 @@ const PlaylistVideoList = ({
             }}
         >
             <div className="sticky top-0 z-0">
-                <div className="relative h-[220px] w-full overflow-hidden md:h-[280px]">
+                <div className="relative h-55 w-full overflow-hidden md:h-70">
                     <Image
                         src={playlistThumbnail}
                         alt="Playlist cover"
@@ -193,7 +193,7 @@ const PlaylistVideoList = ({
                         }}
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-background to-transparent" />
 
                     <div
                         className="absolute bottom-4 left-4 right-4 transition-none"
@@ -250,7 +250,7 @@ const PlaylistVideoList = ({
 
             <div className="sticky bottom-0 z-20 mt-auto border-t border-border/60 bg-background/95 px-3 py-3 backdrop-blur">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                    <div className="relative flex-1 lg:flex-[2]">
+                    <div className="relative flex-1 lg:flex-2">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             value={query}
@@ -260,7 +260,7 @@ const PlaylistVideoList = ({
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 lg:w-[280px] lg:flex-none">
+                    <div className="grid grid-cols-2 gap-2 lg:w-70 lg:flex-none">
                         <Select
                             value={filterStatus}
                             onValueChange={(value) =>
