@@ -33,6 +33,7 @@ import {
 import ThemeToggle from "../ThemeToggle";
 import { type AuthUser } from "@/hooks/use-auth";
 import { useAdminAccess } from "@/hooks/use-admin-access";
+import { APP_VERSION } from "@/generated/version";
 
 type NavbarProps = {
     toggleSidebar: () => void;
@@ -92,6 +93,11 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                         />
                         Playlist Predator
                     </Link>
+
+                    {/* Version badge — small muted text, hidden on mobile, like VS Code / Docker Desktop */}
+                    <span className="hidden sm:inline-flex items-center text-[10px] leading-none text-muted-foreground select-none">
+                        {APP_VERSION}
+                    </span>
                 </div>
 
                 <div className="ml-auto flex items-center gap-2 md:gap-3">
