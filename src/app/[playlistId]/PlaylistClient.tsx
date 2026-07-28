@@ -480,7 +480,7 @@ export default function PlaylistClient({
     if (!isMobile) {
         return (
             <div>
-                <Player video={activeVideo} onClose={handleClosePlayer} />
+                <Player video={activeVideo} videos={videos} onClose={handleClosePlayer} onNavigate={setActiveVideo} />
 
                 <div className="relative flex gap-2 p-2">
                     {showConfetti ? (
