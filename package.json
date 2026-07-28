@@ -3,10 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "version:generate": "node scripts/generate-version.js",
-    "predev": "npm run version:generate",
     "dev": "next dev",
-    "prebuild": "npm run version:generate",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

@@ -42,6 +42,3 @@ next-env.d.ts
 
 # vscode settings
 .vscode
-
-# auto-generated version file (created by scripts/generate-version.js)
-/src/generated/
