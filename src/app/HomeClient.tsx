@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { parseYouTubeInput } from "@/lib/youtube/input";
-import VersionBadge from "@/components/version-badge";
 
 const GREETINGS = [
     "Make sense of your YouTube playlist",
@@ -123,8 +122,6 @@ export default function HomeClient() {
                     </TooltipProvider>
                 </div>
             </div>
-
-            <VersionBadge />
         </main>
     );
 }
