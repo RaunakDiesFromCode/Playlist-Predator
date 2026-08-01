@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, Loader2, Minus, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,16 +25,19 @@ import type {
     ComparisonSuccessItem,
 } from "@/lib/comparison/compare-playlists";
 import type { ComparisonHighlight } from "@/lib/comparison/comparison-metrics";
+import {
+    buildComparisonSlug,
+    getComparisonPlaylistIds,
+} from "@/lib/comparison/comparison-slug";
 
 type InputRow = {
     id: string;
     value: string;
 };
 
-const INITIAL_ROWS: InputRow[] = [
-    { id: "playlist-1", value: "" },
-    { id: "playlist-2", value: "" },
-];
+type ComparisonClientProps = {
+    initialInputs?: string[];
+};
 
 const MAX_ROWS = 4;
 
@@ -52,11 +55,31 @@ function createRow(): InputRow {
     };
 }
 
-export default function ComparisonClient() {
-    const [rows, setRows] = useState<InputRow[]>(INITIAL_ROWS);
+function buildInitialRows(initialInputs?: string[]): InputRow[] {
+    const rows = (initialInputs ?? [])
+        .slice(0, MAX_ROWS)
+        .map((value, index) => ({
+            id: `playlist-${index + 1}`,
+            value,
+        }));
+
+    while (rows.length < 2) {
+        rows.push(createRow());
+    }
+
+    return rows;
+}
+
+export default function ComparisonClient({
+    initialInputs,
+}: ComparisonClientProps) {
+    const [rows, setRows] = useState<InputRow[]>(() =>
+        buildInitialRows(initialInputs),
+    );
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<ComparisonResult | null>(null);
+    const autoSubmitAttemptedRef = useRef(false);
 
     const filledRows = useMemo(
         () => rows.map((row) => row.value.trim()).filter(Boolean),
@@ -95,43 +118,77 @@ export default function ComparisonClient() {
         });
     }
 
-    async function handleSubmit(event: React.FormEvent) {
-        event.preventDefault();
+    const runComparison = useCallback(
+        async (inputs = filledRows) => {
+            const validInputs = inputs.slice(0, MAX_ROWS);
 
-        if (filledRows.length < 2) {
-            setError("Enter at least two playlist URLs or IDs.");
+            if (validInputs.length < 2) {
+                setError("Enter at least two playlist URLs or IDs.");
+                return;
+            }
+
+            setLoading(true);
+            setError(null);
+
+            try {
+                const response = await fetch("/api/comparison", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ inputs: validInputs }),
+                });
+
+                const data = (await response.json()) as ComparisonResult & {
+                    error?: string;
+                };
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.error ?? "Failed to compare playlists.",
+                    );
+                }
+
+                setResult(data);
+
+                const playlistIds = getComparisonPlaylistIds(validInputs);
+
+                if (playlistIds.length >= 2) {
+                    const nextUrl = `/compare/${buildComparisonSlug(playlistIds)}`;
+
+                    if (window.location.pathname !== nextUrl) {
+                        window.history.replaceState(null, "", nextUrl);
+                    }
+                }
+            } catch (submitError) {
+                setError(
+                    submitError instanceof Error
+                        ? submitError.message
+                        : "Failed to compare playlists.",
+                );
+                setResult(null);
+            } finally {
+                setLoading(false);
+            }
+        },
+        [filledRows],
+    );
+
+    useEffect(() => {
+        if (!initialInputs || initialInputs.length < 2) {
             return;
         }
 
-        setLoading(true);
-        setError(null);
-
-        try {
-            const response = await fetch("/api/comparison", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ inputs: filledRows.slice(0, MAX_ROWS) }),
-            });
-
-            const data = (await response.json()) as ComparisonResult & {
-                error?: string;
-            };
-
-            if (!response.ok) {
-                throw new Error(data.error ?? "Failed to compare playlists.");
-            }
-
-            setResult(data);
-        } catch (submitError) {
-            setError(
-                submitError instanceof Error
-                    ? submitError.message
-                    : "Failed to compare playlists.",
-            );
-            setResult(null);
-        } finally {
-            setLoading(false);
+        if (autoSubmitAttemptedRef.current) {
+            return;
         }
+
+        autoSubmitAttemptedRef.current = true;
+        void runComparison(initialInputs);
+    }, [initialInputs, runComparison]);
+
+    async function handleSubmit(event: React.FormEvent) {
+        event.preventDefault();
+
+        await runComparison();
     }
 
     return (

@@ -23,6 +23,7 @@ export interface VideoMetadata {
     position: number;
     watchUrl?: string;
     description?: string;
+    publishedAt?: string;
 }
 
 export interface PlaylistAnalysisResponse {

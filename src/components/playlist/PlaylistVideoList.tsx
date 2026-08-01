@@ -36,7 +36,9 @@ type SortOption =
     | "za"
     | "length-asc"
     | "length-desc"
-    | "status";
+    | "status"
+    | "date-created-asc"
+    | "date-created-desc";
 
 function toDayKey(date: Date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
@@ -96,6 +98,24 @@ const PlaylistVideoList = ({
                     return a.durationSeconds - b.durationSeconds;
                 case "length-desc":
                     return b.durationSeconds - a.durationSeconds;
+                case "date-created-asc": {
+                    const dateA = a.publishedAt
+                        ? new Date(a.publishedAt).getTime()
+                        : 0;
+                    const dateB = b.publishedAt
+                        ? new Date(b.publishedAt).getTime()
+                        : 0;
+                    return dateA - dateB;
+                }
+                case "date-created-desc": {
+                    const dateA = a.publishedAt
+                        ? new Date(a.publishedAt).getTime()
+                        : 0;
+                    const dateB = b.publishedAt
+                        ? new Date(b.publishedAt).getTime()
+                        : 0;
+                    return dateB - dateA;
+                }
                 default:
                     return a.position - b.position;
             }
@@ -305,6 +325,12 @@ const PlaylistVideoList = ({
                                     </SelectItem>
                                     <SelectItem value="az">A to Z</SelectItem>
                                     <SelectItem value="za">Z to A</SelectItem>
+                                    <SelectItem value="date-created-asc">
+                                        Date: Oldest
+                                    </SelectItem>
+                                    <SelectItem value="date-created-desc">
+                                        Date: Newest
+                                    </SelectItem>
                                     <SelectItem value="length-asc">
                                         Length: Shortest
                                     </SelectItem>
