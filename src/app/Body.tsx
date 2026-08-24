@@ -17,11 +17,30 @@ export default function Body({ children }: { children: React.ReactNode }) {
     const isHome = pathname === "/";
 
     useEffect(() => {
-        if (process.env.NODE_ENV !== "production") {
+        if (!("serviceWorker" in navigator)) {
             return;
         }
 
-        if (!("serviceWorker" in navigator)) {
+        if (process.env.NODE_ENV !== "production") {
+            navigator.serviceWorker
+                .getRegistrations()
+                .then((registrations) => {
+                    for (const registration of registrations) {
+                        registration.unregister();
+                    }
+                })
+                .catch(() => undefined);
+
+            if ("caches" in window) {
+                caches
+                    .keys()
+                    .then((keys) => {
+                        for (const key of keys) {
+                            caches.delete(key);
+                        }
+                    })
+                    .catch(() => undefined);
+            }
             return;
         }
 

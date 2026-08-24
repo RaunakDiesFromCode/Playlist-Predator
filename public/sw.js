@@ -39,7 +39,16 @@ self.addEventListener("activate", (event) => {
     self.clients.claim();
 });
 
+const isDev =
+    self.location.hostname === "localhost" ||
+    self.location.hostname === "127.0.0.1" ||
+    self.location.hostname === "[::1]";
+
 self.addEventListener("fetch", (event) => {
+    if (isDev) {
+        return;
+    }
+
     const { request } = event;
 
     if (request.method !== "GET") {
