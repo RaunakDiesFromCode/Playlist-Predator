@@ -51,7 +51,7 @@ This document describes the application from a developer's point of view: archit
 
 ## PredAI — Playlist-aware study assistant
 
-- AI chat powered by OpenRouter with configurable model (`PREDAI_MODEL`).
+- AI chat powered by NVIDIA NIM with configurable model (`NIM_MODEL`).
 - Builds server-side context from playlist metadata, progress, study plan, and video listing.
 - Supports web search via Tavily for content-related questions (decided by `decideSearch()`).
 - Streams responses via Server-Sent Events (SSE).

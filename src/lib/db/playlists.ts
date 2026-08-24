@@ -74,7 +74,38 @@ export async function deletePlaylist(
         throw new Error("Not authenticated");
     }
 
-    // Delete progress rows first (foreign-key-like relationship by playlist_id)
+    // Find playlist database ID to clean up conversations/messages if any
+    const { data: playlist } = await supabase
+        .from("playlists")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("youtube_playlist_id", youtubePlaylistId)
+        .maybeSingle();
+
+    if (playlist) {
+        // Find conversation IDs to clean up messages
+        const { data: conversations } = await supabase
+            .from("predai_conversations")
+            .select("id")
+            .eq("playlist_id", playlist.id)
+            .eq("user_id", user.id);
+
+        if (conversations && conversations.length > 0) {
+            const conversationIds = conversations.map((c) => c.id);
+            await supabase
+                .from("predai_messages")
+                .delete()
+                .in("conversation_id", conversationIds);
+
+            await supabase
+                .from("predai_conversations")
+                .delete()
+                .eq("playlist_id", playlist.id)
+                .eq("user_id", user.id);
+        }
+    }
+
+    // Delete progress rows (foreign-key-like relationship by playlist_id)
     const { error: progressError } = await supabase
         .from("playlist_progress")
         .delete()

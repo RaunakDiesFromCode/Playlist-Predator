@@ -246,7 +246,7 @@ export async function buildPredAIContext(
         analysis = options.initialData;
     } else {
         analysis = await analyzePlaylist({
-            playlistUrl: `https://youtube.com/playlist?list=${playlistId}`,
+            playlistUrl: playlistId,
         });
     }
 

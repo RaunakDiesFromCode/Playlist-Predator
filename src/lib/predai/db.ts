@@ -7,18 +7,45 @@ export async function getOrCreateConversation(
 ) {
     const supabase = await createSupabaseServerClient();
 
-    const { data: playlist, error: playlistError } = await supabase
+    let playlistDbId: string;
+
+    const { data: playlist } = await supabase
         .from("playlists")
         .select("id")
         .eq("youtube_playlist_id", youtubePlaylistId)
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
-    if (playlistError || !playlist) {
-        throw new Error("Playlist not found");
+    if (playlist) {
+        playlistDbId = playlist.id;
+    } else {
+        // Auto-create playlist row if not yet saved to prevent race conditions breaking PredAI
+        const { data: newPlaylist, error: createError } = await supabase
+            .from("playlists")
+            .insert({
+                user_id: userId,
+                youtube_playlist_id: youtubePlaylistId,
+            })
+            .select("id")
+            .single();
+
+        if (createError || !newPlaylist) {
+            // In case of concurrent insert conflict, retry lookup once
+            const { data: retryPlaylist } = await supabase
+                .from("playlists")
+                .select("id")
+                .eq("youtube_playlist_id", youtubePlaylistId)
+                .eq("user_id", userId)
+                .maybeSingle();
+
+            if (!retryPlaylist) {
+                throw new Error("Playlist not found");
+            }
+            playlistDbId = retryPlaylist.id;
+        } else {
+            playlistDbId = newPlaylist.id;
+        }
     }
-
-    const playlistDbId = playlist.id;
 
     const { data: existing } = await supabase
         .from("predai_conversations")

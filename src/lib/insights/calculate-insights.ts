@@ -210,7 +210,13 @@ export function calculateRecentActivity(
     }
 
     const rows = input.progressRows
-        .filter((row) => row.updated_at)
+        .filter((row) => {
+            const status = normalizeStatus(row.status);
+            return (
+                Boolean(row.updated_at) &&
+                (status === "DONE" || status === "SKIP" || status === "REWATCH")
+            );
+        })
         .map((row) => ({
             ...row,
             parsedDate: parseDate(row.updated_at),
@@ -223,18 +229,15 @@ export function calculateRecentActivity(
         .slice(0, limit);
 
     return rows.map((row) => {
-        const normalizedStatus = normalizeStatus(row.status);
+        const normalizedStatus = normalizeStatus(
+            row.status,
+        ) as "DONE" | "SKIP" | "REWATCH";
         return {
             playlistId: row.playlist_id,
             playlistTitle:
                 playlistMap.get(row.playlist_id)?.title ?? null,
             videoId: row.video_id,
-            status:
-                normalizedStatus === "DONE" ||
-                normalizedStatus === "SKIP" ||
-                normalizedStatus === "REWATCH"
-                    ? normalizedStatus
-                    : "DONE",
+            status: normalizedStatus,
             timestamp: row.parsedDate,
         };
     });

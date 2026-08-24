@@ -17,8 +17,8 @@ Required in `.env.local`:
 - `NEXT_PUBLIC_SITE_URL` — Password reset flow (http://localhost:3000 for dev)
 - `ADMIN_EMAILS` or `NEXT_PUBLIC_ADMIN_EMAILS` — Admin access (comma-separated)
 - `SUPABASE_SERVICE_ROLE_KEY` — Admin dashboard privileged queries only
-- `OPENROUTER_API_KEY` — PredAI chat functionality (OpenRouter)
-- `PREDAI_MODEL` — OpenRouter model for PredAI (default: `openai/gpt-oss-120b:free`)
+- `NVIDIA_NIM_API_KEY` — PredAI chat functionality (NVIDIA NIM)
+- `NIM_MODEL` — Model for PredAI (default: `nvidia/nvidia-nemotron-nano-9b-v2`)
 - `TAVILY_API_KEY` — PredAI web search functionality
 
 ## Architecture Overview

@@ -132,7 +132,7 @@ It works without login using local storage, and upgrades to Supabase sync when y
 * Tailwind CSS + shadcn/ui
 * Supabase for auth and Postgres-backed sync
 * YouTube Data API for playlist and video metadata
-* OpenRouter (PredAI) for AI chat
+* NVIDIA NIM (PredAI) for AI chat
 * Tavily for web search
 * Sonner for toast notifications
 * Vercel for deployment and analytics
@@ -147,7 +147,7 @@ It works without login using local storage, and upgrades to Supabase sync when y
 * Saved playlists are written through `/api/playlists` when a signed-in user opens a playlist or chaptered video, and the sidebar cache is updated immediately.
 * Password reset uses Supabase email recovery, then returns through `/auth/callback` to `/reset-password`.
 * The service worker in `public/sw.js` precaches the app shell and serves `/offline.html` when navigation requests fail.
-* PredAI builds server-side context from playlist metadata, progress, and study plan, then streams responses from OpenRouter with optional web search via Tavily.
+* PredAI builds server-side context from playlist metadata, progress, and study plan, then streams responses from NVIDIA NIM with optional web search via Tavily.
 
 ---
 
@@ -187,8 +187,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ADMIN_EMAILS=admin@example.com
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-OPENROUTER_API_KEY=your_openrouter_api_key
-PREDAI_MODEL=openai/gpt-oss-120b:free
+NVIDIA_NIM_API_KEY=your_nvidia_nim_api_key
+NIM_MODEL=nvidia/nvidia-nemotron-nano-9b-v2
 TAVILY_API_KEY=your_tavily_api_key
 ```
 
@@ -199,7 +199,7 @@ Notes:
 * `NEXT_PUBLIC_SITE_URL` is used by the password reset flow.
 * `ADMIN_EMAILS` or `NEXT_PUBLIC_ADMIN_EMAILS` enables admin access checks.
 * `SUPABASE_SERVICE_ROLE_KEY` is only needed for the admin dashboard's privileged queries.
-* `OPENROUTER_API_KEY` and `PREDAI_MODEL` are required for PredAI chat.
+* `NVIDIA_NIM_API_KEY` and `NIM_MODEL` are required for PredAI chat.
 * `TAVILY_API_KEY` is required for PredAI web search.
 
 ---
