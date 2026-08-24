@@ -4,6 +4,8 @@ export type DbPlaylist = {
     youtube_playlist_id: string;
     title: string | null;
     thumbnail: string | null;
+    invite_token?: string | null;
+    invite_enabled?: boolean;
     created_at: string;
     updated_at: string;
 };

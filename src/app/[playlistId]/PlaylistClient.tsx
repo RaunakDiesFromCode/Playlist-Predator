@@ -32,9 +32,12 @@ import {
     Sparkles,
     StickyNote,
     ScanSearch,
+    Users,
 } from "lucide-react";
 import PredAI from "@/components/predai/predai";
+import PlaylistFriendsTab from "@/components/playlist/PlaylistFriendsTab";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
 
@@ -314,9 +317,23 @@ export default function PlaylistClient({
     /* States */
     /* ---------------------------------- */
 
-    const [activeTab, setActiveTab] = useState<"overview" | "PredAI" | "Notes">(
-        "overview",
-    );
+    const searchParams = useSearchParams();
+
+    const [activeTab, setActiveTab] = useState<
+        "overview" | "PredAI" | "Notes" | "Crew"
+    >("overview");
+
+    useEffect(() => {
+        const tab = searchParams.get("tab");
+        if (
+            tab === "Crew" ||
+            tab === "crew" ||
+            tab === "Friends" ||
+            tab === "friends"
+        ) {
+            setActiveTab("Crew");
+        }
+    }, [searchParams]);
 
     const [activeVideo, setActiveVideo] = useState<VideoMetadata | null>(null);
 
@@ -378,9 +395,21 @@ export default function PlaylistClient({
                         Notes <NotebookPen size={16} />
                     </span>
                 </button>
+                <button
+                    onClick={() => setActiveTab("Crew")}
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1 text-sm font-medium transition-colors ${
+                        activeTab === "Crew"
+                            ? "bg-primary text-primary-foreground shadow"
+                            : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                    <span className="flex items-center gap-1">
+                        Crew <Users size={16} />
+                    </span>
+                </button>
             </div>
 
-            {/* Both panels stay mounted; hide inactive with display:none */}
+            {/* Panels stay mounted; hide inactive with display:none */}
             <div
                 style={{ display: activeTab === "overview" ? "flex" : "none" }}
                 className="flex-1 flex-col overflow-y-auto"
@@ -469,6 +498,17 @@ export default function PlaylistClient({
                         Coming Soon
                     </div>
                 </div>
+            </div>
+
+            <div
+                style={{ display: activeTab === "Crew" ? "flex" : "none" }}
+                className="h-full flex-1 flex-col overflow-hidden"
+            >
+                <PlaylistFriendsTab
+                    playlistId={playlistId}
+                    totalVideos={summary.totalVideos}
+                    isActive={activeTab === "Crew"}
+                />
             </div>
         </div>
     );

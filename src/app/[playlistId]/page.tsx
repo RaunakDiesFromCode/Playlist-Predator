@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { analyzePlaylist } from "@/lib/youtube/playlist";
@@ -51,13 +52,15 @@ export default async function Page(props: { params: Promise<RouteParams> }) {
         await loadServerProgress(playlistId);
 
     return (
-        <PlaylistClient
-            playlistId={playlistId}
-            isMobile={isMobile}
-            initialData={initialData}
-            initialError={initialError}
-            initialProgress={initialProgress}
-        />
+        <Suspense fallback={null}>
+            <PlaylistClient
+                playlistId={playlistId}
+                isMobile={isMobile}
+                initialData={initialData}
+                initialError={initialError}
+                initialProgress={initialProgress}
+            />
+        </Suspense>
     );
 }
 

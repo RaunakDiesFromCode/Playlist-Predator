@@ -1,20 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import AuthCard from "@/components/auth/AuthCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeClosed } from "lucide-react";
 
-export default function RegisterPage() {
+function RegisterForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+
+    const redirectUrl = searchParams.get("redirect") || "/";
 
     async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -43,7 +46,7 @@ export default function RegisterPage() {
             return;
         }
 
-        router.replace("/");
+        router.replace(redirectUrl);
     }
 
     return (
@@ -109,11 +112,26 @@ export default function RegisterPage() {
 
                 <p className="text-sm text-center text-muted-foreground">
                     Already have an account?{" "}
-                    <Link href="/login" className="underline">
+                    <Link
+                        href={
+                            redirectUrl !== "/"
+                                ? `/login?redirect=${encodeURIComponent(redirectUrl)}`
+                                : "/login"
+                        }
+                        className="underline"
+                    >
                         Login
                     </Link>
                 </p>
             </form>
         </AuthCard>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={null}>
+            <RegisterForm />
+        </Suspense>
     );
 }

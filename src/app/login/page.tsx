@@ -1,20 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import AuthCard from "@/components/auth/AuthCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeClosed } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+
+    const redirectUrl = searchParams.get("redirect") || "/";
 
     async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -37,7 +40,7 @@ export default function LoginPage() {
             return;
         }
 
-        router.replace("/");
+        router.replace(redirectUrl);
     }
 
     return (
@@ -96,11 +99,26 @@ export default function LoginPage() {
 
                 <p className="text-sm text-center text-muted-foreground">
                     Don’t have an account?{" "}
-                    <Link href="/register" className="underline">
+                    <Link
+                        href={
+                            redirectUrl !== "/"
+                                ? `/register?redirect=${encodeURIComponent(redirectUrl)}`
+                                : "/register"
+                        }
+                        className="underline"
+                    >
                         Register
                     </Link>
                 </p>
             </form>
         </AuthCard>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={null}>
+            <LoginForm />
+        </Suspense>
     );
 }
