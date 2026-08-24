@@ -22,7 +22,7 @@ It works without login using local storage, and upgrades to Supabase sync when y
   Mark videos as `DONE`, `SKIP`, `REWATCH`, or clear them back to `NONE`.
 
 * 🔍 Search, filter, and sort
-  Search videos by number, title, or channel. Filter by status. Sort alphabetically or by duration.
+  Search videos by number, title, or channel. Filter by status. Sort alphabetically, by duration, or by creation date.
 
 * 📊 Activity heatmap
   56-day completion heatmap showing your study consistency at a glance.
@@ -32,6 +32,63 @@ It works without login using local storage, and upgrades to Supabase sync when y
 
 * 🎬 Chapter extraction
   Single video links can be turned into chapter-style playlist rows when timestamps are present in the description.
+
+* 🎥 Enhanced video player
+  Video player with navigation controls, description viewing, and improved YouTube integration.
+
+* 👤 Local-first auth flow
+  Guests keep progress in local storage; signed-in users sync through Supabase.
+
+* 💾 Saved playlists
+  Logged-in users automatically save playlists or video-derived study sets they open, including title, thumbnail, and YouTube link.
+
+* 📚 Playlist sidebar
+  Quick access to saved playlists, with search and loading states. Newly opened items appear immediately and stay visible as you change progress states.
+
+* 🗑 Playlist deletion
+  Delete saved playlists from the sidebar 3-dot menu. Removes the playlist record, all associated progress data, and cached metadata. Redirects to home if the deleted playlist is currently open.
+
+* 🔒 Account recovery
+  Login, register, forgot-password, and reset-password flows are built in.
+
+* 🛡 Admin dashboard
+  `/admin` is available for configured admin emails or users with the `admin` role.
+
+* 📶 Offline support
+  The app ships with a service worker, precached assets, and an offline fallback page.
+
+* 🌙 Dark mode
+  Uses the standard light/dark theme tokens from the app shell.
+
+* 🤖 PredAI — Playlist-aware study assistant
+  AI chat assistant that knows your playlist context, progress, and study plan. Supports web search for content-related questions and maintains conversation history.
+
+* 📈 Learning insights
+  `/insights` dashboard with completion rates, progress breakdowns, playlist rankings, recent activity, and learning summaries across all your playlists.
+
+* 📤 Export progress
+  Copy playlist progress as JSON or CSV to the clipboard.
+
+* 🔢 Versioning support
+  Automatic version tracking with auto-generated version file and version display in the navbar.
+
+* 🆚 Playlist comparison
+  Compare up to 4 playlists side-by-side with detailed metrics and side-by-side video viewing.
+
+* 📊 Activity heatmap
+  56-day completion heatmap showing your study consistency at a glance.
+
+* ⚡ Optimistic updates
+  Progress changes feel instant, with local caching for resilience.
+
+* 🎬 Chapter extraction
+  Single video links can be turned into chapter-style playlist rows when timestamps are present in the description.
+
+* 🎥 Enhanced video player
+  Video player with navigation controls, description viewing, and improved YouTube integration.
+
+* 🔢 Versioning support
+  Automatic version tracking with auto-generated version file and version display in the navbar.
 
 * 👤 Local-first auth flow
   Guests keep progress in local storage; signed-in users sync through Supabase.
