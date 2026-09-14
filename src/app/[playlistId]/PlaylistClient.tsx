@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import PredAI from "@/components/predai/predai";
 import PlaylistFriendsTab from "@/components/playlist/PlaylistFriendsTab";
+import { LobbyInfo } from "@/types/friends";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -98,6 +99,7 @@ export default function PlaylistClient({
     const { user, loading: authLoading } = useAuth();
 
     const [progress, setProgress] = useState<PlaylistProgress>(initialProgress);
+    const [lobby, setLobby] = useState<LobbyInfo | null>(null);
 
     const [celebrate, setCelebrate] = useState(false);
     const [viewport, setViewport] = useState({ width: 0, height: 0 });
@@ -145,6 +147,32 @@ export default function PlaylistClient({
     }, [playlistId]);
 
     /* ---------------------------------- */
+    /* Fetch Crew Lobby + Completions */
+    /* ---------------------------------- */
+
+    useEffect(() => {
+        if (authLoading || !user) return;
+
+        let cancelled = false;
+        fetch(
+            `/api/friends/lobby?playlistId=${encodeURIComponent(
+                playlistId,
+            )}&totalVideos=${summary?.totalVideos ?? 0}&t=${Date.now()}`,
+        )
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (!cancelled && data?.lobby) {
+                    setLobby(data.lobby);
+                }
+            })
+            .catch(() => {});
+
+        return () => {
+            cancelled = true;
+        };
+    }, [authLoading, user, playlistId, summary?.totalVideos]);
+
+    /* ---------------------------------- */
     /* Save playlist once */
     /* ---------------------------------- */
 
@@ -187,6 +215,46 @@ export default function PlaylistClient({
             status,
         );
         setProgress(next);
+
+        // Optimistically update lobby videoCompletions
+        if (user) {
+            setLobby((prev) => {
+                if (!prev) return prev;
+                const currentList = prev.videoCompletions?.[videoId] ?? [];
+                const withoutUser = currentList.filter(
+                    (m) => m.userId !== user.id,
+                );
+
+                if (status === "DONE") {
+                    const myName =
+                        user.name || user.email?.split("@")[0] || "You";
+                    const isOwner = prev.isOwner;
+                    return {
+                        ...prev,
+                        videoCompletions: {
+                            ...prev.videoCompletions,
+                            [videoId]: [
+                                ...withoutUser,
+                                {
+                                    userId: user.id,
+                                    name: myName,
+                                    role: isOwner ? "owner" : "member",
+                                    completedAt: new Date().toISOString(),
+                                },
+                            ],
+                        },
+                    };
+                } else {
+                    return {
+                        ...prev,
+                        videoCompletions: {
+                            ...prev.videoCompletions,
+                            [videoId]: withoutUser,
+                        },
+                    };
+                }
+            });
+        }
     }
 
     /* ---------------------------------- */
@@ -508,6 +576,8 @@ export default function PlaylistClient({
                     playlistId={playlistId}
                     totalVideos={summary.totalVideos}
                     isActive={activeTab === "Crew"}
+                    lobby={lobby}
+                    onLobbyChange={setLobby}
                 />
             </div>
         </div>
@@ -541,6 +611,9 @@ export default function PlaylistClient({
                             onStatusChange={changeStatus}
                             onVideoClick={handleVideoClick}
                             playlist={playlist}
+                            videoCompletions={lobby?.videoCompletions}
+                            currentUserId={user?.id}
+                            isMobile={false}
                         />
                     </div>
 
@@ -576,6 +649,9 @@ export default function PlaylistClient({
                     onStatusChange={changeStatus}
                     onVideoClick={handleVideoClick}
                     playlist={playlist}
+                    videoCompletions={lobby?.videoCompletions}
+                    currentUserId={user?.id}
+                    isMobile={true}
                 />
             </div>
 

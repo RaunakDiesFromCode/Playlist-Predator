@@ -40,6 +40,8 @@ interface PlaylistCrewTabProps {
     playlistId: string; // YouTube playlist ID
     totalVideos: number;
     isActive?: boolean;
+    lobby?: LobbyInfo | null;
+    onLobbyChange?: (lobby: LobbyInfo | null) => void;
 }
 
 function formatRelativeTime(isoString?: string | null): string {
@@ -64,11 +66,13 @@ export default function PlaylistFriendsTab({
     playlistId,
     totalVideos,
     isActive = true,
+    lobby: initialLobby,
+    onLobbyChange,
 }: PlaylistCrewTabProps) {
     const { user, loading: authLoading } = useAuth();
 
-    const [lobby, setLobby] = useState<LobbyInfo | null>(null);
-    const [initialLoading, setInitialLoading] = useState(true);
+    const [lobby, setLobby] = useState<LobbyInfo | null>(initialLobby ?? null);
+    const [initialLoading, setInitialLoading] = useState(!initialLobby);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -112,6 +116,7 @@ export default function PlaylistFriendsTab({
 
                 const data = (await res.json()) as { lobby: LobbyInfo | null };
                 setLobby(data.lobby);
+                onLobbyChange?.(data.lobby);
                 hasLoadedRef.current = true;
             } catch (err) {
                 if (showSkeleton || !hasLoadedRef.current) {
@@ -127,8 +132,16 @@ export default function PlaylistFriendsTab({
                 isRefreshingRef.current = false;
             }
         },
-        [user, playlistId, totalVideos],
+        [user, playlistId, totalVideos, onLobbyChange],
     );
+
+    // Sync if parent passes initialLobby
+    useEffect(() => {
+        if (initialLobby) {
+            setLobby(initialLobby);
+            setInitialLoading(false);
+        }
+    }, [initialLobby]);
 
     // Initial mount load
     useEffect(() => {

@@ -1,5 +1,10 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { LobbyInfo, LobbyMember, JoinLobbyResponse } from "@/types/friends";
+import {
+    LobbyInfo,
+    LobbyMember,
+    JoinLobbyResponse,
+    VideoCrewMember,
+} from "@/types/friends";
 
 const UUID_REGEX =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -147,12 +152,59 @@ export async function getLobbyInfo(
         progressByUser.set(row.user_id, stats);
     }
 
-    const members: LobbyMember[] = (roster as Array<{
+    const rosterList = roster as Array<{
         user_id: string;
         name: string;
         role: "owner" | "member";
         joined_at: string;
-    }>).map((m) => {
+    }>;
+
+    const rosterMap = new Map<
+        string,
+        { userId: string; name: string; role: "owner" | "member" }
+    >();
+    for (const m of rosterList) {
+        rosterMap.set(m.user_id, {
+            userId: m.user_id,
+            name: m.name || "Member",
+            role: m.role,
+        });
+    }
+
+    const videoCompletions: Record<string, VideoCrewMember[]> = {};
+
+    for (const row of progressRows ?? []) {
+        if (row.status === "DONE") {
+            const member = rosterMap.get(row.user_id);
+            if (member) {
+                if (!videoCompletions[row.video_id]) {
+                    videoCompletions[row.video_id] = [];
+                }
+                if (
+                    !videoCompletions[row.video_id].some(
+                        (existing) => existing.userId === member.userId,
+                    )
+                ) {
+                    videoCompletions[row.video_id].push({
+                        userId: member.userId,
+                        name: member.name,
+                        role: member.role,
+                        completedAt: row.updated_at,
+                    });
+                }
+            }
+        }
+    }
+
+    for (const videoId in videoCompletions) {
+        videoCompletions[videoId].sort((a, b) => {
+            if (a.role === "owner" && b.role !== "owner") return -1;
+            if (b.role === "owner" && a.role !== "owner") return 1;
+            return a.name.localeCompare(b.name);
+        });
+    }
+
+    const members: LobbyMember[] = rosterList.map((m) => {
         const userProgress = progressByUser.get(m.user_id) ?? {
             doneCount: 0,
             rewatchCount: 0,
@@ -192,6 +244,7 @@ export async function getLobbyInfo(
         inviteToken: activePlaylist.invite_token ?? "",
         inviteEnabled: activePlaylist.invite_enabled ?? true,
         members,
+        videoCompletions,
     };
 }
 

@@ -1,11 +1,15 @@
 import { memo, useCallback } from "react";
 import Image from "next/image";
+import { ExternalLink } from "lucide-react";
 
 import { useIsMounted } from "@/hooks/use-mounted";
 import { VideoMetadata } from "@/types/playlist";
 import { VideoProgress, VideoStatus } from "@/types/progress";
+import { VideoCrewMember } from "@/types/friends";
+import { cn } from "@/lib/utils";
 
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
     Select,
     SelectContent,
@@ -14,8 +18,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
-import { ExternalLink } from "lucide-react";
 
 interface Props {
     video: VideoMetadata;
@@ -23,6 +37,9 @@ interface Props {
     onStatusChange: (id: string, status: VideoStatus) => void;
     onVideoClick?: (video: VideoMetadata) => void;
     serialNumber: number;
+    completedCrew?: VideoCrewMember[];
+    currentUserId?: string;
+    isMobile?: boolean;
 }
 
 /* ---------------- UI STATUS LAYER ---------------- */
@@ -106,11 +123,21 @@ const PlaylistVideoCardInner = ({
     onStatusChange,
     onVideoClick,
     serialNumber,
+    completedCrew = [],
+    currentUserId,
+    isMobile = false,
 }: Props) => {
     const isMounted = useIsMounted();
     const currentStatus = progressEntry?.status ?? "NONE";
     const uiValue = backendToUI(currentStatus);
     const completionLabel = formatCompletionDate(progressEntry?.updatedAt);
+
+    const maxVisible = isMobile ? 3 : 4;
+    const hasOverflow = completedCrew.length > (isMobile ? 4 : 5);
+    const visibleMembers = hasOverflow
+        ? completedCrew.slice(0, maxVisible)
+        : completedCrew;
+    const hiddenCount = hasOverflow ? completedCrew.length - maxVisible : 0;
 
     const handleValueChange = useCallback(
         (value: string) => {
@@ -130,31 +157,184 @@ const PlaylistVideoCardInner = ({
                 currentStatus === "DONE" ||
                 currentStatus === "SKIP" ||
                 currentStatus === "REWATCH"
-                    ? "opacity-60"
+                    ? "opacity-60 hover:opacity-100"
                     : ""
             }`}
         >
-            {/* Clickable content */}
-            <button
-                type="button"
-                onClick={handleClick}
-                className="flex w-full items-start gap-3 min-w-0 md:flex-1 md:items-center text-left cursor-pointer"
-            >
-                {/* Thumbnail */}
-                <div className="relative w-[96px] aspect-video flex-shrink-0 overflow-hidden rounded-none bg-black/10 md:w-[120px]">
-                    <Image
-                        src={video.thumbnail}
-                        alt={video.title}
-                        fill
-                        className="object-cover"
-                    />
-                    <span className="absolute bottom-1 left-1 rounded-none bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white">
-                        {serialNumber}
-                    </span>
+            <div className="flex w-full items-start gap-3 min-w-0 md:flex-1 md:items-center">
+                {/* Left pane: Thumbnail + Crew's pfp */}
+                <div className="flex flex-col shrink-0 w-[96px] md:w-[120px]">
+                    <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={handleClick}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                                handleClick();
+                            }
+                        }}
+                        className="relative w-full aspect-video overflow-hidden rounded-none bg-black/10 text-left cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                        <Image
+                            src={video.thumbnail}
+                            alt={video.title}
+                            fill
+                            className="object-cover"
+                        />
+                        <span className="absolute bottom-1 left-1 rounded-none bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white">
+                            {serialNumber}
+                        </span>
+                    </div>
+
+                    {/* Crew completed avatars below thumbnail */}
+                    {completedCrew.length > 0 && (
+                        <div className="mt-1 w-full flex items-center">
+                            <TooltipProvider delayDuration={150}>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button
+                                            type="button"
+                                            className="flex items-center gap-[2px] max-w-full overflow-hidden text-left cursor-pointer focus:outline-none"
+                                            aria-label={`View who completed ${video.title}`}
+                                        >
+                                            {visibleMembers.map((member) => {
+                                                const isSelf =
+                                                    member.userId === currentUserId;
+                                                return (
+                                                    <Tooltip key={member.userId}>
+                                                        <TooltipTrigger asChild>
+                                                            <div
+                                                                className={cn(
+                                                                    "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-none border font-bold text-[10px] select-none transition-colors",
+                                                                    isSelf
+                                                                        ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                                                        : "border-border bg-muted text-foreground/80 hover:bg-accent",
+                                                                )}
+                                                            >
+                                                                {member.name
+                                                                    .charAt(0)
+                                                                    .toUpperCase()}
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent
+                                                            side="bottom"
+                                                            className="rounded-none text-[11px] py-1 px-2 font-sans"
+                                                        >
+                                                            <span>
+                                                                {member.name}
+                                                                {isSelf && " (You)"}
+                                                                {member.role === "owner" && " · Host"}
+                                                            </span>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                );
+                                            })}
+
+                                            {hiddenCount > 0 && (
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <div
+                                                            className="flex h-[18px] px-1 shrink-0 items-center justify-center rounded-none border border-primary/40 bg-primary/10 font-bold text-[9px] text-primary select-none hover:bg-primary/20 transition-colors"
+                                                        >
+                                                            +{hiddenCount}
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent
+                                                        side="bottom"
+                                                        className="rounded-none text-[11px] py-1 px-2 font-sans"
+                                                    >
+                                                        <span>
+                                                            +{hiddenCount} more crew {hiddenCount === 1 ? "member" : "members"}
+                                                        </span>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            )}
+                                        </button>
+                                    </DropdownMenuTrigger>
+
+                                <DropdownMenuContent
+                                    align="start"
+                                    className="w-56 rounded-none p-2 space-y-1.5"
+                                >
+                                    <div className="flex items-center justify-between px-1 text-xs font-semibold text-foreground">
+                                        <span>Completed by Crew</span>
+                                        <Badge
+                                            variant="secondary"
+                                            className="rounded-none px-1.5 py-0 text-[10px]"
+                                        >
+                                            {completedCrew.length}
+                                        </Badge>
+                                    </div>
+                                    <div className="max-h-48 overflow-y-auto space-y-1 pt-1">
+                                        {completedCrew.map((member) => {
+                                            const isSelf =
+                                                member.userId === currentUserId;
+                                            const formattedDate =
+                                                formatCompletionDate(
+                                                    member.completedAt ??
+                                                        undefined,
+                                                );
+
+                                            return (
+                                                <div
+                                                    key={member.userId}
+                                                    className="flex items-center justify-between gap-2 px-1.5 py-1 text-xs bg-muted/40 rounded-none border border-border/50"
+                                                >
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <div
+                                                            className={cn(
+                                                                "flex h-5 w-5 shrink-0 items-center justify-center rounded-none border font-bold text-[10px]",
+                                                                isSelf
+                                                                    ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                                                    : "border-border bg-muted",
+                                                            )}
+                                                        >
+                                                            {member.name
+                                                                .charAt(0)
+                                                                .toUpperCase()}
+                                                        </div>
+                                                        <span className="truncate font-medium">
+                                                            {member.name}{" "}
+                                                            {isSelf && "(You)"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-1 shrink-0 text-[10px]">
+                                                        {member.role ===
+                                                            "owner" && (
+                                                            <span className="text-primary font-medium">
+                                                                Host
+                                                            </span>
+                                                        )}
+                                                        {formattedDate && (
+                                                            <span className="text-muted-foreground">
+                                                                {formattedDate}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TooltipProvider>
+                    </div>
+                )}
                 </div>
 
-                {/* Text */}
-                <div className="min-w-0 flex-1 space-y-1">
+                {/* Text (Clickable to play video) */}
+                <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={handleClick}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            handleClick();
+                        }
+                    }}
+                    className="min-w-0 flex-1 space-y-1 text-left cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
                     <p className="font-medium leading-snug line-clamp-2">
                         {video.title}
                     </p>
@@ -174,7 +354,7 @@ const PlaylistVideoCardInner = ({
                             : ""}
                     </p>
                 </div>
-            </button>
+            </div>
 
             <div className="flex flex-col items-center gap-2">
                 <Button className="w-full md:flex hidden" variant="outline" asChild>

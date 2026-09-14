@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { PlaylistMeta, VideoMetadata } from "@/types/playlist";
 import { PlaylistProgress, VideoStatus } from "@/types/progress";
+import { VideoCrewMember } from "@/types/friends";
 import { cn } from "@/lib/utils";
 
 import PlaylistVideoCard from "./PlaylistVideoCard";
@@ -28,6 +29,9 @@ interface Props {
     onStatusChange: (id: string, status: VideoStatus) => void;
     onVideoClick?: (video: VideoMetadata) => void;
     playlist: PlaylistMeta | null;
+    videoCompletions?: Record<string, VideoCrewMember[]>;
+    currentUserId?: string;
+    isMobile?: boolean;
 }
 
 type SortOption =
@@ -52,6 +56,9 @@ const PlaylistVideoList = ({
     onStatusChange,
     onVideoClick,
     playlist,
+    videoCompletions,
+    currentUserId,
+    isMobile,
 }: Props) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const ticking = useRef(false);
@@ -258,6 +265,9 @@ const PlaylistVideoList = ({
                         onStatusChange={onStatusChange}
                         onVideoClick={onVideoClick}
                         serialNumber={video.position}
+                        completedCrew={videoCompletions?.[video.videoId]}
+                        currentUserId={currentUserId}
+                        isMobile={isMobile}
                     />
                 ))}
 

@@ -15,6 +15,13 @@ export interface CrewMember {
 }
 export type LobbyMember = CrewMember;
 
+export interface VideoCrewMember {
+    userId: string;
+    name: string;
+    role: CrewMemberRole;
+    completedAt?: string | null;
+}
+
 export interface CrewInfo {
     playlistId: string;
     youtubePlaylistId: string;
@@ -24,6 +31,7 @@ export interface CrewInfo {
     inviteToken: string;
     inviteEnabled: boolean;
     members: CrewMember[];
+    videoCompletions?: Record<string, VideoCrewMember[]>;
 }
 export type LobbyInfo = CrewInfo;
 
