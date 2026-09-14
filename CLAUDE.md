@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-- `npm run dev` — Start the Next.js dev server
-- `npm run build` — Production build
-- `npm run lint` — ESLint (next lint)
-- `npm install` — Install dependencies
+- `pnpm dev` — Start the Next.js dev server
+- `pnpm build` — Production build
+- `pnpm lint` — ESLint (next lint)
+- `pnpm install` — Install dependencies
 
 ## Environment Variables
 

@@ -174,8 +174,8 @@ All API routes require authentication.
 Install dependencies and start the dev server:
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Create a `.env.local` file with the variables you need:
