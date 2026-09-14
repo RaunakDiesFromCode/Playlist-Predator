@@ -29,7 +29,15 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
+
+function getMemberAvatarUrl(member: VideoCrewMember) {
+    if (member.avatarUrl) return member.avatarUrl;
+    return `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(
+        member.name || "User",
+    )}&radius=0`;
+}
 
 interface Props {
     video: VideoMetadata;
@@ -203,18 +211,38 @@ const PlaylistVideoCardInner = ({
                                                 return (
                                                     <Tooltip key={member.userId}>
                                                         <TooltipTrigger asChild>
-                                                            <div
+                                                            <Avatar
                                                                 className={cn(
-                                                                    "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-none border font-bold text-[10px] select-none transition-colors",
+                                                                    "h-[18px] w-[18px] shrink-0 rounded-none border select-none transition-colors",
                                                                     isSelf
-                                                                        ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                                                                        : "border-border bg-muted text-foreground/80 hover:bg-accent",
+                                                                        ? "border-emerald-500/70 ring-1 ring-emerald-500/30"
+                                                                        : "border-border",
                                                                 )}
                                                             >
-                                                                {member.name
-                                                                    .charAt(0)
-                                                                    .toUpperCase()}
-                                                            </div>
+                                                                <AvatarImage
+                                                                    src={getMemberAvatarUrl(
+                                                                        member,
+                                                                    )}
+                                                                    alt={
+                                                                        member.name
+                                                                    }
+                                                                    className="object-cover"
+                                                                />
+                                                                <AvatarFallback
+                                                                    className={cn(
+                                                                        "rounded-none font-bold text-[9px]",
+                                                                        isSelf
+                                                                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                                                            : "bg-muted text-foreground/80",
+                                                                    )}
+                                                                >
+                                                                    {member.name
+                                                                        .charAt(
+                                                                            0,
+                                                                        )
+                                                                        .toUpperCase()}
+                                                                </AvatarFallback>
+                                                            </Avatar>
                                                         </TooltipTrigger>
                                                         <TooltipContent
                                                             side="bottom"
@@ -281,18 +309,34 @@ const PlaylistVideoCardInner = ({
                                                     className="flex items-center justify-between gap-2 px-1.5 py-1 text-xs bg-muted/40 rounded-none border border-border/50"
                                                 >
                                                     <div className="flex items-center gap-2 min-w-0">
-                                                        <div
+                                                        <Avatar
                                                             className={cn(
-                                                                "flex h-5 w-5 shrink-0 items-center justify-center rounded-none border font-bold text-[10px]",
+                                                                "h-5 w-5 shrink-0 rounded-none border",
                                                                 isSelf
-                                                                    ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                                                                    : "border-border bg-muted",
+                                                                    ? "border-emerald-500/70"
+                                                                    : "border-border",
                                                             )}
                                                         >
-                                                            {member.name
-                                                                .charAt(0)
-                                                                .toUpperCase()}
-                                                        </div>
+                                                            <AvatarImage
+                                                                src={getMemberAvatarUrl(
+                                                                    member,
+                                                                )}
+                                                                alt={member.name}
+                                                                className="object-cover"
+                                                            />
+                                                            <AvatarFallback
+                                                                className={cn(
+                                                                    "rounded-none font-bold text-[10px]",
+                                                                    isSelf
+                                                                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                                                        : "bg-muted",
+                                                                )}
+                                                            >
+                                                                {member.name
+                                                                    .charAt(0)
+                                                                    .toUpperCase()}
+                                                            </AvatarFallback>
+                                                        </Avatar>
                                                         <span className="truncate font-medium">
                                                             {member.name}{" "}
                                                             {isSelf && "(You)"}

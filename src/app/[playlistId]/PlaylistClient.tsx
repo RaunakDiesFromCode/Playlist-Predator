@@ -107,6 +107,12 @@ export default function PlaylistClient({
     const savedRef = useRef(false);
     const hasResolvedPlaylistRef = useRef(false);
     const celebrationTimerRef = useRef<number | null>(null);
+    const refreshLobbyTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const handleLobbyChange = useCallback((next: LobbyInfo | null) => {
+        if (next) setLobby(next);
+    }, []);
+
     const summary = initialData?.summary ?? null;
     const videos = initialData?.videos ?? EMPTY_VIDEOS;
     const playlist = initialData?.playlist ?? null;
@@ -207,54 +213,157 @@ export default function PlaylistClient({
     /* Progress update */
     /* ---------------------------------- */
 
-    async function changeStatus(videoId: string, status: VideoStatus) {
-        const next = await updateVideoStatus(
-            playlistId,
-            progress,
-            videoId,
-            status,
-        );
-        setProgress(next);
+    function changeStatus(videoId: string, status: VideoStatus) {
+        const previousStatus = progress[videoId]?.status ?? "NONE";
+        if (previousStatus === status) return;
 
-        // Optimistically update lobby videoCompletions
+        // 1. UPDATE UI FIRST
+        const nextProgress = { ...progress };
+        if (status === "NONE") {
+            delete nextProgress[videoId];
+        } else {
+            nextProgress[videoId] = {
+                status,
+                updatedAt: new Date().toISOString(),
+            };
+        }
+        setProgress(nextProgress);
+
+        let doneDelta = 0;
+        if (previousStatus !== "DONE" && status === "DONE") doneDelta = 1;
+        else if (previousStatus === "DONE" && status !== "DONE") doneDelta = -1;
+
+        let rewatchDelta = 0;
+        if (previousStatus !== "REWATCH" && status === "REWATCH") rewatchDelta = 1;
+        else if (previousStatus === "REWATCH" && status !== "REWATCH") rewatchDelta = -1;
+
+        let skippedDelta = 0;
+        if (previousStatus !== "SKIP" && status === "SKIP") skippedDelta = 1;
+        else if (previousStatus === "SKIP" && status !== "SKIP") skippedDelta = -1;
+
         if (user) {
             setLobby((prev) => {
                 if (!prev) return prev;
+
                 const currentList = prev.videoCompletions?.[videoId] ?? [];
                 const withoutUser = currentList.filter(
                     (m) => m.userId !== user.id,
                 );
 
+                const myName =
+                    user.name || user.email?.split("@")[0] || "You";
+                const myAvatar = user.avatarUrl ?? null;
+                const isOwner = prev.isOwner;
+
+                let nextVideoCompletions = prev.videoCompletions ?? {};
                 if (status === "DONE") {
-                    const myName =
-                        user.name || user.email?.split("@")[0] || "You";
-                    const isOwner = prev.isOwner;
-                    return {
-                        ...prev,
-                        videoCompletions: {
-                            ...prev.videoCompletions,
-                            [videoId]: [
-                                ...withoutUser,
-                                {
-                                    userId: user.id,
-                                    name: myName,
-                                    role: isOwner ? "owner" : "member",
-                                    completedAt: new Date().toISOString(),
-                                },
-                            ],
-                        },
+                    nextVideoCompletions = {
+                        ...nextVideoCompletions,
+                        [videoId]: [
+                            ...withoutUser,
+                            {
+                                userId: user.id,
+                                name: myName,
+                                avatarUrl: myAvatar,
+                                role: isOwner ? "owner" : "member",
+                                completedAt: new Date().toISOString(),
+                            },
+                        ],
                     };
                 } else {
-                    return {
-                        ...prev,
-                        videoCompletions: {
-                            ...prev.videoCompletions,
-                            [videoId]: withoutUser,
-                        },
+                    nextVideoCompletions = {
+                        ...nextVideoCompletions,
+                        [videoId]: withoutUser,
                     };
                 }
+
+                const safeTotal = summary?.totalVideos || 1;
+                const hasUserInMembers = prev.members.some(
+                    (m) => m.userId === user.id,
+                );
+
+                let nextMembers = prev.members.map((m) => {
+                    if (m.userId !== user.id) return m;
+                    const newDone = Math.max(0, m.doneCount + doneDelta);
+                    const newRewatch = Math.max(0, m.rewatchCount + rewatchDelta);
+                    const newSkipped = Math.max(0, m.skippedCount + skippedDelta);
+                    const totalVids = safeTotal > 0 ? safeTotal : (m.totalVideos || 1);
+                    const newPercentage = Math.min(
+                        100,
+                        Math.round((newDone / totalVids) * 100),
+                    );
+                    return {
+                        ...m,
+                        avatarUrl: m.avatarUrl || myAvatar,
+                        doneCount: newDone,
+                        rewatchCount: newRewatch,
+                        skippedCount: newSkipped,
+                        totalVideos: totalVids,
+                        completionPercentage: newPercentage,
+                        lastActiveAt: new Date().toISOString(),
+                    };
+                });
+
+                if (!hasUserInMembers) {
+                    const newDone = Math.max(0, doneDelta);
+                    const newRewatch = Math.max(0, rewatchDelta);
+                    const newSkipped = Math.max(0, skippedDelta);
+                    const newPercentage = Math.min(
+                        100,
+                        Math.round((newDone / safeTotal) * 100),
+                    );
+                    nextMembers = [
+                        ...nextMembers,
+                        {
+                            userId: user.id,
+                            name: myName,
+                            avatarUrl: myAvatar,
+                            role: isOwner ? "owner" : "member",
+                            joinedAt: new Date().toISOString(),
+                            doneCount: newDone,
+                            rewatchCount: newRewatch,
+                            skippedCount: newSkipped,
+                            totalVideos: safeTotal,
+                            completionPercentage: newPercentage,
+                            lastActiveAt: new Date().toISOString(),
+                        },
+                    ];
+                }
+
+                return {
+                    ...prev,
+                    videoCompletions: nextVideoCompletions,
+                    members: nextMembers,
+                };
             });
         }
+
+        // 2. BACKEND IN THE BACKGROUND
+        void updateVideoStatus(playlistId, progress, videoId, status)
+            .then(() => {
+                // Debounce background refresh lobby to prevent request bursts
+                if (refreshLobbyTimerRef.current) {
+                    clearTimeout(refreshLobbyTimerRef.current);
+                }
+                refreshLobbyTimerRef.current = setTimeout(async () => {
+                    try {
+                        const res = await fetch(
+                            `/api/friends/lobby?playlistId=${encodeURIComponent(
+                                playlistId,
+                            )}&totalVideos=${summary?.totalVideos ?? 0}&t=${Date.now()}`,
+                        );
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data?.lobby) {
+                                setLobby(data.lobby);
+                            }
+                        }
+                    } catch {
+                        // Silent background sync
+                    }
+                }, 1500);
+            })
+            .catch(() => {});
     }
 
     /* ---------------------------------- */
@@ -574,10 +683,10 @@ export default function PlaylistClient({
             >
                 <PlaylistFriendsTab
                     playlistId={playlistId}
-                    totalVideos={summary.totalVideos}
+                    totalVideos={summary?.totalVideos ?? 0}
                     isActive={activeTab === "Crew"}
                     lobby={lobby}
-                    onLobbyChange={setLobby}
+                    onLobbyChange={handleLobbyChange}
                 />
             </div>
         </div>

@@ -4,6 +4,7 @@ export type LobbyMemberRole = CrewMemberRole;
 export interface CrewMember {
     userId: string;
     name: string;
+    avatarUrl?: string | null;
     role: CrewMemberRole;
     joinedAt: string;
     doneCount: number;
@@ -18,6 +19,7 @@ export type LobbyMember = CrewMember;
 export interface VideoCrewMember {
     userId: string;
     name: string;
+    avatarUrl?: string | null;
     role: CrewMemberRole;
     completedAt?: string | null;
 }

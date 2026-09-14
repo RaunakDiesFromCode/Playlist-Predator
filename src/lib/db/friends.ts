@@ -67,58 +67,176 @@ export async function getLobbyInfo(
         return null;
     }
 
-    // Query all playlists accessible by caller (owner or member) for this youtube ID
-    const { data: playlists, error: playlistError } = await supabase
-        .from("playlists")
-        .select(
-            "id, user_id, youtube_playlist_id, title, thumbnail, invite_token, invite_enabled",
-        )
-        .eq("youtube_playlist_id", youtubePlaylistId);
+    // 1 & 2 in parallel: Fetch user memberships and playlists matching youtubePlaylistId
+    const [userMembershipsRes, playlistsRes] = await Promise.all([
+        supabase
+            .from("playlist_members")
+            .select("playlist_id")
+            .eq("user_id", user.id),
+        supabase
+            .from("playlists")
+            .select(
+                "id, user_id, youtube_playlist_id, title, thumbnail, invite_token, invite_enabled",
+            )
+            .eq("youtube_playlist_id", youtubePlaylistId),
+    ]);
 
-    if (playlistError || !playlists || playlists.length === 0) {
-        return null;
+    const userMemberships = userMembershipsRes.data;
+    const playlists = playlistsRes.data ?? [];
+
+    let activePlaylist: {
+        id: string;
+        user_id: string;
+        youtube_playlist_id: string;
+        title: string | null;
+        thumbnail: string | null;
+        invite_token?: string | null;
+        invite_enabled?: boolean | null;
+    } | null = null;
+
+    if (userMemberships && userMemberships.length > 0) {
+        const joinedPlaylistIds = new Set(
+            userMemberships.map((m) => m.playlist_id),
+        );
+        activePlaylist =
+            playlists.find((p) => joinedPlaylistIds.has(p.id)) ?? null;
+
+        // If the joined playlist wasn't in playlists query (e.g. filtered by RLS), fetch it by id
+        if (!activePlaylist) {
+            const { data: joinedPlaylists } = await supabase
+                .from("playlists")
+                .select(
+                    "id, user_id, youtube_playlist_id, title, thumbnail, invite_token, invite_enabled",
+                )
+                .in("id", Array.from(joinedPlaylistIds))
+                .eq("youtube_playlist_id", youtubePlaylistId)
+                .limit(1);
+
+            if (joinedPlaylists && joinedPlaylists.length > 0) {
+                activePlaylist = joinedPlaylists[0];
+            }
+        }
     }
 
-    // Determine active lobby: prefer the lobby the user joined as a member, or the one they own
-    let activePlaylist = playlists[0];
+    // 2. Check if user owns one of the matching playlists
+    if (!activePlaylist) {
+        activePlaylist = playlists.find((p) => p.user_id === user.id) ?? null;
+    }
 
-    const playlistIds = playlists.map((p) => p.id);
-    const { data: memberships } = await supabase
-        .from("playlist_members")
-        .select("playlist_id")
-        .in("playlist_id", playlistIds)
-        .eq("user_id", user.id);
+    // 3. Fallback to any matching playlist
+    if (!activePlaylist && playlists.length > 0) {
+        activePlaylist = playlists[0];
+    }
 
-    if (memberships && memberships.length > 0) {
-        const joinedId = memberships[0].playlist_id;
-        activePlaylist =
-            playlists.find((p) => p.id === joinedId) ?? playlists[0];
-    } else {
-        const owned = playlists.find((p) => p.user_id === user.id);
-        if (owned) {
-            activePlaylist = owned;
+    // 4. Auto-create if none exists at all
+    if (!activePlaylist) {
+        const { data: createdPlaylist } = await supabase
+            .from("playlists")
+            .insert({
+                user_id: user.id,
+                youtube_playlist_id: youtubePlaylistId,
+            })
+            .select(
+                "id, user_id, youtube_playlist_id, title, thumbnail, invite_token, invite_enabled",
+            )
+            .single();
+
+        if (createdPlaylist) {
+            activePlaylist = createdPlaylist;
         }
+    }
+
+    if (!activePlaylist) {
+        return null;
     }
 
     const isOwner = activePlaylist.user_id === user.id;
 
-    // Fetch lobby roster via SECURITY DEFINER function
-    const { data: roster, error: rosterError } = await supabase.rpc(
-        "get_playlist_members",
-        {
+    // Run roster fetch and progress fetch in PARALLEL
+    const [rosterRes, progressRes] = await Promise.all([
+        supabase.rpc("get_playlist_members", {
             p_playlist_id: activePlaylist.id,
-        },
-    );
+        }),
+        supabase
+            .from("playlist_progress")
+            .select("user_id, video_id, status, updated_at")
+            .eq("playlist_id", youtubePlaylistId),
+    ]);
 
-    if (rosterError || !roster) {
-        return null;
+    const roster = rosterRes.data;
+    const progressRows = progressRes.data;
+
+    let rosterList: Array<{
+        user_id: string;
+        name: string;
+        avatar_url?: string | null;
+        role: "owner" | "member";
+        joined_at: string;
+    }> = Array.isArray(roster)
+        ? (roster as Array<{
+              user_id: string;
+              name: string;
+              avatar_url?: string | null;
+              role: "owner" | "member";
+              joined_at: string;
+          }>)
+        : [];
+
+    // Ensure the host/owner is always present in rosterList
+    const hasOwner = rosterList.some(
+        (m) => m.role === "owner" || m.user_id === activePlaylist.user_id,
+    );
+    if (!hasOwner) {
+        const ownerName = isOwner
+            ? user.user_metadata?.name || user.email?.split("@")[0] || "Host"
+            : "Host";
+        const ownerAvatar = isOwner
+            ? user.user_metadata?.avatar_url || user.user_metadata?.picture || null
+            : null;
+
+        rosterList.unshift({
+            user_id: activePlaylist.user_id,
+            name: ownerName,
+            avatar_url: ownerAvatar,
+            role: "owner",
+            joined_at: new Date().toISOString(),
+        });
     }
 
-    // Fetch progress for this playlist (filtered by RLS to co-members)
-    const { data: progressRows } = await supabase
-        .from("playlist_progress")
-        .select("user_id, video_id, status, updated_at")
-        .eq("playlist_id", youtubePlaylistId);
+    // Ensure current user is present if they belong to this playlist
+    const hasCurrentUser = rosterList.some((m) => m.user_id === user.id);
+    if (
+        !hasCurrentUser &&
+        (isOwner ||
+            userMemberships?.some((m) => m.playlist_id === activePlaylist.id))
+    ) {
+        const myName =
+            user.user_metadata?.name || user.email?.split("@")[0] || "You";
+        const myAvatar =
+            user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+        rosterList.push({
+            user_id: user.id,
+            name: myName,
+            avatar_url: myAvatar,
+            role: isOwner ? "owner" : "member",
+            joined_at: new Date().toISOString(),
+        });
+    }
+
+    // Attach caller avatar if present
+    rosterList = rosterList.map((m) => {
+        if (m.user_id === user.id) {
+            return {
+                ...m,
+                avatar_url:
+                    m.avatar_url ||
+                    user.user_metadata?.avatar_url ||
+                    user.user_metadata?.picture ||
+                    null,
+            };
+        }
+        return m;
+    });
 
     const progressByUser = new Map<
         string,
@@ -152,21 +270,20 @@ export async function getLobbyInfo(
         progressByUser.set(row.user_id, stats);
     }
 
-    const rosterList = roster as Array<{
-        user_id: string;
-        name: string;
-        role: "owner" | "member";
-        joined_at: string;
-    }>;
-
     const rosterMap = new Map<
         string,
-        { userId: string; name: string; role: "owner" | "member" }
+        {
+            userId: string;
+            name: string;
+            avatarUrl?: string | null;
+            role: "owner" | "member";
+        }
     >();
     for (const m of rosterList) {
         rosterMap.set(m.user_id, {
             userId: m.user_id,
             name: m.name || "Member",
+            avatarUrl: m.avatar_url || null,
             role: m.role,
         });
     }
@@ -188,6 +305,7 @@ export async function getLobbyInfo(
                     videoCompletions[row.video_id].push({
                         userId: member.userId,
                         name: member.name,
+                        avatarUrl: member.avatarUrl ?? null,
                         role: member.role,
                         completedAt: row.updated_at,
                     });
@@ -224,6 +342,7 @@ export async function getLobbyInfo(
         return {
             userId: m.user_id,
             name: m.name || "Member",
+            avatarUrl: m.avatar_url ?? null,
             role: m.role,
             joinedAt: m.joined_at,
             doneCount: userProgress.doneCount,

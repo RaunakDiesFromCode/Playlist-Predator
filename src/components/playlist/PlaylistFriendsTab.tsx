@@ -24,6 +24,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -83,6 +84,13 @@ export default function PlaylistFriendsTab({
 
     const isRefreshingRef = useRef(false);
     const hasLoadedRef = useRef(false);
+    const initialFetchedRef = useRef(false);
+    const lastFetchTimeRef = useRef(0);
+    const onLobbyChangeRef = useRef(onLobbyChange);
+
+    useEffect(() => {
+        onLobbyChangeRef.current = onLobbyChange;
+    }, [onLobbyChange]);
 
     const loadLobby = useCallback(
         async (showSkeleton = false) => {
@@ -91,8 +99,14 @@ export default function PlaylistFriendsTab({
                 return;
             }
 
+            const now = Date.now();
+            if (!showSkeleton && now - lastFetchTimeRef.current < 2500) {
+                return;
+            }
+
             if (isRefreshingRef.current) return;
             isRefreshingRef.current = true;
+            lastFetchTimeRef.current = now;
 
             if (showSkeleton) {
                 setInitialLoading(true);
@@ -115,8 +129,12 @@ export default function PlaylistFriendsTab({
                 }
 
                 const data = (await res.json()) as { lobby: LobbyInfo | null };
-                setLobby(data.lobby);
-                onLobbyChange?.(data.lobby);
+                if (data.lobby) {
+                    setLobby(data.lobby);
+                    onLobbyChangeRef.current?.(data.lobby);
+                } else {
+                    setLobby((prev) => prev ?? data.lobby);
+                }
                 hasLoadedRef.current = true;
             } catch (err) {
                 if (showSkeleton || !hasLoadedRef.current) {
@@ -132,7 +150,7 @@ export default function PlaylistFriendsTab({
                 isRefreshingRef.current = false;
             }
         },
-        [user, playlistId, totalVideos, onLobbyChange],
+        [user, playlistId, totalVideos],
     );
 
     // Sync if parent passes initialLobby
@@ -140,16 +158,23 @@ export default function PlaylistFriendsTab({
         if (initialLobby) {
             setLobby(initialLobby);
             setInitialLoading(false);
+            hasLoadedRef.current = true;
+            initialFetchedRef.current = true;
         }
     }, [initialLobby]);
 
-    // Initial mount load
+    // Initial mount load (only if parent didn't provide lobby)
     useEffect(() => {
-        if (authLoading) return;
+        if (authLoading || !user || initialFetchedRef.current) return;
+        if (initialLobby) {
+            initialFetchedRef.current = true;
+            return;
+        }
+        initialFetchedRef.current = true;
         void loadLobby(true);
-    }, [authLoading, loadLobby]);
+    }, [authLoading, user, initialLobby, loadLobby]);
 
-    // Automatic background polling: every 12 seconds only while tab is active and visible
+    // Automatic background polling: every 20 seconds only while tab is active and visible
     useEffect(() => {
         if (!isActive || !user || !hasLoadedRef.current) return;
 
@@ -162,7 +187,7 @@ export default function PlaylistFriendsTab({
             }
             if (isRefreshingRef.current) return;
             void loadLobby(false);
-        }, 12000);
+        }, 20000);
 
         return () => window.clearInterval(intervalId);
     }, [isActive, user, loadLobby]);
@@ -298,7 +323,7 @@ export default function PlaylistFriendsTab({
         [lobby?.playlistId],
     );
 
-    if (authLoading || initialLoading) {
+    if (authLoading || (initialLoading && !lobby)) {
         return (
             <div className="space-y-4 p-4">
                 <Skeleton className="h-28 w-full rounded-none" />
@@ -358,7 +383,26 @@ export default function PlaylistFriendsTab({
         ? `${inviteOrigin}/join/${lobby.inviteToken}`
         : "";
 
-    const memberCount = lobby?.members.length ?? 1;
+    const displayMembers: LobbyMember[] =
+        lobby?.members && lobby.members.length > 0
+            ? lobby.members
+            : [
+                  {
+                      userId: user.id,
+                      name: user.name || user.email?.split("@")[0] || "Host",
+                      avatarUrl: user.avatarUrl || null,
+                      role: (lobby?.isOwner ?? true) ? "owner" : "member",
+                      joinedAt: new Date().toISOString(),
+                      doneCount: 0,
+                      rewatchCount: 0,
+                      skippedCount: 0,
+                      totalVideos: totalVideos || 0,
+                      completionPercentage: 0,
+                      lastActiveAt: new Date().toISOString(),
+                  },
+              ];
+
+    const memberCount = displayMembers.length;
 
     return (
         <div className="flex flex-col gap-4 p-3 overflow-y-auto">
@@ -544,14 +588,14 @@ export default function PlaylistFriendsTab({
                 </CardHeader>
 
                 <CardContent className="p-3 pt-0 space-y-3">
-                    {(!lobby?.members || lobby.members.length === 0) && (
+                    {memberCount <= 1 && (
                         <p className="text-xs text-muted-foreground text-center py-4">
                             No other members have joined this Crew yet. Share
                             the invite link above!
                         </p>
                     )}
 
-                    {lobby?.members.map((member: LobbyMember) => {
+                    {displayMembers.map((member: LobbyMember) => {
                         const isSelf = member.userId === user.id;
                         const isMemberOwner = member.role === "owner";
 
@@ -562,11 +606,23 @@ export default function PlaylistFriendsTab({
                             >
                                 <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-none border border-border bg-muted font-bold text-xs">
-                                            {member.name
-                                                .charAt(0)
-                                                .toUpperCase()}
-                                        </div>
+                                        <Avatar className="h-7 w-7 shrink-0 rounded-none border border-border">
+                                            <AvatarImage
+                                                src={
+                                                    member.avatarUrl ||
+                                                    `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(
+                                                        member.name || "Member",
+                                                    )}&radius=0`
+                                                }
+                                                alt={member.name}
+                                                className="object-cover"
+                                            />
+                                            <AvatarFallback className="rounded-none font-bold text-xs bg-muted">
+                                                {member.name
+                                                    .charAt(0)
+                                                    .toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
 
                                         <div className="flex items-center gap-1.5 min-w-0">
                                             <span className="text-sm font-medium truncate">
@@ -600,7 +656,7 @@ export default function PlaylistFriendsTab({
                                         </div>
                                     </div>
 
-                                    {lobby.isOwner && !isSelf && (
+                                    {lobby?.isOwner && !isSelf && (
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button

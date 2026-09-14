@@ -7,6 +7,7 @@ export type AuthUser = {
     id: string;
     email: string;
     name?: string;
+    avatarUrl?: string | null;
     role?: string;
 };
 
@@ -27,6 +28,10 @@ export function useAuth() {
                           id: u.id,
                           email: u.email!,
                           name: u.user_metadata?.name,
+                          avatarUrl:
+                              (u.user_metadata?.avatar_url as string | undefined) ??
+                              (u.user_metadata?.picture as string | undefined) ??
+                              null,
                           role:
                               (u.app_metadata?.role as string | undefined) ??
                               (u.user_metadata?.role as string | undefined),
@@ -46,6 +51,10 @@ export function useAuth() {
                           id: u.id,
                           email: u.email!,
                           name: u.user_metadata?.name,
+                          avatarUrl:
+                              (u.user_metadata?.avatar_url as string | undefined) ??
+                              (u.user_metadata?.picture as string | undefined) ??
+                              null,
                           role:
                               (u.app_metadata?.role as string | undefined) ??
                               (u.user_metadata?.role as string | undefined),
