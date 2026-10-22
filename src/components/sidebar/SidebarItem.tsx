@@ -103,6 +103,7 @@ export default function SidebarItem({
         >
             <Link
                 href={href}
+                scroll={false}
                 onClick={onClickAction}
                 className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden"
             >

@@ -212,6 +212,7 @@ export default function HomeClient() {
                                 <Link
                                     key={item.id}
                                     href={`/${item.id}`}
+                                    scroll={false}
                                     className="group flex items-center gap-2.5 rounded-none border border-border bg-card/60 p-2 text-left transition-colors hover:border-primary/40 hover:bg-muted/50"
                                 >
                                     <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-none bg-muted text-[11px] font-semibold text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">

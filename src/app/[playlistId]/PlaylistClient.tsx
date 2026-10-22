@@ -11,6 +11,7 @@ import PlaylistOverview from "@/components/playlist/PlaylistOverview";
 import PlaylistVideoList from "@/components/playlist/PlaylistVideoList";
 import Player from "@/components/playlist/Player";
 import { loadProgress, updateVideoStatus } from "@/lib/progress";
+import { loadProgress as loadLocalProgress } from "@/lib/storage/progress";
 import { PlaylistProgress, VideoStatus } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -95,10 +96,27 @@ export default function PlaylistClient({
 }: PlaylistClientProps) {
     const { user, loading: authLoading } = useAuth();
 
-    const [progress, setProgress] = useState<PlaylistProgress>(initialProgress);
-    const [isProgressLoaded, setIsProgressLoaded] = useState(
-        () => Object.keys(initialProgress).length > 0,
-    );
+    const [progress, setProgress] = useState<PlaylistProgress>(() => {
+        if (initialProgress && Object.keys(initialProgress).length > 0) {
+            return initialProgress;
+        }
+        if (typeof window !== "undefined") {
+            const local = loadLocalProgress(playlistId);
+            if (Object.keys(local).length > 0) return local;
+        }
+        return {};
+    });
+
+    const [isProgressLoaded, setIsProgressLoaded] = useState(() => {
+        if (initialProgress && Object.keys(initialProgress).length > 0) {
+            return true;
+        }
+        if (typeof window !== "undefined") {
+            const local = loadLocalProgress(playlistId);
+            if (Object.keys(local).length > 0) return true;
+        }
+        return false;
+    });
     const [lobby, setLobby] = useState<LobbyInfo | null>(null);
 
     const [celebrate, setCelebrate] = useState(false);

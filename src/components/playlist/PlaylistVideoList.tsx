@@ -194,23 +194,23 @@ const PlaylistVideoList = ({
         // If we've already auto-scrolled for this playlist, do not re-scroll on subsequent user clicks
         if (scrolledPlaylistRef.current === currentId) return;
 
-        const progressCount = Object.keys(progress).length;
+        const progressKeys = Object.keys(progress);
         // Wait until progress has finished loading or has entries before deciding which video to scroll to
-        if (!isProgressLoaded && progressCount === 0) {
+        if (!isProgressLoaded && progressKeys.length === 0) {
             return;
         }
 
-        // Find the first video that needs to be watched (not DONE or SKIP)
+        // Find the first video that needs to be watched (not DONE and not SKIP)
         const targetIndex = videos.findIndex((v) => {
             const status = progress[v.videoId]?.status;
             return status !== "DONE" && status !== "SKIP";
         });
 
-        // Mark as scrolled for this playlist so it doesn't trigger again on subsequent status clicks
-        scrolledPlaylistRef.current = currentId;
-
-        // If targetIndex <= 0, the user is already at the top (video 1) or all are watched
+        // If targetIndex <= 0, user is already at the top (video 1) or all are watched
         if (targetIndex <= 0) {
+            if (isProgressLoaded || progressKeys.length > 0) {
+                scrolledPlaylistRef.current = currentId;
+            }
             return;
         }
 
@@ -219,7 +219,7 @@ const PlaylistVideoList = ({
         let attempts = 0;
         let cancelled = false;
 
-        const attemptScroll = () => {
+        const executeScroll = () => {
             if (cancelled) return;
             const targetElement = document.getElementById(
                 `video-card-${targetVideoId}`,
@@ -227,32 +227,40 @@ const PlaylistVideoList = ({
             const container = scrollRef.current;
 
             if (targetElement && container) {
-                const containerRect = container.getBoundingClientRect();
-                const targetRect = targetElement.getBoundingClientRect();
-                const relativeTop =
-                    targetRect.top - containerRect.top + container.scrollTop;
+                // Calculate exact offset top within scroll container
+                let el: HTMLElement | null = targetElement;
+                let offsetTop = 0;
+                while (el && el !== container) {
+                    offsetTop += el.offsetTop;
+                    el = el.offsetParent as HTMLElement | null;
+                }
+
                 const targetScrollTop = Math.max(
                     0,
-                    relativeTop -
+                    offsetTop -
                         container.clientHeight / 2 +
-                        targetRect.height / 2,
+                        targetElement.clientHeight / 2,
                 );
 
-                container.scrollTo({
-                    top: targetScrollTop,
-                    behavior: "smooth",
+                container.scrollTop = targetScrollTop;
+                targetElement.scrollIntoView({
+                    block: "center",
+                    behavior: "auto",
                 });
-            } else if (attempts < 8) {
+
+                // Mark successful scroll
+                scrolledPlaylistRef.current = currentId;
+            } else if (attempts < 15) {
                 attempts += 1;
-                setTimeout(attemptScroll, 100);
+                setTimeout(executeScroll, 50);
             }
         };
 
-        const timer = setTimeout(attemptScroll, 150);
+        const rafId = requestAnimationFrame(executeScroll);
 
         return () => {
             cancelled = true;
-            clearTimeout(timer);
+            cancelAnimationFrame(rafId);
         };
     }, [playlistId, playlist?.youtubeUrl, videos, progress, isProgressLoaded]);
 
