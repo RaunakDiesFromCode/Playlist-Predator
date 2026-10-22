@@ -218,7 +218,7 @@ export default function Player({ video, videos, onClose, onNavigate }: PlayerPro
                                     {/* Sidebar body */}
                                     <ScrollArea className="flex-1">
                                         <div className="px-4 py-3">
-                                            <pre className="whitespace-pre-wrap wrap-break-word text-sm text-muted-foreground font-[inherit] leading-relaxed">
+                                            <pre className="whitespace-pre-wrap break-words text-sm text-muted-foreground font-[inherit] leading-relaxed">
                                                 {formattedDescription}
                                             </pre>
                                         </div>

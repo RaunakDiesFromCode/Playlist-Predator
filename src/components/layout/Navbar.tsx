@@ -58,7 +58,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
             aria-label="Main"
         >
             {/* padding for iOS safe area (notch) */}
-            <div className="mx-auto flex max-w-7xl items-center gap-3 px-3 pt-[calc(0.5rem+env(safe-area-inset-top))]">
+            <div className="mx-auto flex max-w-7xl items-center gap-2 sm:gap-3 px-3 pt-[calc(0.5rem+env(safe-area-inset-top))]">
                 {/* Skip navigation link for keyboard users */}
                 <a
                     href="#main-content"
@@ -66,35 +66,35 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                 >
                     Skip to main content
                 </a>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={toggleSidebar}
                         aria-label="Toggle sidebar"
-                        className="h-11 w-11 md:hidden"
+                        className="h-10 w-10 shrink-0 md:hidden"
                     >
-                        <Sidebar className="h-6 w-6" />
+                        <Sidebar className="h-5 w-5" />
                     </Button>
 
                     <Link
                         href="/"
-                        className="hidden md:flex items-center gap-2 font-semibold text-lg"
+                        className="flex items-center gap-2 font-semibold text-sm sm:text-base md:text-lg truncate"
                     >
                         {/* Image is decorative — link text already labels it */}
                         <Image
                             src="/apple-touch-icon.png"
                             alt=""
                             aria-hidden="true"
-                            width={36}
-                            height={36}
-                            className="rounded mix-blend-screen"
+                            width={32}
+                            height={32}
+                            className="h-7 w-7 md:h-8 md:w-8 shrink-0 rounded"
                         />
-                        Playlist Predator
+                        <span className="truncate">Playlist Predator</span>
                     </Link>
                 </div>
 
-                <div className="ml-auto flex items-center gap-2 md:gap-3">
+                <div className="ml-auto flex items-center gap-1.5 md:gap-3 shrink-0">
                     {!loading &&
                         (user ? (
                             <DropdownMenu onOpenChange={(open) => setMenuOpen(open)}>
@@ -104,16 +104,16 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                             <DropdownMenuTrigger asChild>
                                                 <Button
                                                     variant="ghost"
-                                                    className="h-11 max-w-[220px] justify-start gap-1 px-3"
+                                                    className="h-10 max-w-[120px] sm:max-w-[220px] justify-start gap-1 px-2 sm:px-3"
                                                     aria-label="Open profile menu"
                                                 >
-                                                    <span className="text-muted-foreground">
+                                                    <span className="text-muted-foreground hidden sm:inline">
                                                         Hi,
                                                     </span>
-                                                    <span className="truncate font-medium">
+                                                    <span className="truncate font-medium text-xs sm:text-sm">
                                                         {user.name ?? user.email}
                                                     </span>
-                                                    <ChevronDown className={`transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`} />
+                                                    <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`} />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                         </TooltipTrigger>
@@ -125,7 +125,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
 
                                 <DropdownMenuContent
                                     align="end"
-                                    className="w-36"
+                                    className="w-56"
                                 >
                                     <DropdownMenuLabel>
                                         <div className="space-y-1">
@@ -161,7 +161,7 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                         </Link>
                                     </DropdownMenuItem>
 
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                         <ThemeToggle />
                                     </DropdownMenuItem>
 
@@ -186,9 +186,12 @@ const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         ) : (
-                            <Button asChild variant="outline">
-                                <Link href="/login">Login</Link>
-                            </Button>
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                <ThemeToggle variant="button" className="h-9 w-9 text-muted-foreground hover:text-foreground" />
+                                <Button asChild variant="outline" size="sm" className="h-9 px-3">
+                                    <Link href="/login">Login</Link>
+                                </Button>
+                            </div>
                         ))}
                 </div>
             </div>

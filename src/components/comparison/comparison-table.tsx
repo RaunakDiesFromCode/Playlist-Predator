@@ -217,19 +217,19 @@ function MobileComparisonRow({
 
                 <div className="min-w-0 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium leading-snug">
+                        <span className="font-medium leading-snug line-clamp-2 break-words">
                             {item.title}
                         </span>
                         {isHighlighted ? (
                             <Badge
                                 variant="outline"
-                                className="text-[10px] uppercase tracking-wide"
+                                className="text-[10px] uppercase tracking-wide shrink-0"
                             >
                                 Compared
                             </Badge>
                         ) : null}
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground truncate">
                         {item.playlist.channelTitle}
                     </p>
                 </div>
@@ -257,11 +257,11 @@ function MobileComparisonRow({
 
 function Metric({ label, value }: { label: string; value: string }) {
     return (
-        <div className="rounded-none border bg-muted/20 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        <div className="rounded-none border bg-muted/20 px-3 py-2 min-w-0">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground truncate">
                 {label}
             </p>
-            <p className="mt-1 font-medium text-foreground">{value}</p>
+            <p className="mt-1 font-medium text-foreground truncate">{value}</p>
         </div>
     );
 }

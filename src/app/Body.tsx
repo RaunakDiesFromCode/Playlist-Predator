@@ -57,7 +57,7 @@ export default function Body({ children }: { children: React.ReactNode }) {
         <body
             className={
                 isHome
-                    ? "bg-background overflow-hidden"
+                    ? "bg-background overflow-x-hidden overflow-y-auto md:overflow-y-hidden"
                     : "bg-background overflow-x-hidden overflow-y-auto"
             }
         >
@@ -83,9 +83,13 @@ export default function Body({ children }: { children: React.ReactNode }) {
                             }
                         />
 
-                        <main className="flex flex-1 flex-col transition-all duration-200">
+                        <div
+                            id="main-content"
+                            tabIndex={-1}
+                            className="flex flex-1 flex-col transition-all duration-200 outline-none"
+                        >
                             {children}
-                        </main>
+                        </div>
                     </div>
                 </div>
             </ThemeProvider>

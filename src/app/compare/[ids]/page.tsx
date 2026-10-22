@@ -10,7 +10,7 @@ type ComparePlaylistPageProps = {
 };
 
 export const metadata: Metadata = {
-    title: "Compare Playlists | Playlist Predator",
+    title: "Compare Playlists",
     description:
         "Compare multiple YouTube playlists side by side before choosing what to study.",
 };

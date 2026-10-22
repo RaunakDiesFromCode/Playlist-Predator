@@ -90,14 +90,14 @@ export default function AdminUserSwitcher({
                             disabled={isSwitching}
                             aria-busy={isSwitching}
                             className={cn(
-                                "flex w-full items-center justify-between rounded-none border px-3 py-2 text-left text-sm transition-colors",
+                                "flex w-full items-center justify-between rounded-none border px-3 py-2 text-left text-sm transition-colors gap-2",
                                 isSelected
                                     ? "border-primary/40 bg-primary/10"
                                     : "hover:bg-muted/50",
                                 isSwitching && "opacity-70",
                             )}
                         >
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                                 <p className="truncate font-medium">
                                     {userLabel(
                                         user.name,

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import { toast } from "sonner";
+import { removeRecentPlaylist } from "@/lib/sidebar/playlists";
 
 export default function SidebarItem({
     title,
@@ -64,9 +65,10 @@ export default function SidebarItem({
                 const body = await res.json().catch(() => ({}));
                 throw new Error(body.error ?? "Failed to delete playlist");
             }
+            removeRecentPlaylist(youtubePlaylistId);
             setDeleteDialogOpen(false);
             // Dispatch custom event so Sidebar can update its cache
-            if (userId && typeof window !== "undefined") {
+            if (typeof window !== "undefined") {
                 window.dispatchEvent(
                     new CustomEvent("sidebar:playlist-deleted", {
                         detail: {
@@ -102,7 +104,7 @@ export default function SidebarItem({
             <Link
                 href={href}
                 onClick={onClickAction}
-                className="flex min-w-0 flex-1 items-center gap-3 w-5"
+                className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden"
             >
                 <span
                     className={cn(
@@ -117,9 +119,10 @@ export default function SidebarItem({
 
                 <span
                     className={cn(
-                        "block min-w-0 truncate",
+                        "min-w-0 flex-1 truncate",
                         collapsed && "sr-only",
                     )}
+                    title={title}
                 >
                     {title}
                 </span>
@@ -130,7 +133,7 @@ export default function SidebarItem({
                     <DropdownMenuTrigger asChild>
                         <button
                             type="button"
-                            className="shrink-0 p-1 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+                            className="shrink-0 p-1 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             aria-label="Playlist actions"
                             onClick={(e) => e.stopPropagation()}
                         >

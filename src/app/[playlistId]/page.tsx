@@ -22,9 +22,7 @@ export async function generateMetadata({
         .catch(() => null);
 
     return {
-        title: playlist?.title
-            ? `${playlist.title} | Playlist Predator`
-            : "Playlist Predator",
+        title: playlist?.title ? playlist.title : "Playlist Overview",
         description: playlist?.channelTitle
             ? `Analyze and track progress for ${playlist.title} from ${playlist.channelTitle}.`
             : "Analyze and track progress across a YouTube playlist or video chapters.",
@@ -54,6 +52,7 @@ export default async function Page(props: { params: Promise<RouteParams> }) {
     return (
         <Suspense fallback={null}>
             <PlaylistClient
+                key={playlistId}
                 playlistId={playlistId}
                 isMobile={isMobile}
                 initialData={initialData}

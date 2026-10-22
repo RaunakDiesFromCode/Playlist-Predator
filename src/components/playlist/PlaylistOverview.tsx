@@ -361,7 +361,7 @@ const PlaylistOverview = ({
     return (
         <Card className="h-full flex flex-col justify-center border-none md:border mb-5">
             <CardHeader className="pt-2">
-                <CardTitle className="text-lg flex flex-row items-center justify-between gap-3 ">
+                <CardTitle className="text-lg flex flex-wrap items-center justify-between gap-3 ">
                     Reality Check
                     <div className="flex items-center gap-2">
                         <Badge
@@ -446,13 +446,13 @@ const PlaylistOverview = ({
                     </div>
 
                     <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                        <Badge className="whitespace-nowrap bg-green-500/80">
+                        <Badge className="whitespace-nowrap bg-green-500/80 text-white">
                             DONE ({doneVideos})
                         </Badge>
                         <Badge className="whitespace-nowrap bg-yellow-500/80 text-yellow-950">
                             Rewatch ({rewatchVideos})
                         </Badge>
-                        <Badge className="whitespace-nowrap bg-red-500/80">
+                        <Badge className="whitespace-nowrap bg-red-500/80 text-white">
                             Skipped ({skippedVideos})
                         </Badge>
                         <Badge className="whitespace-nowrap bg-muted text-muted-foreground">
@@ -463,7 +463,7 @@ const PlaylistOverview = ({
 
                 {/* ================= TIME SUMMARY ================= */}
 
-                <div className="w-full flex  gap-4 text-sm md:flex-row">
+                <div className="w-full flex flex-col sm:flex-row gap-4 text-sm">
                     <div className="w-full">
                         <p className="text-muted-foreground">Total length</p>
                         <p className="font-medium">{totalDuration}</p>
@@ -505,7 +505,7 @@ const PlaylistOverview = ({
                         </span>
                     </p>
 
-                    <div className="grid w-full md:grid-flow-col auto-cols-fr gap-2 text-sm grid-cols-2">
+                    <div className="grid w-full grid-cols-2 sm:grid-cols-3 xl:grid-flow-col xl:auto-cols-fr gap-2 text-sm">
                         {FASTEST_SANE_SPEEDS.map((s) => {
                             const isSelected = s.value === selectedSpeed;
 
@@ -548,7 +548,7 @@ const PlaylistOverview = ({
 
                 {/* ================= QUICK INSIGHTS ================= */}
 
-                <TooltipProvider delayDuration={100}>
+                <TooltipProvider delayDuration={0} skipDelayDuration={0} disableHoverableContent>
                     <div className="space-y-3 text-sm">
                         <p className="font-medium">Quick insights</p>
 
@@ -635,7 +635,7 @@ const PlaylistOverview = ({
                                                             className={`h-2.5 w-2.5 rounded-none ${getIntensityClass(count, maxHeatmapCount)}`}
                                                         />
                                                     </TooltipTrigger>
-                                                    <TooltipContent>
+                                                    <TooltipContent className="pointer-events-none">
                                                         {getHeatmapTooltipLabel(
                                                             date,
                                                             count,
@@ -659,8 +659,8 @@ const PlaylistOverview = ({
                             </div>
                         </div>
 
-                        <div className="hidden md:flex gap-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="hidden md:flex flex-col lg:flex-row gap-4 items-start">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 w-full">
                                 <div className="rounded-none border px-3 py-2.5">
                                     <p className="text-xs text-muted-foreground">
                                         Today
@@ -714,7 +714,7 @@ const PlaylistOverview = ({
                                     </p>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-7 gap-2.5 w-[50%]">
+                            <div className="grid grid-cols-7 gap-2.5 shrink-0 self-start p-2 border rounded-none bg-muted/20">
                                 {heatmapDays.map((date, index) => {
                                     if (!isMounted) {
                                         return (
@@ -736,7 +736,7 @@ const PlaylistOverview = ({
                                                     className={`h-2.5 w-2.5 rounded-none ${getIntensityClass(count, maxHeatmapCount)}`}
                                                 />
                                             </TooltipTrigger>
-                                            <TooltipContent>
+                                            <TooltipContent className="pointer-events-none">
                                                 {getHeatmapTooltipLabel(
                                                     date,
                                                     count,

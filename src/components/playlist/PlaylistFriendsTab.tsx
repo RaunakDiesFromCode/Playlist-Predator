@@ -437,7 +437,7 @@ export default function PlaylistFriendsTab({
                             <Input
                                 readOnly
                                 value={inviteUrl}
-                                className="h-9 rounded-none bg-muted/40 font-mono text-xs"
+                                className="h-9 flex-1 min-w-0 rounded-none bg-muted/40 font-mono text-xs"
                             />
 
                             <Button

@@ -110,7 +110,7 @@ function SidebarContent({
 
     return (
         <>
-            <div className="p-2.5">
+            <div className="p-2.5 pr-12 md:pr-2.5">
                 {collapsed ? (
                     <div className="flex w-full items-center justify-start">
                         <TooltipProvider delayDuration={100}>
@@ -154,8 +154,8 @@ function SidebarContent({
                 ) : null}
             </div>
 
-            <ScrollArea className="flex-1 min-h-0">
-                <div className="px-2 py-3 overscroll-contain">
+            <ScrollArea className="flex-1 min-h-0 w-full [&>div>div]:!block [&>div>div]:!min-w-0">
+                <div className="w-full min-w-0 px-2 py-3 overscroll-contain">
                     {loading && <SidebarSkeleton />}
 
                     {!loading && playlists.length === 0 && user && (
@@ -203,7 +203,7 @@ function SidebarContent({
             </ScrollArea>
 
             <div
-                className={cn(" bg-muted/20 px-4 py-4", collapsed && "sr-only")}
+                className={cn("bg-muted/20 px-4 py-4", collapsed && "sr-only")}
             >
                 <Footer />
             </div>
@@ -370,7 +370,7 @@ export default function Sidebar({
         <>
             <aside
                 className={cn(
-                    "hidden md:flex md:sticky md:top-0 md:h-screen md:shrink-0 flex-col overflow-hidden  bg-background/95 backdrop-blur transition-[width] duration-200 ease-out",
+                    "hidden md:flex md:sticky md:top-0 md:h-screen md:shrink-0 flex-col overflow-hidden border-r border-border bg-background/95 backdrop-blur transition-[width] duration-200 ease-out",
                     collapsed ? "w-16" : "w-72",
                 )}
             >

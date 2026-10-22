@@ -91,7 +91,7 @@ export function ChatInput({
                     )}
                 </Button>
             </div>
-            <div className="mx-20 text-xs text-muted-foreground/50 text-center italic">
+            <div className="px-4 max-w-xl mx-auto text-xs text-muted-foreground/50 text-center italic">
                 PredAI may not always provide accurate information. Please verify any critical details independently.
             </div>
         </div>

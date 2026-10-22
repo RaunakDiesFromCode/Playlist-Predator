@@ -88,6 +88,7 @@ function RegisterForm() {
                         type={showPassword ? "text" : "password"}
                         autoComplete="new-password"
                         placeholder="Password"
+                        className="pr-10"
                         minLength={8}
                         required
                     />
@@ -100,7 +101,11 @@ function RegisterForm() {
                         aria-pressed={showPassword}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground hover:text-foreground"
                     >
-                        {showPassword ? <Eye /> : <EyeClosed />}
+                        {showPassword ? (
+                            <Eye className="h-4 w-4" />
+                        ) : (
+                            <EyeClosed className="h-4 w-4" />
+                        )}
                     </button>
                 </div>
 

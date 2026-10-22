@@ -70,6 +70,7 @@ function LoginForm() {
                         type={showPassword ? "text" : "password"}
                         autoComplete="current-password"
                         placeholder="Password"
+                        className="pr-10"
                         required
                     />
                     <button
@@ -81,7 +82,11 @@ function LoginForm() {
                         aria-pressed={showPassword}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground hover:text-foreground"
                     >
-                        {showPassword ? <Eye /> : <EyeClosed />}
+                        {showPassword ? (
+                            <Eye className="h-4 w-4" />
+                        ) : (
+                            <EyeClosed className="h-4 w-4" />
+                        )}
                     </button>
                 </div>
 

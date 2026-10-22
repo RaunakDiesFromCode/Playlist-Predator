@@ -10,15 +10,12 @@ import {
 import PlaylistOverview from "@/components/playlist/PlaylistOverview";
 import PlaylistVideoList from "@/components/playlist/PlaylistVideoList";
 import Player from "@/components/playlist/Player";
-import StudyPlanner from "@/components/study-planner";
 import { loadProgress, updateVideoStatus } from "@/lib/progress";
 import { PlaylistProgress, VideoStatus } from "@/types/progress";
 import { formatDuration } from "@/lib/time/duration";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { upsertSidebarPlaylist } from "@/lib/sidebar/playlists";
-import { useStudyPlannerPreferences } from "@/hooks/use-study-planner-preferences";
-import { Separator } from "@/components/ui/separator";
 import {
     Drawer,
     DrawerContent,
@@ -99,6 +96,9 @@ export default function PlaylistClient({
     const { user, loading: authLoading } = useAuth();
 
     const [progress, setProgress] = useState<PlaylistProgress>(initialProgress);
+    const [isProgressLoaded, setIsProgressLoaded] = useState(
+        () => Object.keys(initialProgress).length > 0,
+    );
     const [lobby, setLobby] = useState<LobbyInfo | null>(null);
 
     const [celebrate, setCelebrate] = useState(false);
@@ -118,9 +118,38 @@ export default function PlaylistClient({
     const playlist = initialData?.playlist ?? null;
     const loading = !initialData && !initialError;
     const error = initialError;
-    const plannerStorageKey = `study-planner:${playlistId}`;
-    const { preferences, setStudyTime, setPreferredSpeed } =
-        useStudyPlannerPreferences(plannerStorageKey);
+
+    const [preferredSpeed, setPreferredSpeedState] = useState<number>(() => {
+        if (typeof window === "undefined") return 1.5;
+        const saved = localStorage.getItem(`playlist-speed:${playlistId}`);
+        return saved ? Number(saved) : 1.5;
+    });
+
+    const setPreferredSpeed = useCallback((speed: number) => {
+        setPreferredSpeedState(speed);
+        try {
+            localStorage.setItem(`playlist-speed:${playlistId}`, String(speed));
+        } catch {}
+    }, [playlistId]);
+
+    useEffect(() => {
+        if (!playlist || !playlistId) return;
+        try {
+            const item = {
+                id: playlistId,
+                title: playlist.title,
+                thumbnail: playlist.thumbnail ?? null,
+                channelTitle: playlist.channelTitle ?? null,
+                totalVideos: summary?.totalVideos ?? videos.length,
+                viewedAt: Date.now(),
+            };
+            const raw = localStorage.getItem("recent_playlists");
+            const list = raw ? JSON.parse(raw) : [];
+            const filtered = list.filter((p: { id: string }) => p.id !== playlistId);
+            const updated = [item, ...filtered].slice(0, 8);
+            localStorage.setItem("recent_playlists", JSON.stringify(updated));
+        } catch {}
+    }, [playlistId, playlist, summary?.totalVideos, videos.length]);
 
     useEffect(() => {
         if (playlist?.title) {
@@ -147,9 +176,23 @@ export default function PlaylistClient({
     /* ---------------------------------- */
 
     useEffect(() => {
+        let cancelled = false;
         void loadProgress(playlistId)
-            .then(setProgress)
-            .catch(() => undefined);
+            .then((loaded) => {
+                if (!cancelled) {
+                    setProgress(loaded);
+                    setIsProgressLoaded(true);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setIsProgressLoaded(true);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
     }, [playlistId]);
 
     /* ---------------------------------- */
@@ -375,7 +418,6 @@ export default function PlaylistClient({
         rewatchCount,
         skippedCount,
         remainingDuration,
-        remainingDurationSeconds,
     } = useMemo(() => {
         let done = 0;
         let rewatch = 0;
@@ -411,15 +453,9 @@ export default function PlaylistClient({
             doneCount: done,
             rewatchCount: rewatch,
             skippedCount: skipped,
-            remainingDurationSeconds: nextRemainingSeconds,
             remainingDuration: formatDuration(nextRemainingSeconds),
         };
     }, [progress, videos]);
-
-    const remainingVideos = Math.max(
-        videos.length - doneCount - rewatchCount - skippedCount,
-        0,
-    );
 
     const isComplete = videos.length > 0 && doneCount === videos.length;
 
@@ -514,15 +550,23 @@ export default function PlaylistClient({
 
     const [activeVideo, setActiveVideo] = useState<VideoMetadata | null>(null);
 
-    const handleVideoClick = useCallback((video: VideoMetadata) => {
-        if (isMobile) {
-            const url = video.watchUrl ?? `https://www.youtube.com/watch?v=${video.videoId}`;
-            window.open(url, "_blank", "noopener,noreferrer");
-            return;
-        }
+    const isMobileEffective =
+        isMobile || (viewport.width > 0 && viewport.width < 768);
 
-        setActiveVideo(video);
-    }, [isMobile]);
+    const handleVideoClick = useCallback(
+        (video: VideoMetadata) => {
+            if (isMobileEffective) {
+                const url =
+                    video.watchUrl ??
+                    `https://www.youtube.com/watch?v=${video.videoId}`;
+                window.open(url, "_blank", "noopener,noreferrer");
+                return;
+            }
+
+            setActiveVideo(video);
+        },
+        [isMobileEffective],
+    );
 
     const handleClosePlayer = useCallback(() => {
         setActiveVideo(null);
@@ -533,55 +577,55 @@ export default function PlaylistClient({
     if (!summary || !playlist) return null;
 
     const RightPannel = (
-        <div className="rounded-none border border-border h-full flex flex-col">
+        <div className="rounded-none border border-border h-full flex flex-col min-w-0 overflow-hidden">
             {/* Tab bar */}
-            <div className="w-full sticky top-0 z-10 bg-background inline-flex items-center rounded-none border-b border-border">
+            <div className="w-full sticky top-0 z-10 bg-background flex items-center overflow-x-auto scrollbar-none rounded-none border-b border-border">
                 <button
                     onClick={() => setActiveTab("overview")}
-                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1 text-sm font-medium transition-colors ${
+                    className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-none px-2 xl:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
                         activeTab === "overview"
                             ? "bg-primary text-primary-foreground shadow"
                             : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
                     <span className="flex items-center gap-1">
-                        Overview <ScanSearch size={16} />
+                        Overview <ScanSearch size={15} />
                     </span>
                 </button>
                 <button
                     onClick={() => setActiveTab("PredAI")}
-                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1 text-sm font-medium transition-colors ${
+                    className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-none px-2 xl:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
                         activeTab === "PredAI"
                             ? "bg-primary text-primary-foreground shadow"
                             : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
                     <span className="flex items-center gap-1">
-                        PredAI <Sparkles size={16} />
+                        PredAI <Sparkles size={15} />
                     </span>
                 </button>
                 <button
                     onClick={() => setActiveTab("Notes")}
-                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1 text-sm font-medium transition-colors ${
+                    className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-none px-2 xl:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
                         activeTab === "Notes"
                             ? "bg-primary text-primary-foreground shadow"
                             : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
                     <span className="flex items-center gap-1">
-                        Notes <NotebookPen size={16} />
+                        Notes <NotebookPen size={15} />
                     </span>
                 </button>
                 <button
                     onClick={() => setActiveTab("Crew")}
-                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1 text-sm font-medium transition-colors ${
+                    className={`inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-none px-2 xl:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
                         activeTab === "Crew"
                             ? "bg-primary text-primary-foreground shadow"
                             : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
                     <span className="flex items-center gap-1">
-                        Crew <Users size={16} />
+                        Crew <Users size={15} />
                     </span>
                 </button>
             </div>
@@ -602,19 +646,8 @@ export default function PlaylistClient({
                         totalDuration={summary.totalDuration}
                         remainingDuration={remainingDuration}
                         progress={progress}
-                        preferredSpeed={preferences.preferredSpeed}
+                        preferredSpeed={preferredSpeed}
                         onPreferredSpeedChange={setPreferredSpeed}
-                    />
-
-                    <Separator />
-
-                    <StudyPlanner
-                        remainingMinutes={remainingDurationSeconds / 60}
-                        remainingVideos={remainingVideos}
-                        studyHours={preferences.hours}
-                        studyMinutes={preferences.minutes}
-                        preferredSpeed={preferences.preferredSpeed}
-                        onStudyTimeChange={setStudyTime}
                     />
                 </div>
             </div>
@@ -696,7 +729,7 @@ export default function PlaylistClient({
     /* Desktop */
     /* ---------------------------------- */
 
-    if (!isMobile) {
+    if (!isMobileEffective) {
         return (
             <div>
                 <Player video={activeVideo} videos={videos} onClose={handleClosePlayer} onNavigate={setActiveVideo} />
@@ -713,10 +746,12 @@ export default function PlaylistClient({
                         />
                     ) : null}
 
-                    <div className="w-1/2 h-[calc(100dvh-4.3em)] overflow-hidden">
+                    <div className="flex-1 min-w-0 h-[calc(100dvh-4.3em)] overflow-hidden">
                         <PlaylistVideoList
+                            playlistId={playlistId}
                             videos={videos}
                             progress={progress}
+                            isProgressLoaded={isProgressLoaded}
                             onStatusChange={changeStatus}
                             onVideoClick={handleVideoClick}
                             playlist={playlist}
@@ -726,7 +761,7 @@ export default function PlaylistClient({
                         />
                     </div>
 
-                    <div className="w-1/2 h-[calc(100dvh-4.3em)] overflow-y-auto">
+                    <div className="flex-1 min-w-0 h-[calc(100dvh-4.3em)] overflow-y-auto overflow-x-hidden">
                         {RightPannel}
                     </div>
                 </div>
@@ -753,8 +788,10 @@ export default function PlaylistClient({
 
             <div className="flex-1 overflow-hidden ">
                 <PlaylistVideoList
+                    playlistId={playlistId}
                     videos={videos}
                     progress={progress}
+                    isProgressLoaded={isProgressLoaded}
                     onStatusChange={changeStatus}
                     onVideoClick={handleVideoClick}
                     playlist={playlist}

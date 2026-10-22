@@ -40,6 +40,7 @@ function getMemberAvatarUrl(member: VideoCrewMember) {
 }
 
 interface Props {
+    id?: string;
     video: VideoMetadata;
     progressEntry?: VideoProgress;
     onStatusChange: (id: string, status: VideoStatus) => void;
@@ -126,6 +127,7 @@ function formatCompletionDate(value?: string) {
 /* ---------------- COMPONENT ---------------- */
 
 const PlaylistVideoCardInner = ({
+    id,
     video,
     progressEntry,
     onStatusChange,
@@ -161,6 +163,7 @@ const PlaylistVideoCardInner = ({
 
     return (
         <Card
+            id={id}
             className={`group flex flex-col gap-3 p-3 transition-colors backdrop-blur-sm md:flex-row md:items-center ${
                 currentStatus === "DONE" ||
                 currentStatus === "SKIP" ||
@@ -172,27 +175,24 @@ const PlaylistVideoCardInner = ({
             <div className="flex w-full items-start gap-3 min-w-0 md:flex-1 md:items-center">
                 {/* Left pane: Thumbnail + Crew's pfp */}
                 <div className="flex flex-col shrink-0 w-[96px] md:w-[120px]">
-                    <div
-                        role="button"
-                        tabIndex={0}
+                    <button
+                        type="button"
                         onClick={handleClick}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                                handleClick();
-                            }
-                        }}
+                        aria-label={`Play ${video.title}`}
                         className="relative w-full aspect-video overflow-hidden rounded-none bg-black/10 text-left cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
                         <Image
                             src={video.thumbnail}
                             alt={video.title}
                             fill
+                            sizes="(max-width: 768px) 96px, 120px"
+                            unoptimized
                             className="object-cover"
                         />
                         <span className="absolute bottom-1 left-1 rounded-none bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white">
                             {serialNumber}
                         </span>
-                    </div>
+                    </button>
 
                     {/* Crew completed avatars below thumbnail */}
                     {completedCrew.length > 0 && (
@@ -368,15 +368,9 @@ const PlaylistVideoCardInner = ({
                 </div>
 
                 {/* Text (Clickable to play video) */}
-                <div
-                    role="button"
-                    tabIndex={0}
+                <button
+                    type="button"
                     onClick={handleClick}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                            handleClick();
-                        }
-                    }}
                     className="min-w-0 flex-1 space-y-1 text-left cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
                     <p className="font-medium leading-snug line-clamp-2">
@@ -397,10 +391,10 @@ const PlaylistVideoCardInner = ({
                             ? ` ${completionLabel}`
                             : ""}
                     </p>
-                </div>
+                </button>
             </div>
 
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-2 w-full md:w-auto shrink-0">
                 <Button className="w-full md:flex hidden" variant="outline" asChild>
                     <a
                         href={

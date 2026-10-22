@@ -16,7 +16,7 @@ import { isAdminEmail, isAdminRole } from "@/lib/admin/access";
 import { getAdminDashboardData } from "@/lib/admin/dashboard";
 
 export const metadata: Metadata = {
-    title: "Admin | Playlist Predator",
+    title: "Admin",
     description:
         "Platform administration dashboard for managing playlists and user progress.",
 };
@@ -536,7 +536,7 @@ export default async function AdminDashboardPage({
                         Selected User Playlists ({selectedUserPlaylists.length})
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                     <Table className="min-w-[980px] text-left">
                         <TableHeader>
                             <TableRow className="text-xs uppercase text-muted-foreground hover:bg-transparent">
@@ -618,7 +618,7 @@ export default async function AdminDashboardPage({
                         {selectedUserProgressRows.length})
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                     <Table className="min-w-[1240px] text-left">
                         <TableHeader>
                             <TableRow className="text-xs uppercase text-muted-foreground hover:bg-transparent">

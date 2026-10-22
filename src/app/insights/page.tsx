@@ -18,7 +18,7 @@ import {
 } from "@/lib/insights/calculate-insights";
 
 export const metadata: Metadata = {
-    title: "Insights | Playlist Predator",
+    title: "Insights",
     description:
         "View your learning insights — completion rates, progress breakdowns, playlist rankings, and recent activity.",
 };

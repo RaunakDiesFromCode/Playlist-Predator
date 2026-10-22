@@ -62,6 +62,7 @@ export default function ResetPasswordPage() {
                         type={showPassword ? "text" : "password"}
                         autoComplete="new-password"
                         placeholder="New password"
+                        className="pr-10"
                         minLength={8}
                         required
                     />
@@ -74,7 +75,11 @@ export default function ResetPasswordPage() {
                         aria-pressed={showPassword}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground hover:text-foreground"
                     >
-                        {showPassword ? <Eye /> : <EyeClosed />}
+                        {showPassword ? (
+                            <Eye className="h-4 w-4" />
+                        ) : (
+                            <EyeClosed className="h-4 w-4" />
+                        )}
                     </button>
                 </div>
 
@@ -88,6 +93,7 @@ export default function ResetPasswordPage() {
                         type={showConfirmPassword ? "text" : "password"}
                         autoComplete="new-password"
                         placeholder="Confirm new password"
+                        className="pr-10"
                         minLength={8}
                         required
                     />
@@ -102,7 +108,11 @@ export default function ResetPasswordPage() {
                         aria-pressed={showConfirmPassword}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground hover:text-foreground"
                     >
-                        {showConfirmPassword ? <Eye /> : <EyeClosed />}
+                        {showConfirmPassword ? (
+                            <Eye className="h-4 w-4" />
+                        ) : (
+                            <EyeClosed className="h-4 w-4" />
+                        )}
                     </button>
                 </div>
 

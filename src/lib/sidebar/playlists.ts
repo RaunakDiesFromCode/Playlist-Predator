@@ -80,10 +80,31 @@ export function clearSidebarPlaylistRequest(userId: string) {
     playlistRequestCache.delete(userId);
 }
 
+export function removeRecentPlaylist(youtubePlaylistId: string) {
+    if (typeof window === "undefined") return;
+    try {
+        const raw = localStorage.getItem("recent_playlists");
+        if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+                const filtered = list.filter(
+                    (p: { id?: string }) => p.id !== youtubePlaylistId,
+                );
+                localStorage.setItem(
+                    "recent_playlists",
+                    JSON.stringify(filtered),
+                );
+            }
+        }
+    } catch {}
+}
+
 export function removeSidebarPlaylist(
     userId: string,
     youtubePlaylistId: string,
 ) {
+    removeRecentPlaylist(youtubePlaylistId);
+
     const current = playlistCache.get(userId) ?? [];
     const filtered = current.filter(
         (item) => playlistKey(item) !== youtubePlaylistId,

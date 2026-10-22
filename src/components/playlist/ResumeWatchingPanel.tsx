@@ -55,12 +55,14 @@ export default function ResumeWatchingPanel({
                     </p>
                 </div>
 
-                <div className="flex flex-col items-center justify-center">
+                <div className="shrink-0 flex flex-col items-center justify-center gap-1.5">
                     <Badge
                         variant="secondary"
-                        className="h-5 px-2 text-[10px] w-full rounded-none"
+                        className="h-5 px-2 text-[10px] w-full justify-center rounded-none"
                     >
-                        {target.remainingCount} left
+                        {hasFinished
+                            ? "Completed"
+                            : `${target.remainingCount} left`}
                     </Badge>
                     <Button
                         asChild

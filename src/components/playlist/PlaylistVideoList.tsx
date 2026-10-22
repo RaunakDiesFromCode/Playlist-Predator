@@ -24,8 +24,10 @@ import { cn } from "@/lib/utils";
 import PlaylistVideoCard from "./PlaylistVideoCard";
 
 interface Props {
+    playlistId?: string;
     videos: VideoMetadata[];
     progress: PlaylistProgress;
+    isProgressLoaded?: boolean;
     onStatusChange: (id: string, status: VideoStatus) => void;
     onVideoClick?: (video: VideoMetadata) => void;
     playlist: PlaylistMeta | null;
@@ -51,8 +53,10 @@ function toDayKey(date: Date) {
 }
 
 const PlaylistVideoList = ({
+    playlistId,
     videos,
     progress,
+    isProgressLoaded,
     onStatusChange,
     onVideoClick,
     playlist,
@@ -180,6 +184,78 @@ const PlaylistVideoList = ({
         }
     }, []);
 
+    // Auto-scroll to current video to watch on initial playlist load / navigation
+    const scrolledPlaylistRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        const currentId = playlistId ?? playlist?.youtubeUrl;
+        if (!currentId || videos.length === 0) return;
+
+        // If we've already auto-scrolled for this playlist, do not re-scroll on subsequent user clicks
+        if (scrolledPlaylistRef.current === currentId) return;
+
+        const progressCount = Object.keys(progress).length;
+        // Wait until progress has finished loading or has entries before deciding which video to scroll to
+        if (!isProgressLoaded && progressCount === 0) {
+            return;
+        }
+
+        // Find the first video that needs to be watched (not DONE or SKIP)
+        const targetIndex = videos.findIndex((v) => {
+            const status = progress[v.videoId]?.status;
+            return status !== "DONE" && status !== "SKIP";
+        });
+
+        // Mark as scrolled for this playlist so it doesn't trigger again on subsequent status clicks
+        scrolledPlaylistRef.current = currentId;
+
+        // If targetIndex <= 0, the user is already at the top (video 1) or all are watched
+        if (targetIndex <= 0) {
+            return;
+        }
+
+        const targetVideoId = videos[targetIndex].videoId;
+
+        let attempts = 0;
+        let cancelled = false;
+
+        const attemptScroll = () => {
+            if (cancelled) return;
+            const targetElement = document.getElementById(
+                `video-card-${targetVideoId}`,
+            );
+            const container = scrollRef.current;
+
+            if (targetElement && container) {
+                const containerRect = container.getBoundingClientRect();
+                const targetRect = targetElement.getBoundingClientRect();
+                const relativeTop =
+                    targetRect.top - containerRect.top + container.scrollTop;
+                const targetScrollTop = Math.max(
+                    0,
+                    relativeTop -
+                        container.clientHeight / 2 +
+                        targetRect.height / 2,
+                );
+
+                container.scrollTo({
+                    top: targetScrollTop,
+                    behavior: "smooth",
+                });
+            } else if (attempts < 8) {
+                attempts += 1;
+                setTimeout(attemptScroll, 100);
+            }
+        };
+
+        const timer = setTimeout(attemptScroll, 150);
+
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [playlistId, playlist?.youtubeUrl, videos, progress, isProgressLoaded]);
+
     if (videos.length === 0 || !playlistThumbnail) return null;
 
     return (
@@ -212,6 +288,8 @@ const PlaylistVideoList = ({
                         alt="Playlist cover"
                         width={1200}
                         height={675}
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        unoptimized
                         priority
                         className="h-full w-full object-cover transition-none"
                         style={{
@@ -237,7 +315,7 @@ const PlaylistVideoList = ({
                                 {playlist?.title}
                             </Link>
                         </h2>
-                        <p className="text-sm text-muted-foreground md:text-lg flex gap-1 items-center">
+                        <div className="text-sm text-muted-foreground md:text-lg flex gap-1 items-center">
                             {playlist?.channelTitle}
                             {isMounted && streakInfo.streakDay ? (
                                 <Badge
@@ -251,7 +329,7 @@ const PlaylistVideoList = ({
                                     Day {streakInfo.streakDay}
                                 </Badge>
                             ) : null}
-                        </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -260,6 +338,7 @@ const PlaylistVideoList = ({
                 {filteredVideos.map((video) => (
                     <PlaylistVideoCard
                         key={video.videoId}
+                        id={`video-card-${video.videoId}`}
                         video={video}
                         progressEntry={progress[video.videoId]}
                         onStatusChange={onStatusChange}
@@ -298,8 +377,8 @@ const PlaylistVideoList = ({
                             }
                         >
                             <SelectTrigger className="h-9 text-xs">
-                                <div className="flex items-center gap-2">
-                                    <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                                     <SelectValue placeholder="Filter" />
                                 </div>
                             </SelectTrigger>
@@ -323,8 +402,8 @@ const PlaylistVideoList = ({
                             }
                         >
                             <SelectTrigger className="h-9 text-xs">
-                                <div className="flex items-center gap-2">
-                                    <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                                     <SelectValue placeholder="Sort" />
                                 </div>
                             </SelectTrigger>

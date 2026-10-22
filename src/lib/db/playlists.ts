@@ -40,12 +40,18 @@ export async function createPlaylist(input: {
 
     const { data, error } = await supabase
         .from("playlists")
-        .insert({
-            user_id: user.id,
-            youtube_playlist_id: input.youtube_playlist_id,
-            title: input.title ?? null,
-            thumbnail: input.thumbnail ?? null,
-        })
+        .upsert(
+            {
+                user_id: user.id,
+                youtube_playlist_id: input.youtube_playlist_id,
+                title: input.title ?? null,
+                thumbnail: input.thumbnail ?? null,
+                updated_at: new Date().toISOString(),
+            },
+            {
+                onConflict: "user_id,youtube_playlist_id",
+            },
+        )
         .select()
         .single();
 

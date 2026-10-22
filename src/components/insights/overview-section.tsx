@@ -126,7 +126,7 @@ export function OverviewSection({ data }: OverviewSectionProps) {
                             <Clock3 className="h-4 w-4" />
                         </div>
                     </div>
-                    <p className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                    <p className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl truncate" title={formatLastActivity(data.lastActivity)}>
                         {formatLastActivity(data.lastActivity)}
                     </p>
                     <p className="text-sm leading-relaxed text-muted-foreground">

@@ -6,7 +6,7 @@ type RouteParams = {
 };
 
 export const metadata: Metadata = {
-    title: "Join Playlist Crew | Playlist Predator",
+    title: "Join Playlist Crew",
     description: "Join a shared YouTube playlist study Crew.",
 };
 
