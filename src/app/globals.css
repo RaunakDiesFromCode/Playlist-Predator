@@ -129,6 +129,33 @@ html.theme-transitioning *::after {
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%
   }
+
+  /* Anniversary Gold Theme (1st January IST / Testing mode) */
+  :root[data-anniversary="true"],
+  :root.anniversary,
+  [data-anniversary="true"],
+  .anniversary {
+    --primary: 43 90% 40%;
+    --primary-foreground: 0 0% 98%;
+    --border: 43 85% 42%;
+    --input: 43 85% 42%;
+    --ring: 43 90% 40%;
+    --sidebar-border: 43 85% 42%;
+  }
+
+  .dark[data-anniversary="true"],
+  .dark.anniversary,
+  [data-anniversary="true"].dark,
+  .anniversary.dark,
+  .dark [data-anniversary="true"],
+  .dark .anniversary {
+    --primary: 43 90% 55%;
+    --primary-foreground: 0 0% 9%;
+    --border: 43 85% 50%;
+    --input: 43 85% 50%;
+    --ring: 43 90% 55%;
+    --sidebar-border: 43 85% 50%;
+  }
 }
 
 @layer base {

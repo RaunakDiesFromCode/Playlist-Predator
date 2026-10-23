@@ -17,6 +17,10 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { parseYouTubeInput } from "@/lib/youtube/input";
 import { removeRecentPlaylist } from "@/lib/sidebar/playlists";
+import {
+    isAnniversaryActive,
+    getAnniversaryMessage,
+} from "@/lib/time/anniversary";
 
 const GREETINGS = [
     "Make sense of your YouTube playlist",
@@ -43,6 +47,8 @@ function pickGreeting() {
 export default function HomeClient() {
     const [input, setInput] = useState("");
     const [greetingBase, setGreetingBase] = useState(GREETINGS[0]);
+    const [isAnniversary, setIsAnniversary] = useState(isAnniversaryActive);
+    const [anniversaryMsg, setAnniversaryMsg] = useState(getAnniversaryMessage);
     const [recentPlaylists, setRecentPlaylists] = useState<
         Array<{
             id: string;
@@ -56,6 +62,8 @@ export default function HomeClient() {
 
     useEffect(() => {
         setGreetingBase(pickGreeting());
+        setIsAnniversary(isAnniversaryActive());
+        setAnniversaryMsg(getAnniversaryMessage());
 
         // 1. Load from localStorage immediately
         let localList: Array<{
@@ -173,6 +181,11 @@ export default function HomeClient() {
     return (
         <main className="flex flex-1 flex-col items-center justify-center px-4 py-4 sm:py-6">
             <div className="flex w-full max-w-xl flex-col gap-4">
+                {isAnniversary && anniversaryMsg && (
+                    <p className="text-center text-xs sm:text-sm font-medium text-primary tracking-wide -mb-2">
+                        {anniversaryMsg}
+                    </p>
+                )}
                 <h1 className="text-center text-2xl font-bold sm:text-3xl break-words">
                     {greeting}
                 </h1>

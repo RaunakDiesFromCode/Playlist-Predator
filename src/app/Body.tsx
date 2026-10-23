@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Toaster } from "sonner";
 import DomainRedirectBanner from "@/components/DomainRedirectBanner";
+import { isAnniversaryActive } from "@/lib/time/anniversary";
 
 export default function Body({ children }: { children: React.ReactNode }) {
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -52,6 +53,17 @@ export default function Body({ children }: { children: React.ReactNode }) {
             window.clearTimeout(timeoutId);
         };
     }, []);
+
+    useEffect(() => {
+        const active = isAnniversaryActive();
+        if (active) {
+            document.documentElement.setAttribute("data-anniversary", "true");
+            document.documentElement.classList.add("anniversary");
+        } else {
+            document.documentElement.removeAttribute("data-anniversary");
+            document.documentElement.classList.remove("anniversary");
+        }
+    }, [pathname]);
 
     return (
         <body
