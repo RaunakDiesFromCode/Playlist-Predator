@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const btnBrowsePredator = document.getElementById("btn-browse-predator");
 
     const tabStatus = document.getElementById("tab-status");
-    const envSelect = document.getElementById("env-select");
     const btnManualSync = document.getElementById("btn-manual-sync");
 
     let currentBaseUrl = "https://playlist-predator.vercel.app";
@@ -41,9 +40,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             const { baseUrl, auth, activePlaylist, progress } = response;
             currentBaseUrl = baseUrl || currentBaseUrl;
             currentActivePlaylist = activePlaylist;
-
-            // Set env select
-            envSelect.value = currentBaseUrl.includes("localhost") ? "http://localhost:3000" : "https://playlist-predator.vercel.app";
 
             // Render Auth
             if (auth?.authenticated) {
@@ -91,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             if (!tab?.url) {
-                tabStatus.textContent = "Unable to read active tab.";
+                tabStatus.innerHTML = `<span class="text-muted">This extension works only for YouTube.</span>`;
                 return;
             }
 
@@ -120,13 +116,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 } else {
                     tabStatus.innerHTML = `<span class="text-muted">Watching video <code>${videoId}</code> — not part of active playlist <em>${activePlaylist.title}</em>. Syncing paused.</span>`;
                 }
-            } else if (url.hostname.includes("playlist-predator.vercel.app") || url.hostname.includes("localhost")) {
-                tabStatus.innerHTML = `<span style="color:#22c55e">● Active:</span> Viewing Playlist Predator app.`;
+            } else if (url.hostname.includes("youtube.com")) {
+                tabStatus.innerHTML = `<span class="text-muted">On YouTube. Open a video from your active playlist to start tracking.</span>`;
             } else {
-                tabStatus.textContent = "Not on YouTube. Open YouTube to track videos.";
+                tabStatus.innerHTML = `<span class="text-muted">This extension works only for YouTube.</span>`;
             }
         } catch {
-            tabStatus.textContent = "Unable to inspect active tab.";
+            tabStatus.innerHTML = `<span class="text-muted">This extension works only for YouTube.</span>`;
         }
     }
 
@@ -145,17 +141,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Button: Login
     btnLogin.addEventListener("click", () => {
         chrome.tabs.create({ url: `${currentBaseUrl}/login` });
-    });
-
-    // Change Base URL
-    envSelect.addEventListener("change", (e) => {
-        const nextUrl = e.target.value;
-        chrome.runtime.sendMessage({
-            type: "SET_BASE_URL",
-            payload: { baseUrl: nextUrl },
-        }, () => {
-            loadStatus();
-        });
     });
 
     // Button: Manual Sync

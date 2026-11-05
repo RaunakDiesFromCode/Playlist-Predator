@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="100%" height="100%" fill="none" style="background:#09090b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'JetBrains Mono', monospace;">
+  <defs>
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#18181b" />
+      <stop offset="100%" stop-color="#0f0f12" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22c55e" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Background grid subtle pattern -->
+  <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+    <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#27272a" stroke-width="0.75" stroke-opacity="0.5" />
+  </pattern>
+  <rect width="960" height="440" fill="url(#grid)" />
+
+  <!-- Outer frame -->
+  <rect x="16" y="16" width="928" height="408" stroke="#27272a" stroke-width="1" rx="0" />
+
+  <!-- Header -->
+  <text x="40" y="52" fill="#fafafa" font-size="16" font-weight="700" letter-spacing="1">PLAYLIST PREDATOR // EXTENSION DATA FLOW</text>
+  <rect x="800" y="38" width="110" height="22" stroke="#22c55e" stroke-opacity="0.4" fill="#22c55e" fill-opacity="0.1" />
+  <text x="855" y="53" fill="#22c55e" font-size="11" font-weight="600" text-anchor="middle">ACTIVE SYNC</text>
+
+  <!-- Step 1: Playlist Predator -->
+  <g transform="translate(40, 80)" filter="url(#shadow)">
+    <rect width="250" height="300" fill="url(#cardGrad)" stroke="#27272a" stroke-width="1" />
+    <rect x="0" y="0" width="250" height="34" fill="#141416" stroke="#27272a" stroke-width="1" />
+    <circle cx="18" cy="17" r="4" fill="#ef4444" />
+    <circle cx="32" cy="17" r="4" fill="#eab308" />
+    <circle cx="46" cy="17" r="4" fill="#22c55e" />
+    <text x="65" y="21" fill="#a1a1aa" font-size="11" font-weight="500">predator.raunakm.xyz</text>
+    
+    <text x="20" y="65" fill="#e4e4e7" font-size="14" font-weight="700">1. Web Application</text>
+    <text x="20" y="85" fill="#71717a" font-size="11">Your active study workspace</text>
+
+    <rect x="20" y="105" width="210" height="70" fill="#09090b" stroke="#27272a" stroke-width="1" />
+    <text x="32" y="128" fill="#38bdf8" font-size="11" font-weight="600">Active Study Playlist</text>
+    <text x="32" y="146" fill="#e4e4e7" font-size="12" font-weight="600">Learn Next.js 15 Full Course</text>
+    <text x="32" y="162" fill="#71717a" font-size="10">ID: PLxyz987410 • 14/40 done</text>
+
+    <!-- Bridge component -->
+    <rect x="20" y="195" width="210" height="75" fill="#18181b" stroke="#3f3f46" stroke-width="1" stroke-dasharray="3 3" />
+    <text x="32" y="218" fill="#a1a1aa" font-size="11" font-weight="600">predator-bridge.js</text>
+    <text x="32" y="235" fill="#71717a" font-size="10">• Broadcasts active playlist</text>
+    <text x="32" y="251" fill="#71717a" font-size="10">• Detects Supabase auth token</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <path d="M 290 230 L 340 230" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4 4" />
+  <polygon points="345,230 338,226 338,234" fill="#3b82f6" />
+  <text x="318" y="218" fill="#3b82f6" font-size="9" text-anchor="middle" font-weight="600">POST_MSG</text>
+
+  <!-- Step 2: Extension Service Worker -->
+  <g transform="translate(350, 80)" filter="url(#shadow)">
+    <rect width="250" height="300" fill="url(#cardGrad)" stroke="#3f3f46" stroke-width="1" />
+    <rect x="0" y="0" width="250" height="34" fill="#141416" stroke="#27272a" stroke-width="1" />
+    <text x="18" y="21" fill="#fafafa" font-size="12" font-weight="600">🧩 Chrome Extension</text>
+    <rect x="180" y="8" width="55" height="18" fill="#22c55e" fill-opacity="0.15" stroke="#22c55e" stroke-width="0.5" />
+    <text x="207" y="20" fill="#22c55e" font-size="9" font-weight="700" text-anchor="middle">MV3</text>
+
+    <text x="20" y="65" fill="#e4e4e7" font-size="14" font-weight="700">2. Background Worker</text>
+    <text x="20" y="85" fill="#71717a" font-size="11">background.js • popup.html</text>
+
+    <rect x="20" y="105" width="210" height="60" fill="#09090b" stroke="#27272a" stroke-width="1" />
+    <text x="32" y="126" fill="#a1a1aa" font-size="11">Isolated State Memory:</text>
+    <text x="32" y="142" fill="#22c55e" font-size="11" font-weight="600">✓ Auth session linked</text>
+    <text x="32" y="156" fill="#e4e4e7" font-size="10">Active: PLxyz987410</text>
+
+    <rect x="20" y="180" width="210" height="85" fill="#18181b" stroke="#27272a" stroke-width="1" />
+    <text x="32" y="202" fill="#e4e4e7" font-size="11" font-weight="600">Smart Guard Rules</text>
+    <text x="32" y="220" fill="#71717a" font-size="10">• Only syncs matching playlist</text>
+    <text x="32" y="236" fill="#71717a" font-size="10">• Protects REWATCH &amp; SKIP</text>
+    <text x="32" y="252" fill="#71717a" font-size="10">• Only upgrades NONE → DONE</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <path d="M 600 230 L 650 230" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 4" />
+  <polygon points="655,230 648,226 648,234" fill="#ef4444" />
+  <text x="628" y="218" fill="#ef4444" font-size="9" text-anchor="middle" font-weight="600">TRACK</text>
+
+  <!-- Step 3: YouTube Tab -->
+  <g transform="translate(660, 80)" filter="url(#shadow)">
+    <rect width="260" height="300" fill="url(#cardGrad)" stroke="#27272a" stroke-width="1" />
+    <rect x="0" y="0" width="260" height="34" fill="#141416" stroke="#27272a" stroke-width="1" />
+    <circle cx="18" cy="17" r="4" fill="#ef4444" />
+    <circle cx="32" cy="17" r="4" fill="#eab308" />
+    <circle cx="46" cy="17" r="4" fill="#22c55e" />
+    <text x="65" y="21" fill="#ef4444" font-size="11" font-weight="600">▶ youtube.com/watch</text>
+
+    <text x="20" y="65" fill="#e4e4e7" font-size="14" font-weight="700">3. Video Playback</text>
+    <text x="20" y="85" fill="#71717a" font-size="11">youtube-tracker.js</text>
+
+    <rect x="20" y="105" width="220" height="60" fill="#09090b" stroke="#27272a" stroke-width="1" />
+    <text x="32" y="125" fill="#a1a1aa" font-size="11">Completion Detector</text>
+    <rect x="32" y="135" width="190" height="6" fill="#27272a" />
+    <rect x="32" y="135" width="165" height="6" fill="#22c55e" />
+    <text x="32" y="155" fill="#22c55e" font-size="10" font-weight="600">87% Watched (Threshold ≥ 85%)</text>
+
+    <!-- Floating Toast Representation -->
+    <rect x="15" y="180" width="230" height="85" fill="#09090b" stroke="#22c55e" stroke-width="1.5" />
+    <rect x="25" y="195" width="24" height="24" fill="#22c55e" fill-opacity="0.2" />
+    <text x="37" y="211" fill="#22c55e" font-size="13" font-weight="700" text-anchor="middle">✓</text>
+    <text x="56" y="206" fill="#fafafa" font-size="11" font-weight="700">Video marked as Done!</text>
+    <text x="56" y="222" fill="#a1a1aa" font-size="10">Synced with Predator tab</text>
+    <line x1="25" y1="235" x2="235" y2="235" stroke="#27272a" stroke-width="1" />
+    <text x="25" y="253" fill="#22c55e" font-size="9" font-weight="600">POST /api/progress { status: &quot;DONE&quot; }</text>
+  </g>
+
+  <!-- Return sync arrow from YouTube back to Predator -->
+  <path d="M 790 390 C 790 425, 165 425, 165 390" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5 5" fill="none" />
+  <polygon points="165,385 160,394 170,394" fill="#22c55e" />
+  <rect x="420" y="405" width="120" height="18" fill="#09090b" stroke="#22c55e" stroke-width="0.5" />
+  <text x="480" y="417" fill="#22c55e" font-size="9" font-weight="600" text-anchor="middle">INSTANT LIVE REFRESH</text>
+</svg>

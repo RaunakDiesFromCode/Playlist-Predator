@@ -259,25 +259,6 @@ body {
     border-top: 1px solid #27272a;
 }
 
-.env-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.env-select {
-    background: #18181b;
-    color: #fafafa;
-    border: 1px solid #27272a;
-    font-size: 11px;
-    padding: 3px 6px;
-    outline: none;
-}
-
-.env-select:focus {
-    border-color: #52525b;
-}
-
 .text-muted {
     color: #a1a1aa;
 }

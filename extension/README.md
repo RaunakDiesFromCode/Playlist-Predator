@@ -23,8 +23,6 @@ Automatically syncs your YouTube watch progress directly to your active playlist
 6. **Live Sync with Predator App**:
    * When a video is marked done on YouTube, any open Playlist Predator tabs are notified to refresh their progress.
    * A dedicated **Refresh / Sync** button is also available directly inside Playlist Predator.
-7. **Production & Localhost Support**:
-   * Seamlessly toggle between `https://playlist-predator.vercel.app` (default) and `http://localhost:3000` via the popup.
 
 ---
 
@@ -71,8 +69,6 @@ Automatically syncs your YouTube watch progress directly to your active playlist
 ## Troubleshooting
 
 - **"Not Logged In" in popup:**
-  * Open Playlist Predator (`https://playlist-predator.vercel.app` or `http://localhost:3000`) and log in. The extension will automatically detect your session.
+  * Open Playlist Predator and log in. The extension will automatically detect your session.
 - **"No active playlist" in popup:**
-  * Open any playlist page in Playlist Predator (e.g. `https://playlist-predator.vercel.app/PL...`). The extension bridge automatically links it.
-- **Testing locally on localhost:**
-  * In the extension popup, change the **Server** dropdown from `Production` to `Localhost:3000`.
+  * Open any playlist page in Playlist Predator (e.g. `https://predator.raunakm.xyz/PL...`). The extension bridge automatically links it.
