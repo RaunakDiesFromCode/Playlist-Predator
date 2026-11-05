@@ -19,7 +19,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, RotateCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlaylistMeta, VideoMetadata } from "@/types/playlist";
 import { PlaylistProgress } from "@/types/progress";
@@ -49,6 +49,8 @@ interface Props {
     progress: PlaylistProgress;
     preferredSpeed: number;
     onPreferredSpeedChange: (speed: number) => void;
+    onRefreshProgress?: () => void;
+    isSyncing?: boolean;
 }
 
 /* ===================== CONSTANTS ===================== */
@@ -233,6 +235,8 @@ const PlaylistOverview = ({
     progress,
     preferredSpeed,
     onPreferredSpeedChange,
+    onRefreshProgress,
+    isSyncing,
 }: Props) => {
     const isMounted = useIsMounted();
     const remainingSeconds = parseToSeconds(remainingDuration);
@@ -370,6 +374,21 @@ const PlaylistOverview = ({
                         >
                             {doneVideos}/{totalVideos} done
                         </Badge>
+
+                        {onRefreshProgress && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={onRefreshProgress}
+                                disabled={isSyncing}
+                                title="Sync progress with extension"
+                                className="h-8 gap-1.5 px-2.5"
+                            >
+                                <RotateCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin")} />
+                                <span className="text-xs">Refresh</span>
+                            </Button>
+                        )}
 
                         {playlist?.title ? (
                             <DropdownMenu>

@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpDown, Filter, Search } from "lucide-react";
+import { ArrowUpDown, Filter, Search, RotateCw } from "lucide-react";
 
 import { useIsMounted } from "@/hooks/use-mounted";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
     Select,
@@ -34,6 +35,8 @@ interface Props {
     videoCompletions?: Record<string, VideoCrewMember[]>;
     currentUserId?: string;
     isMobile?: boolean;
+    onRefreshProgress?: () => void;
+    isSyncing?: boolean;
 }
 
 type SortOption =
@@ -63,6 +66,8 @@ const PlaylistVideoList = ({
     videoCompletions,
     currentUserId,
     isMobile,
+    onRefreshProgress,
+    isSyncing,
 }: Props) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const ticking = useRef(false);
@@ -367,14 +372,30 @@ const PlaylistVideoList = ({
 
             <div className="sticky bottom-0 z-20 mt-auto border-t border-border/60 bg-background/95 px-3 py-3 backdrop-blur">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                    <div className="relative flex-1 lg:flex-2">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Search by number, title, or channel"
-                            className="h-9 pl-9"
-                        />
+                    <div className="flex gap-2 items-center flex-1 lg:flex-2">
+                        <div className="relative flex-1">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                placeholder="Search by number, title, or channel"
+                                className="h-9 pl-9"
+                            />
+                        </div>
+                        {onRefreshProgress && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={onRefreshProgress}
+                                disabled={isSyncing}
+                                title="Sync progress with extension"
+                                className="h-9 px-2.5 shrink-0 gap-1.5"
+                            >
+                                <RotateCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin")} />
+                                <span className="hidden sm:inline text-xs">Sync</span>
+                            </Button>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 lg:w-70 lg:flex-none">

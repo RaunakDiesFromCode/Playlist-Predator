@@ -37,6 +37,7 @@ import PlaylistFriendsTab from "@/components/playlist/PlaylistFriendsTab";
 import { LobbyInfo } from "@/types/friends";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
 const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
 
@@ -212,6 +213,83 @@ export default function PlaylistClient({
             cancelled = true;
         };
     }, [playlistId]);
+
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const handleRefreshProgress = useCallback(async () => {
+        setIsSyncing(true);
+        try {
+            const loaded = await loadProgress(playlistId);
+            setProgress(loaded);
+            setIsProgressLoaded(true);
+            toast.success("Progress synced with latest data");
+        } catch {
+            toast.error("Failed to sync progress");
+        } finally {
+            setIsSyncing(false);
+        }
+    }, [playlistId]);
+
+    /* ---------------------------------- */
+    /* Sync events & focus re-check       */
+    /* ---------------------------------- */
+
+    useEffect(() => {
+        const onSyncEvent = () => {
+            void handleRefreshProgress();
+        };
+
+        window.addEventListener("predator:sync-progress", onSyncEvent);
+
+        let lastFocus = Date.now();
+        const onFocus = () => {
+            const now = Date.now();
+            if (now - lastFocus > 5000) {
+                lastFocus = now;
+                void loadProgress(playlistId)
+                    .then((loaded) => {
+                        setProgress(loaded);
+                        setIsProgressLoaded(true);
+                    })
+                    .catch(() => {});
+            }
+        };
+
+        window.addEventListener("focus", onFocus);
+
+        return () => {
+            window.removeEventListener("predator:sync-progress", onSyncEvent);
+            window.removeEventListener("focus", onFocus);
+        };
+    }, [handleRefreshProgress, playlistId]);
+
+    /* ---------------------------------- */
+    /* Expose active playlist for ext     */
+    /* ---------------------------------- */
+
+    useEffect(() => {
+        if (!playlistId || typeof window === "undefined") return;
+
+        const detail = {
+            playlistId,
+            title: playlist?.title || "",
+            totalVideos: videos.length,
+            videoIds: videos.map((v) => v.videoId),
+            url: window.location.href,
+            updatedAt: Date.now(),
+        };
+
+        try {
+            (
+                window as unknown as {
+                    __PREDATOR_ACTIVE_PLAYLIST__?: typeof detail;
+                }
+            ).__PREDATOR_ACTIVE_PLAYLIST__ = detail;
+            window.dispatchEvent(
+                new CustomEvent("predator:active-playlist-changed", { detail }),
+            );
+        } catch {}
+    }, [playlistId, playlist?.title, videos]);
 
     /* ---------------------------------- */
     /* Fetch Crew Lobby + Completions */
@@ -666,6 +744,8 @@ export default function PlaylistClient({
                         progress={progress}
                         preferredSpeed={preferredSpeed}
                         onPreferredSpeedChange={setPreferredSpeed}
+                        onRefreshProgress={handleRefreshProgress}
+                        isSyncing={isSyncing}
                     />
                 </div>
             </div>
@@ -749,7 +829,11 @@ export default function PlaylistClient({
 
     if (!isMobileEffective) {
         return (
-            <div>
+            <div
+                data-predator-playlist-id={playlistId}
+                data-predator-title={playlist?.title || ""}
+                data-predator-video-ids={JSON.stringify(videos.map((v) => v.videoId))}
+            >
                 <Player video={activeVideo} videos={videos} onClose={handleClosePlayer} onNavigate={setActiveVideo} />
 
                 <div className="relative flex gap-2 p-2">
@@ -776,6 +860,8 @@ export default function PlaylistClient({
                             videoCompletions={lobby?.videoCompletions}
                             currentUserId={user?.id}
                             isMobile={false}
+                            onRefreshProgress={handleRefreshProgress}
+                            isSyncing={isSyncing}
                         />
                     </div>
 
@@ -792,7 +878,12 @@ export default function PlaylistClient({
     /* ---------------------------------- */
 
     return (
-        <div className="relative flex h-[calc(100dvh-4rem)] flex-col gap-4 p-2 transition-colors md:p-4">
+        <div
+            data-predator-playlist-id={playlistId}
+            data-predator-title={playlist?.title || ""}
+            data-predator-video-ids={JSON.stringify(videos.map((v) => v.videoId))}
+            className="relative flex h-[calc(100dvh-4rem)] flex-col gap-4 p-2 transition-colors md:p-4"
+        >
             {showConfetti ? (
                 <Confetti
                     width={viewport.width}
@@ -816,6 +907,8 @@ export default function PlaylistClient({
                     videoCompletions={lobby?.videoCompletions}
                     currentUserId={user?.id}
                     isMobile={true}
+                    onRefreshProgress={handleRefreshProgress}
+                    isSyncing={isSyncing}
                 />
             </div>
 

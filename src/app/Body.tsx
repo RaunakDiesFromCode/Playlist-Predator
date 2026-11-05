@@ -105,7 +105,15 @@ export default function Body({ children }: { children: React.ReactNode }) {
                     </div>
                 </div>
             </ThemeProvider>
-            <Toaster position="bottom-right" data-sonner-toaster />
+            <Toaster
+                position="bottom-right"
+                toastOptions={{
+                    className: "!rounded-none border border-border bg-background text-foreground shadow-md font-sans",
+                    style: {
+                        borderRadius: "0px",
+                    },
+                }}
+            />
         </body>
     );
 }

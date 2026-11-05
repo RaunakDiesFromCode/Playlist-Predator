@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playlist Predator Sync</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-group">
+                <img src="icons/icon-48.png" alt="Logo" class="logo">
+                <div class="brand">
+                    <span class="brand-title">Playlist Predator</span>
+                    <span class="brand-subtitle">YouTube Sync</span>
+                </div>
+            </div>
+            <div id="status-pill" class="status-pill status-disconnected">
+                <span class="status-dot"></span>
+                <span id="status-text">Checking...</span>
+            </div>
+        </header>
+
+        <!-- Auth Section -->
+        <section id="auth-section" class="card">
+            <div class="card-header">Account</div>
+            <div id="auth-logged-in" class="hidden">
+                <div class="user-row">
+                    <span class="user-icon">👤</span>
+                    <span id="user-email" class="user-email">user@example.com</span>
+                </div>
+            </div>
+            <div id="auth-logged-out" class="hidden">
+                <p class="card-desc warning-text">
+                    You must be signed in to Playlist Predator to enable automatic watch syncing.
+                </p>
+                <button id="btn-login" class="btn btn-primary w-full">Sign In to Predator</button>
+            </div>
+        </section>
+
+        <!-- Active Playlist Section -->
+        <section id="playlist-section" class="card">
+            <div class="card-header flex-between">
+                <span>Active Playlist</span>
+                <span id="playlist-badge" class="badge">None</span>
+            </div>
+
+            <div id="playlist-active" class="hidden">
+                <div id="playlist-title" class="playlist-title">Loading...</div>
+                <div class="playlist-meta">
+                    <span id="playlist-id" class="code-pill">PL...</span>
+                    <span id="playlist-progress-stats" class="text-muted">0 done</span>
+                </div>
+                <button id="btn-open-predator" class="btn btn-outline w-full mt-2">
+                    Open in Playlist Predator ↗
+                </button>
+            </div>
+
+            <div id="playlist-inactive" class="hidden">
+                <p class="card-desc">
+                    Open any playlist in Playlist Predator to link tracking. The extension only syncs videos from your currently active playlist.
+                </p>
+                <button id="btn-browse-predator" class="btn btn-outline w-full">
+                    Go to Playlist Predator ↗
+                </button>
+            </div>
+        </section>
+
+        <!-- Current YouTube Tab Section -->
+        <section id="tab-section" class="card">
+            <div class="card-header">Current Tab</div>
+            <div id="tab-status" class="tab-status-text">Detecting active tab...</div>
+        </section>
+
+        <!-- Environment & Controls -->
+        <footer class="footer">
+            <div class="env-group">
+                <label for="env-select" class="text-xs text-muted">Server:</label>
+                <select id="env-select" class="env-select">
+                    <option value="https://playlist-predator.vercel.app">Production</option>
+                    <option value="http://localhost:3000">Localhost:3000</option>
+                </select>
+            </div>
+            <button id="btn-manual-sync" class="btn btn-sm btn-outline">
+                Sync Now ↻
+            </button>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

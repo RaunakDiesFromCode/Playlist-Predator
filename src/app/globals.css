@@ -358,3 +358,16 @@ html.theme-transitioning *::after {
 .animate-fade-in-up {
   animation: fade-in-up 0.2s ease-out;
 }
+
+/* ── Squared toasts to match Playlist Predator UI ────────────────────────── */
+
+[data-sonner-toaster] [data-sonner-toast],
+[data-sonner-toast] {
+  border-radius: 0px !important;
+  font-family: inherit !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast] [data-button],
+[data-sonner-toaster] [data-sonner-toast] [data-cancel] {
+  border-radius: 0px !important;
+}
