@@ -31,9 +31,14 @@ export async function GET(req: NextRequest) {
             );
         }
 
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+
         return NextResponse.json(
             {
                 authenticated: true,
+                token: session?.access_token || null,
                 user: {
                     id: user.id,
                     email: user.email,

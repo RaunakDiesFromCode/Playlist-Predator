@@ -10,11 +10,23 @@
     let currentPlaylistId = null;
     let trackedElement = null;
     let hasMarkedDone = false;
+    let syncFailed = false;
+    let syncFailedCount = 0;
+    let lastAttemptTime = 0;
+    let isSyncing = false;
     let syncThreshold = 0.85; // 85% completion
     let pollInterval = null;
+    let lastToast = { message: "", time: 0 };
 
     // In-page toast notification on YouTube
     function showNotification(message, type = "success") {
+        const now = Date.now();
+        // Prevent duplicate toasts within 8 seconds
+        if (lastToast.message === message && now - lastToast.time < 8000) {
+            return;
+        }
+        lastToast = { message, time: now };
+
         try {
             const existing = document.getElementById("predator-toast");
             if (existing) existing.remove();
@@ -82,12 +94,33 @@
 
     // Check if progress threshold reached
     function checkCompletion(videoEl, activePlaylistId, videoId) {
-        if (hasMarkedDone) return;
-
         const { currentTime, duration, isEnded } = getPlaybackStats(videoEl);
         if (!duration || duration <= 0) return;
 
         const ratio = currentTime / duration;
+
+        // If user scrubs backward below the threshold, reset failure state
+        if (ratio < syncThreshold && !isEnded) {
+            if (syncFailed) {
+                syncFailed = false;
+                hasMarkedDone = false;
+                syncFailedCount = 0;
+            }
+            return;
+        }
+
+        // Already marked, currently syncing, or permanently failed for this watch session
+        if (hasMarkedDone || isSyncing) return;
+
+        // If previous attempt failed, allow at most 1 retry after 30 seconds of continued watching
+        const now = Date.now();
+        if (syncFailed) {
+            if (syncFailedCount < 2 && now - lastAttemptTime > 30000) {
+                // Retry attempt allowed
+            } else {
+                return;
+            }
+        }
 
         // If watched or scrubbed past 85% or reached end
         if (ratio >= syncThreshold || isEnded) {
@@ -98,6 +131,10 @@
 
     // Trigger completion to background worker
     function triggerMarkDone(playlistId, videoId) {
+        if (isSyncing) return;
+        isSyncing = true;
+        lastAttemptTime = Date.now();
+
         console.log(`[Predator Ext] Triggering mark done for video ${videoId} in playlist ${playlistId}`);
 
         chrome.runtime.sendMessage(
@@ -106,19 +143,33 @@
                 payload: { playlistId, videoId },
             },
             (response) => {
+                isSyncing = false;
+
                 if (chrome.runtime.lastError) {
                     console.warn("[Predator Ext] Message error:", chrome.runtime.lastError);
-                    hasMarkedDone = false; // Allow retry on error
+                    syncFailed = true;
+                    syncFailedCount++;
+                    // Keep hasMarkedDone = true to prevent infinite event loops
+                    hasMarkedDone = true;
                     showNotification("Could not communicate with extension", "error");
                     return;
                 }
 
                 if (response?.updated) {
+                    syncFailed = false;
+                    syncFailedCount = 0;
+                    hasMarkedDone = true;
                     showNotification("Video marked as Done! Synced with Predator.", "success");
                 } else if (response?.unchanged) {
+                    syncFailed = false;
+                    syncFailedCount = 0;
+                    hasMarkedDone = true;
                     showNotification(`Video is already ${response.currentStatus || "DONE"} in Predator.`, "info");
                 } else if (response?.error) {
-                    hasMarkedDone = false; // Allow retry on error
+                    syncFailed = true;
+                    syncFailedCount++;
+                    // Keep hasMarkedDone = true to prevent infinite event loops
+                    hasMarkedDone = true;
                     showNotification(`Sync notice: ${response.message || response.error}`, "error");
                 }
             }
@@ -166,6 +217,10 @@
             currentVideoId = videoId;
             currentPlaylistId = playlistId;
             hasMarkedDone = false;
+            syncFailed = false;
+            syncFailedCount = 0;
+            lastAttemptTime = 0;
+            isSyncing = false;
             trackedElement = null;
             if (pollInterval) {
                 clearInterval(pollInterval);

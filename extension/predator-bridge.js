@@ -51,7 +51,7 @@
                                 type: "SET_AUTH",
                                 payload: {
                                     authenticated: true,
-                                    token: null,
+                                    token: data.token || null,
                                     user: data.user,
                                 },
                             }).catch(() => {});

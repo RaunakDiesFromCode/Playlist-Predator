@@ -4,11 +4,49 @@
  */
 
 const DEFAULT_BASE_URL = "https://playlist-predator.vercel.app";
+const KNOWN_DOMAINS = [
+    "https://playlist-predator.vercel.app",
+    "https://predator.raunakm.xyz"
+];
 
 // Helper: Get configured Base URL
 async function getBaseUrl() {
     const data = await chrome.storage.local.get("baseUrl");
     return (data.baseUrl || DEFAULT_BASE_URL).replace(/\/+$/, "");
+}
+
+// Resilient API fetch that automatically falls back across known production domains
+async function apiFetch(path, options = {}) {
+    const configuredBase = await getBaseUrl();
+    const tryUrls = [configuredBase];
+
+    for (const d of KNOWN_DOMAINS) {
+        if (!tryUrls.includes(d)) {
+            tryUrls.push(d);
+        }
+    }
+
+    let lastError = null;
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+    for (const base of tryUrls) {
+        try {
+            const url = `${base}${cleanPath}`;
+            const res = await fetch(url, options);
+
+            // If we succeeded on a fallback domain, update stored baseUrl
+            if (base !== configuredBase && (res.ok || res.status === 401 || res.status === 404)) {
+                await chrome.storage.local.set({ baseUrl: base });
+            }
+
+            return res;
+        } catch (err) {
+            console.warn(`[Predator Ext] fetch failed for ${base}${cleanPath}:`, err);
+            lastError = err;
+        }
+    }
+
+    throw lastError || new Error("Failed to connect to Playlist Predator");
 }
 
 // Helper: Get current Auth state
@@ -42,28 +80,49 @@ async function setProgressCache(playlistId, progress) {
 async function getSupabaseTokenFromCookies(baseUrl) {
     try {
         const urlObj = new URL(baseUrl);
-        const cookies = await chrome.cookies.getAll({ domain: urlObj.hostname });
-        const authCookies = cookies.filter((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
-        if (!authCookies.length) return null;
-
-        authCookies.sort((a, b) => a.name.localeCompare(b.name));
-        const combined = authCookies.map((c) => c.value).join("");
-
-        let raw = combined;
-        try {
-            raw = decodeURIComponent(combined);
-        } catch {}
-
-        if (raw.startsWith("base64-")) {
-            const json = atob(raw.slice(7));
-            const parsed = JSON.parse(json);
-            return parsed.access_token || parsed[0] || null;
+        const candidateHosts = [urlObj.hostname];
+        if (urlObj.hostname === "playlist-predator.vercel.app") {
+            candidateHosts.push("predator.raunakm.xyz");
+        } else if (urlObj.hostname === "predator.raunakm.xyz") {
+            candidateHosts.push("playlist-predator.vercel.app");
         }
 
-        try {
-            const parsed = JSON.parse(raw);
-            return parsed.access_token || (Array.isArray(parsed) ? parsed[0] : null);
-        } catch {}
+        for (const host of candidateHosts) {
+            const cookies = await chrome.cookies.getAll({ domain: host });
+            const authCookies = cookies.filter((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+            if (!authCookies.length) continue;
+
+            // Sort chunk indices numerically (.0, .1, .2 ... .10)
+            authCookies.sort((a, b) => {
+                const getChunk = (name) => {
+                    const m = name.match(/\.(\d+)$/);
+                    return m ? parseInt(m[1], 10) : 0;
+                };
+                return getChunk(a.name) - getChunk(b.name);
+            });
+
+            const combined = authCookies.map((c) => c.value).join("");
+
+            let raw = combined;
+            try {
+                raw = decodeURIComponent(combined);
+            } catch {}
+
+            if (raw.startsWith("base64-")) {
+                try {
+                    const json = atob(raw.slice(7));
+                    const parsed = JSON.parse(json);
+                    const token = parsed.access_token || parsed[0];
+                    if (token) return token;
+                } catch {}
+            }
+
+            try {
+                const parsed = JSON.parse(raw);
+                const token = parsed.access_token || (Array.isArray(parsed) ? parsed[0] : null);
+                if (token) return token;
+            } catch {}
+        }
     } catch (e) {
         console.warn("[Predator Ext] Error extracting token from cookies:", e);
     }
@@ -76,6 +135,7 @@ async function detectActivePlaylistFromTabs() {
         const tabs = await chrome.tabs.query({
             url: [
                 "https://playlist-predator.vercel.app/*",
+                "https://predator.raunakm.xyz/*",
                 "http://localhost/*",
                 "http://127.0.0.1/*"
             ]
@@ -149,7 +209,7 @@ async function fetchPlaylistProgress(playlistId) {
             headers["Authorization"] = `Bearer ${token}`;
         }
 
-        const res = await fetch(`${baseUrl}/api/progress?playlistId=${encodeURIComponent(playlistId)}`, {
+        const res = await apiFetch(`/api/progress?playlistId=${encodeURIComponent(playlistId)}`, {
             method: "GET",
             headers,
             credentials: "include",
@@ -175,6 +235,7 @@ async function notifyPredatorTabsToRefresh() {
         const tabs = await chrome.tabs.query({
             url: [
                 "https://playlist-predator.vercel.app/*",
+                "https://predator.raunakm.xyz/*",
                 "http://localhost/*",
                 "http://127.0.0.1/*"
             ]
@@ -368,19 +429,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         headers["Authorization"] = `Bearer ${token}`;
                     }
 
-                    console.log(`[Predator Ext] Sending PATCH ${baseUrl}/api/progress for ${videoId}`);
+                    console.log(`[Predator Ext] Sending PATCH /api/progress for ${videoId}`);
 
-                    const res = await fetch(`${baseUrl}/api/progress`, {
-                        method: "PATCH",
-                        headers,
-                        credentials: "include",
-                        body: JSON.stringify({
-                            playlistId,
-                            videoId,
-                            status: "DONE",
-                            onlyIfStudy: true,
-                        }),
-                    });
+                    let res;
+                    try {
+                        res = await apiFetch(`/api/progress`, {
+                            method: "PATCH",
+                            headers,
+                            credentials: "include",
+                            body: JSON.stringify({
+                                playlistId,
+                                videoId,
+                                status: "DONE",
+                                onlyIfStudy: true,
+                            }),
+                        });
+                    } catch (fetchErr) {
+                        console.error("[Predator Ext] Network fetch error:", fetchErr);
+                        sendResponse({
+                            success: false,
+                            error: "NETWORK_ERROR",
+                            message: "Unable to reach Playlist Predator server. Check your connection or login status.",
+                        });
+                        return;
+                    }
 
                     if (!res.ok) {
                         const errData = await res.json().catch(() => ({}));
