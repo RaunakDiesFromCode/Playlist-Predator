@@ -13,7 +13,6 @@ import {
     Sidebar,
     User,
     ChevronDown,
-    Chrome,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -39,15 +38,9 @@ type NavbarProps = {
     toggleSidebar: () => void;
     user: AuthUser | null;
     loading: boolean;
-    showSidebarToggle?: boolean;
 };
 
-const Navbar = ({
-    toggleSidebar,
-    user,
-    loading,
-    showSidebarToggle = true,
-}: NavbarProps) => {
+const Navbar = ({ toggleSidebar, user, loading }: NavbarProps) => {
     const router = useRouter();
     const { canAccess: showAdminLink } = useAdminAccess();
     const [menuOpen, setMenuOpen] = useState(false);
@@ -74,17 +67,15 @@ const Navbar = ({
                     Skip to main content
                 </a>
                 <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                    {showSidebarToggle && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={toggleSidebar}
-                            aria-label="Toggle sidebar"
-                            className="h-10 w-10 shrink-0 md:hidden"
-                        >
-                            <Sidebar className="h-5 w-5" />
-                        </Button>
-                    )}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleSidebar}
+                        aria-label="Toggle sidebar"
+                        className="h-10 w-10 shrink-0 md:hidden"
+                    >
+                        <Sidebar className="h-5 w-5" />
+                    </Button>
 
                     <Link
                         href="/"
@@ -167,13 +158,6 @@ const Navbar = ({
                                         <Link href="/insights">
                                             <BarChart3 className="h-4 w-4" aria-hidden="true" />
                                             Insights
-                                        </Link>
-                                    </DropdownMenuItem>
-
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/docs/extension">
-                                            <Chrome className="h-4 w-4" aria-hidden="true" />
-                                            Extension Sync
                                         </Link>
                                     </DropdownMenuItem>
 

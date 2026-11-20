@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Toaster } from "sonner";
 import DomainRedirectBanner from "@/components/DomainRedirectBanner";
-import ExtensionAnnouncementModal from "@/components/ExtensionAnnouncementModal";
 import { isAnniversaryActive } from "@/lib/time/anniversary";
 
 export default function Body({ children }: { children: React.ReactNode }) {
@@ -17,7 +16,6 @@ export default function Body({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     const pathname = usePathname();
     const isHome = pathname === "/";
-    const isDocs = pathname?.startsWith("/docs");
 
     useEffect(() => {
         if (!("serviceWorker" in navigator)) {
@@ -76,26 +74,22 @@ export default function Body({ children }: { children: React.ReactNode }) {
             }
         >
             <DomainRedirectBanner />
-            <ExtensionAnnouncementModal />
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                 <div className="flex min-h-[100dvh] flex-col md:flex-row">
-                    {!isDocs && (
-                        <Sidebar
-                            user={user}
-                            loading={loading}
-                            mobileOpen={mobileSidebarOpen}
-                            setMobileOpen={setMobileSidebarOpen}
-                            collapsed={sidebarCollapsed}
-                            setCollapsed={setSidebarCollapsed}
-                            onNavigateAction={() => setMobileSidebarOpen(false)}
-                        />
-                    )}
+                    <Sidebar
+                        user={user}
+                        loading={loading}
+                        mobileOpen={mobileSidebarOpen}
+                        setMobileOpen={setMobileSidebarOpen}
+                        collapsed={sidebarCollapsed}
+                        setCollapsed={setSidebarCollapsed}
+                        onNavigateAction={() => setMobileSidebarOpen(false)}
+                    />
 
                     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
                         <Navbar
                             user={user}
                             loading={loading}
-                            showSidebarToggle={!isDocs}
                             toggleSidebar={() =>
                                 setMobileSidebarOpen((value) => !value)
                             }
@@ -111,15 +105,7 @@ export default function Body({ children }: { children: React.ReactNode }) {
                     </div>
                 </div>
             </ThemeProvider>
-            <Toaster
-                position="bottom-right"
-                toastOptions={{
-                    className: "!rounded-none border border-border bg-background text-foreground shadow-md font-sans",
-                    style: {
-                        borderRadius: "0px",
-                    },
-                }}
-            />
+            <Toaster position="bottom-right" data-sonner-toaster />
         </body>
     );
 }
